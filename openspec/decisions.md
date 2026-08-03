@@ -59,14 +59,22 @@ siga mantenido cuando se llegue a esa fase).
 
 **Motivo**: ver el razonamiento completo en
 `TekoApp-Backend/.claude/documentation/notifications-push-architecture.md` — decisión tomada para
-los 3 repos: Web Push (VAPID) en `TekoApp-Web`, FCM acá. El backend ya tiene `firebase-admin` como
-dependencia (sin conectar todavía) — el trabajo de mobile depende de que el backend primero
-implemente el wiring real de envío (ver checkpoints en ese documento) antes de que tenga sentido
-construir la recepción en la app.
+los 3 repos: Web Push (VAPID) en `TekoApp-Web`, FCM acá.
 
-**Estado**: decisión tomada, **bloqueada por el backend** — no empezar la Fase 5
-(`changes/0005-realtime-and-push.md`) hasta confirmar que el backend ya envía FCM de verdad (no
-solo loguea que lo haría).
+**Estado (actualizado 2026-08-02): backend YA implementado, deja de estar bloqueado por
+infraestructura.** El backend conectó `firebase-admin` de verdad (`modules/push-provider/`,
+`FcmProviderService`) y expone:
+
+- `POST /notifications/fcm-tokens` — registrar/actualizar el token FCM del dispositivo.
+- `DELETE /notifications/fcm-tokens/:referenceId` — dar de baja un token.
+- `NotificationsProcessor` envía de verdad vía `admin.messaging().send()` cuando una notificación
+  declara el canal `fcm`, y desactiva el token si Firebase reporta
+  `messaging/registration-token-not-registered` (no reintenta indefinidamente).
+
+Lo único que sigue bloqueado es la falta de un **proyecto Firebase real** para esta app (no hay
+`google-services.json`/`GoogleService-Info.plist` todavía) y, obviamente, de código Flutter que
+consuma esos endpoints — no es un bloqueo de arquitectura backend, es trabajo de esta fase. Ver
+`changes/0005-realtime-and-push.md`, que ya refleja este desbloqueo.
 
 ## Diseño: tokens compartidos, no reinterpretados
 
@@ -78,13 +86,67 @@ a la web por una reinterpretación manual de los mismos colores.
 — probablemente un archivo `.dart` con constantes `Color(0x...)`) sin definir todavía — es tarea
 de `changes/0002-auth-and-design-system.md`.
 
+## Testing: `flutter_test` + `mocktail`
+
+**Motivo**: decidido al ejecutar la Fase 0001 (bootstrap) — `mocktail` no depende de code
+generation (a diferencia de `mockito`, que necesita `build_runner`), lo que mantiene el ciclo de
+test más simple mientras el proyecto es chico. Se usa ya en
+`test/core/api_client/envelope_interceptor_test.dart` para mockear `ResponseInterceptorHandler`.
+
+**Estado**: decidido e implementado (Fase 0001).
+
+## CI/CD: GitHub Actions, 3 ambientes, sin firma de release todavía
+
+**Motivo**: mismo proveedor que `TekoApp-Backend`/`TekoApp-Web`, consistencia del ecosistema.
+`.github/workflows/ci.yml` corre `flutter analyze` + `flutter test` en cada push/PR a
+`develop`/`qa`/`master` (los 3 ambientes, igual que los otros 2 repos).
+
+**Mapeo de ambientes** (mismo criterio que el resto del ecosistema):
+
+| Rama | Ambiente | Play Console (futuro) | App Store / TestFlight (futuro) |
+|---|---|---|---|
+| `develop` | dev | track "internal" | build interno (sin distribuir) |
+| `qa` | qa | track "closed testing" | grupo de beta en TestFlight |
+| `master` | prod | "production" | App Store público |
+
+`.github/workflows/build.yml` (disparo manual, con input `environment: dev\|qa\|prod`) valida que
+compile un APK Android (`--debug`, sin keystore de release) y un build de iOS para simulador
+(`--no-codesign`), pasando el `API_BASE_URL` correspondiente al ambiente elegido vía
+`--dart-define`. **No publica a ninguna store** — no existe todavía la cuenta de Google Play
+Console, la de Apple Developer Program, ni sus certificados, ni un backend real desplegado en
+dev/qa/prod (hoy `API_BASE_URL_QA`/`API_BASE_URL_PROD` en el workflow son placeholders de URL,
+sin backend detrás).
+
+**Lo que falta para releases reales a las stores** (bloqueado por cuentas/infra, no por decisión
+técnica pendiente):
+
+1. Cuenta de Google Play Console + keystore de firma → secrets `ANDROID_KEYSTORE_BASE64` +
+   `ANDROID_KEY_PROPERTIES`, un job de `build.yml` con `flutter build appbundle --release` +
+   `key.properties` generado desde el secret, subida vía `fastlane`/`google-play-publisher` a la
+   track correspondiente al ambiente.
+2. Cuenta de Apple Developer Program + certificado de distribución + provisioning profile →
+   secrets equivalentes, `flutter build ipa --release` firmado, subida a TestFlight/App Store
+   Connect vía `fastlane`.
+3. Proyecto Firebase real (uno por ambiente o uno solo con distintos flavors) →
+   `google-services.json`/`GoogleService-Info.plist` por ambiente, nunca committeados (ver
+   `.gitignore`).
+4. Backend real desplegado en `qa`/`prod` (hoy solo existe local) para que
+   `API_BASE_URL_QA`/`API_BASE_URL_PROD` en `build.yml` apunten a algo real.
+
+Ninguno de estos 4 puntos es una decisión de arquitectura sin tomar — son cuentas/infra externas
+que no existen todavía. Cuando existan, se extiende `build.yml` con la firma real y un job de
+publicación por ambiente — no antes, para no dejar placeholders de credenciales tentando a usarse.
+
+**Estado**: decidido e implementado (Fase 0001) el build de validación multi-ambiente; publicación
+real a stores pendiente de las cuentas/infra listadas arriba.
+
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
-- Testing: framework de testing de Flutter (`flutter_test` + `mocktail`/`mockito`) — sin decidir
-  cuál usar para mocks, evaluar en la Fase 1.
-- CI/CD: pipeline de build/firma para iOS y Android — fuera de alcance de esta sesión de
-  documentación, decidir cuando el proyecto tenga código real para buildear.
+- Almacenamiento seguro de tokens y el flujo de login real (nonce + RSA-OAEP) — ver la sección
+  específica más arriba, sigue pendiente para la Fase 0002.
 - Offline-first vs. online-only: no se decidió si la app necesita funcionar sin conexión (ej. ver
   servicios ya cargados) — el dominio (servicios en tiempo real, ubicación en vivo) sugiere que
   online-only es razonable para el MVP, pero es una decisión de producto, no técnica, que falta
   confirmar con el negocio antes de la Fase 3.
+- Firma de release y publicación en Google Play / App Store — bloqueado por no tener las cuentas
+  todavía, no por falta de decisión técnica (ver "CI/CD" arriba).

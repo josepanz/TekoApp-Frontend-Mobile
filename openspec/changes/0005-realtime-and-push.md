@@ -5,13 +5,17 @@
 Leer: `specs/realtime-location.md`, `specs/notifications-push.md`,
 `TekoApp-Backend/.claude/documentation/notifications-push-architecture.md`.
 
-## Bloqueo a confirmar ANTES de arrancar esta fase
+## Bloqueo — actualizado 2026-08-02: YA NO bloqueado por el backend
 
-La parte de push **depende de trabajo pendiente en el backend** (ver documento de arquitectura de
-push) — confirmar en ese momento que el backend ya implementó el modelo de suscripción FCM, los
-endpoints de registro de token, y que `NotificationsProcessor` efectivamente envía FCM (no solo
-loguea). Si no está listo, hacer primero la parte de tiempo real (geolocalización) de esta fase,
-que no depende del backend más allá de lo que ya existe hoy.
+**El backend ya implementó el modelo de suscripción FCM, los endpoints de registro de token
+(`POST`/`DELETE /notifications/fcm-tokens`), y `NotificationsProcessor` efectivamente envía FCM
+vía `admin.messaging().send()` (no solo loguea) — ver
+`TekoApp-Backend/.claude/documentation/notifications-push-architecture.md` y
+`openspec/decisions.md`.** El bloqueo real que queda no es de arquitectura: falta (a) un proyecto
+Firebase real para esta app (`google-services.json`/`GoogleService-Info.plist`, nadie lo generó
+todavía) y (b) el propio código Flutter. Antes de arrancar la parte de push de esta fase,
+confirmar igual contra el backend real corriendo localmente (no asumir que el endpoint documentado
+sigue vigente sin probarlo — cosas cambian entre sesiones).
 
 ## Tareas — Tiempo real
 
