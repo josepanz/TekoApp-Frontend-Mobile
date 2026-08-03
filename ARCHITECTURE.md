@@ -162,18 +162,93 @@ en Flutter.
 
 ## CI/CD
 
-`.github/workflows/ci.yml` corre `flutter analyze` + `flutter test` en cada push/PR a
-`develop`/`qa`/`master`. `.github/workflows/build.yml` (disparo manual, input `environment`) valida
-que compile un APK Android debug y un build de iOS para simulador, pasando el `API_BASE_URL` del
-ambiente elegido.
+Tres workflows, cada uno con un propósito distinto:
 
-**No publica a ninguna store todavía** — falta, en los 4 puntos siguientes, infraestructura externa
-(no decisiones técnicas pendientes):
+- **`ci.yml`** — `flutter analyze` + `flutter test` en cada push/PR a `develop`/`qa`/`master`.
+- **`build.yml`** (disparo manual, input `environment`) — build de validación rápida: APK debug +
+  build de iOS para simulador, pasando el `API_BASE_URL` del ambiente elegido. No firma, no
+  publica nada — solo confirma que el código compila para ambas plataformas.
+- **`release.yml`** — se dispara en cada push a `develop`/`qa`/`master`. Versiona con
+  **semantic-release** (mismo mecanismo que `TekoApp-Backend`/`TekoApp-Web`: analiza los commits
+  convencionales, decide la versión siguiente, genera `CHANGELOG.md`, bumpea `pubspec.yaml` vía
+  `scripts/replace-version.sh`, y crea el GitHub Release con las notas) y después compila y sube
+  como assets del release: **APK + AAB** (Android, siempre) e **IPA** (iOS, solo en `qa`/`master`,
+  ver más abajo por qué no en `develop`). Si además existen los secrets de las stores, sube el
+  build a Google Play / App Store Connect automáticamente.
 
-1. Cuenta de Google Play Console + keystore de firma.
-2. Cuenta de Apple Developer Program + certificado de distribución.
-3. Proyecto Firebase real (uno por ambiente o con flavors).
-4. Backend real desplegado en `qa`/`prod` (hoy solo corre local).
+### Cómo queda el release sin ningún secret cargado (estado de hoy)
+
+`release.yml` funciona igual — crea el GitHub Release y adjunta APK/AAB firmados con la **key de
+debug** (el mismo fallback que deja `flutter create` por default: sirve para instalar el APK a
+mano/sideload y para `flutter run --release`, pero **Google Play rechaza un AAB sin firma de
+release real**). El job de iOS directamente no corre (necesita los secrets de certificado, ver
+abajo), así que no hay IPA hasta que se carguen. Los jobs de publicación a las stores tampoco
+corren sin sus secrets — todo el pipeline es aditivo: cargás un grupo de secrets y esa parte se
+activa sola, sin tocar el workflow.
+
+### Secrets a cargar — Android (firma de release)
+
+| Secret | Qué es | Cómo generarlo |
+|---|---|---|
+| `ANDROID_KEYSTORE_BASE64` | El keystore de firma, en base64 | `keytool -genkey -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias tekoapp` (guardar `release-keystore.jks` **fuera del repo**, en un lugar seguro — si se pierde, no se puede volver a actualizar la app publicada) → `base64 -w0 release-keystore.jks` (Linux/Mac) o `[Convert]::ToBase64String([IO.File]::ReadAllBytes("release-keystore.jks"))` (PowerShell) |
+| `ANDROID_KEYSTORE_PASSWORD` | Password del keystore | El que elegiste al correr `keytool` |
+| `ANDROID_KEY_ALIAS` | Alias de la key dentro del keystore | `tekoapp` en el ejemplo de arriba (`-alias`) |
+| `ANDROID_KEY_PASSWORD` | Password de la key (puede ser igual al del keystore) | El que elegiste al correr `keytool` |
+
+Cargar cada uno con `gh secret set <NOMBRE> --repo josepanz/TekoApp-Frontend-Mobile` (pega el valor
+oculto) o desde GitHub → Settings → Secrets and variables → Actions → New repository secret.
+
+**Una vez cargados los 4**, `android/app/build.gradle.kts` los usa automáticamente (lee
+`android/key.properties`, que genera `release.yml` a partir de estos secrets en cada run — nunca
+se commitea, ya está en `.gitignore`) y el AAB/APK quedan firmados de verdad.
+
+### Secrets a cargar — iOS (firma de release)
+
+Requiere una cuenta de **Apple Developer Program** (paga, ~USD 99/año) activa.
+
+| Secret | Qué es | Cómo generarlo |
+|---|---|---|
+| `IOS_CERTIFICATE_P12_BASE64` | Certificado de distribución, en base64 | En Xcode (Mac): Settings → Accounts → tu Apple ID → Manage Certificates → `+` → "Apple Distribution". Exportarlo desde Keychain Access como `.p12` (con password) → `base64 -w0 certificado.p12` |
+| `IOS_CERTIFICATE_PASSWORD` | Password puesto al exportar el `.p12` | El que elegiste en el paso anterior |
+| `IOS_PROVISIONING_PROFILE_BASE64` | Provisioning profile de distribución, en base64 | developer.apple.com → Certificates, IDs & Profiles → Profiles → `+` → "App Store Connect" → seleccionar el App ID `py.com.tekoapp.mobile` → descargar el `.mobileprovision` → `base64 -w0 perfil.mobileprovision` |
+| `IOS_TEAM_ID` | Team ID de Apple Developer | developer.apple.com → Membership (es un código de 10 caracteres, ej. `AB12CD34EF`) |
+
+**Por qué `build-ios` no corre en `develop`**: subir un build firmado a Apple pasa por su sistema
+de provisioning (no hay un equivalente al "debug-signing" de Android) — no tiene sentido gastar esa
+vuelta en cada commit de desarrollo. `qa` y `master` sí lo hacen porque ahí es donde importa tener
+un IPA real (TestFlight interno / App Store).
+
+### Secrets a cargar — publicación en las stores
+
+| Secret | Qué es | Cómo generarlo |
+|---|---|---|
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Credencial de una cuenta de servicio con acceso a la Play Console API | Play Console → Setup → API access → crear cuenta de servicio en Google Cloud Console (rol "Service Account User" + permiso de "Release manager" en Play Console) → descargar el JSON de la key → pegar el **contenido completo del archivo** como valor del secret (no hace falta base64, es JSON plano) |
+| `APP_STORE_CONNECT_API_KEY_ID` | ID de la API Key de App Store Connect | App Store Connect → Users and Access → Integrations → App Store Connect API → `+` (rol "App Manager" alcanza) → el Key ID que muestra |
+| `APP_STORE_CONNECT_API_ISSUER_ID` | Issuer ID de la cuenta | Mismo lugar, arriba de la tabla de keys |
+| `APP_STORE_CONNECT_API_KEY_BASE64` | El archivo `.p8` de la key, en base64 | Se descarga **una sola vez** al crear la key — `base64 -w0 AuthKey_XXXX.p8` |
+
+**Mapeo de ambientes → track/canal** (ver `openspec/decisions.md`):
+
+| Rama | Google Play | App Store Connect |
+|---|---|---|
+| `develop` | — (no corre, ver arriba) | — (no corre) |
+| `qa` | track "internal" | TestFlight, grupo interno (disponible automáticamente al subir) |
+| `master` | track "production" | Sube a App Store Connect en estado "Ready to Submit" — **la revisión/publicación final la confirmás vos a mano** en App Store Connect (no se automatiza el submit-for-review, para no publicar sin que alguien revise release notes/capturas antes) |
+
+### Lo único que sigue bloqueado tras cargar todos los secrets de arriba
+
+Nada de arquitectura — con esos 8 secrets cargados, `release.yml` firma y publica de punta a punta.
+Lo que puede seguir pendiente es específico de contenido de la store, no de CI/CD: ficha de la
+app en Play Console (capturas, descripción, clasificación de contenido), ficha en App Store
+Connect (capturas, descripción, política de privacidad pública), y la revisión humana de Apple
+antes de que un release en `master` quede visible al público (Google Play no tiene ese paso para
+tracks internos, pero sí para "production" la primera vez).
+
+### Firebase (notificaciones push) — recordatorio, no parte de este pipeline
+
+Sigue bloqueado por falta de un proyecto Firebase real (`google-services.json`/
+`GoogleService-Info.plist`), ver la sección "Notificaciones push" más arriba — no es parte del
+release de instaladores, es un requisito aparte para que FCM funcione en un build real.
 
 ## Errores ya encontrados que esta app debería evitar de entrada
 

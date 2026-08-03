@@ -1,0 +1,12 @@
+{
+  "name": "tekoapp-mobile-release-tooling",
+  "private": true,
+  "description": "No es un paquete npm real - solo aloja semantic-release para versionar pubspec.yaml y publicar releases de GitHub con los instaladores (APK/AAB/IPA), mismo mecanismo que TekoApp-Backend/TekoApp-Web.",
+  "devDependencies": {
+    "semantic-release": "^24.2.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.8"
+  }
+}
