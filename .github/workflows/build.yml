@@ -1,0 +1,62 @@
+name: Build (Android + iOS)
+
+# Builds de validación de compilación, SIN firma de release — no hay todavía cuenta de Google
+# Play Console / Apple Developer Program ni certificados/keystore configurados como secrets (ver
+# README.md "Cómo correr localmente" y openspec/changes/0006-i18n-and-polish.md para el estado de
+# esa decisión). Cuando existan esos secrets, este workflow se extiende con firma real — no antes,
+# para no dejar credenciales de placeholder tentando a alguien a usarlas.
+#
+# Disparo manual (workflow_dispatch) en vez de en cada push — un build de Android+iOS es lento y
+# no aporta nada en cada commit que ya cubre ci.yml (analyze + test).
+on:
+  workflow_dispatch:
+
+jobs:
+  android:
+    name: Build Android (APK debug)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter gen-l10n
+
+      # --debug: sin keystore de release configurado todavía. Cambiar a `--release` con
+      # `key.properties` (desde secrets) cuando exista la cuenta de Play Console.
+      - name: Build APK debug
+        run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+  ios:
+    name: Build iOS (simulador, sin firma)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter gen-l10n
+
+      # --no-codesign + build para simulador: sin cuenta de Apple Developer/certificados todavía,
+      # no se puede firmar para dispositivo físico ni App Store. Valida que el código Dart/nativo
+      # compile en iOS, nada más — ver README.md para correr en un dispositivo real desde una Mac.
+      - name: Build iOS (simulador)
+        run: flutter build ios --simulator --no-codesign

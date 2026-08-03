@@ -1,0 +1,10 @@
+{
+  "@@locale": "en",
+  "appTitle": "TekoApp",
+  "homeGreeting": "Hi, {name}",
+  "loginTitle": "Sign in",
+  "loginEmailLabel": "Email",
+  "loginPasswordLabel": "Password",
+  "loginSubmit": "Sign in",
+  "comingSoon": "Coming soon"
+}

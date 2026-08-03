@@ -19,12 +19,17 @@
 - 0 warnings/errores en el analizador (`flutter analyze`) y en la corrida de tests — mismo
   estándar que los otros 2 repos.
 
-## Pendiente de decidir (no asumir, confirmar en Fase 0001/0002)
+## Mocks: `mocktail`
 
-- Framework de testing más allá de `flutter_test` (¿`mocktail`? ¿`mockito`?) — ver
-  `openspec/decisions.md`, listado explícitamente como "no decidido".
+Decidido en la Fase 0001 (ver `openspec/decisions.md`) — sin code generation, a diferencia de
+`mockito`. Ver `test/core/api_client/envelope_interceptor_test.dart` como ejemplo del patrón
+(`class _MockHandler extends Mock implements X {}`).
+
+## Pendiente de decidir
+
 - Si hay e2e (`integration_test`) y qué flujos cubre — probablemente login + un flujo CRUD
   representativo, mismo alcance que Playwright en `TekoApp-Web`, no buscar 100% de cobertura e2e.
+  La carpeta `integration_test/` ya existe (vacía) desde la Fase 0001, lista para cuando se decida.
 
 ## Comandos (una vez exista `pubspec.yaml`)
 

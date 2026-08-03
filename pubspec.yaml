@@ -1,0 +1,50 @@
+name: tekoapp_mobile
+description: >-
+  TekoApp — marketplace de servicios profesionales. App Flutter (iOS + Android) para clientes y
+  profesionales, mismo backend que TekoApp-Web.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Estado — ver openspec/decisions.md (decidido, spike de login pendiente de validar el patrón)
+  flutter_riverpod: ^2.5.1
+
+  # Ruteo declarativo + guards de sesión — ver openspec/decisions.md
+  go_router: ^14.2.7
+
+  # Cliente HTTP (interceptors Bearer/refresh, multipart nativo) — ver openspec/decisions.md
+  dio: ^5.5.0+1
+
+  # i18n es/en — ver .claude/rules/i18n.md
+  intl: any
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+  # flutter_lints es el punto de partida estándar del SDK — ver .claude/rules/test.md
+  flutter_lints: ^4.0.0
+
+  # Mocks para tests de providers/widgets — candidato único evaluado hoy, no hay alternativa
+  # activa descartada explícitamente en decisions.md, así que se fija acá en vez de dejarlo
+  # indefinido (bloquearía escribir el primer test).
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  generate: true # habilita l10n vía flutter_localizations (ver l10n.yaml)
+
+  # Sin assets/fonts propios todavía — el manual de marca (tipografía Poppins, íconos) se
+  # incorpora en la Fase 0002 (design-system) junto con el output Dart de tokens.json.
