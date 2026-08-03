@@ -1,5 +1,32 @@
 # Sesión 3 — 2026-08-03 — Fase 0001: bootstrap del código Flutter
 
+## Actualización (mismo día, tras correr el CI real por primera vez)
+
+- El CI real (con el SDK de Flutter instalado, a diferencia de donde se escribió el código)
+  encontró 3 archivos mal formateados (`dart format`) — corregidos a mano: líneas de código
+  (no comentarios) de más de 80 columnas en `api_client.dart`, `login_screen.dart` y
+  `envelope_interceptor_test.dart`. `flutter analyze` ya pasaba antes de este fix.
+- `brand/` ahora vive de verdad DENTRO de este repo (copia local de `banner.png`/`logo.png`/
+  `manual-de-marca.png`, ya no una referencia relativa a `TekoApp-Backend/brand/`) — mismo
+  criterio que backend/web, cada repo con su propia copia.
+- Sacada la sección "Cómo arrancar la próxima sesión (con un agente de IA)" del `README.md` — un
+  README describe el proyecto a cualquier lector, no el protocolo de una IA específica (eso ya
+  vive en `.claude/memory/memory.md`, que no cambió).
+- Nuevo `CONTRIBUTING.md` (raíz del repo, no `.claude/`) — guía paso a paso para alguien sin
+  experiencia en Flutter: conceptos base (Widget, Riverpod, go_router), ejemplos de ajuste menor/
+  mayor/feature nueva, i18n, testing.
+- `.github/workflows/build.yml` ahora es consciente de los 3 ambientes (`dev`/`qa`/`prod`, mismo
+  mapeo de ramas que backend/web) vía un input de `workflow_dispatch` — pasa el `API_BASE_URL`
+  correspondiente por `--dart-define`. Documentado en `openspec/decisions.md` qué falta
+  exactamente para releases reales a las stores (cuentas, Firebase, backend desplegado) — nada de
+  eso es una decisión técnica pendiente, son cuentas/infra externas que no existen todavía.
+- **Bug real reportado por el usuario probando en el browser**: `service.professional.user`
+  crasheaba en el detail view de servicios (`TekoApp-Frontend-Web`). Causa raíz en
+  `TekoApp-Backend`: `findServiceByReferenceId` incluía `professional: true` sin anidar
+  `include: { user: true }`, a pesar de que `ServiceDetailResponseDTO` documenta
+  `professional.user`. Corregido el include (mismo patrón que ya usaban otros métodos del mismo
+  archivo) + agregado `service.professional?.user` en el frontend como defensa adicional.
+
 ## Qué se hizo
 
 - Creado `pubspec.yaml` con el stack ya decidido: `flutter_riverpod`, `go_router`, `dio`,

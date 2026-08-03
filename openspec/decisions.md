@@ -95,20 +95,50 @@ test más simple mientras el proyecto es chico. Se usa ya en
 
 **Estado**: decidido e implementado (Fase 0001).
 
-## CI/CD: GitHub Actions, sin firma todavía
+## CI/CD: GitHub Actions, 3 ambientes, sin firma de release todavía
 
 **Motivo**: mismo proveedor que `TekoApp-Backend`/`TekoApp-Web`, consistencia del ecosistema.
-`.github/workflows/ci.yml` corre `flutter analyze` + `flutter test` en cada push/PR.
-`.github/workflows/build.yml` (disparo manual) valida que compile un APK Android (`--debug`, sin
-keystore de release) y un build de iOS para simulador (`--no-codesign`) — **no publica a ninguna
-store**, porque todavía no existe la cuenta de Google Play Console ni de Apple Developer Program
-ni sus certificados. Cuando esas cuentas existan, se agrega firma real vía GitHub Secrets
-(keystore de Android en base64 + `key.properties`; certificado/provisioning profile de iOS) y un
-job de publicación separado — no antes, para no dejar placeholders de credenciales tentando a
-usarse.
+`.github/workflows/ci.yml` corre `flutter analyze` + `flutter test` en cada push/PR a
+`develop`/`qa`/`master` (los 3 ambientes, igual que los otros 2 repos).
 
-**Estado**: decidido e implementado (Fase 0001) el build de validación; publicación a stores
-pendiente de las cuentas reales.
+**Mapeo de ambientes** (mismo criterio que el resto del ecosistema):
+
+| Rama | Ambiente | Play Console (futuro) | App Store / TestFlight (futuro) |
+|---|---|---|---|
+| `develop` | dev | track "internal" | build interno (sin distribuir) |
+| `qa` | qa | track "closed testing" | grupo de beta en TestFlight |
+| `master` | prod | "production" | App Store público |
+
+`.github/workflows/build.yml` (disparo manual, con input `environment: dev\|qa\|prod`) valida que
+compile un APK Android (`--debug`, sin keystore de release) y un build de iOS para simulador
+(`--no-codesign`), pasando el `API_BASE_URL` correspondiente al ambiente elegido vía
+`--dart-define`. **No publica a ninguna store** — no existe todavía la cuenta de Google Play
+Console, la de Apple Developer Program, ni sus certificados, ni un backend real desplegado en
+dev/qa/prod (hoy `API_BASE_URL_QA`/`API_BASE_URL_PROD` en el workflow son placeholders de URL,
+sin backend detrás).
+
+**Lo que falta para releases reales a las stores** (bloqueado por cuentas/infra, no por decisión
+técnica pendiente):
+
+1. Cuenta de Google Play Console + keystore de firma → secrets `ANDROID_KEYSTORE_BASE64` +
+   `ANDROID_KEY_PROPERTIES`, un job de `build.yml` con `flutter build appbundle --release` +
+   `key.properties` generado desde el secret, subida vía `fastlane`/`google-play-publisher` a la
+   track correspondiente al ambiente.
+2. Cuenta de Apple Developer Program + certificado de distribución + provisioning profile →
+   secrets equivalentes, `flutter build ipa --release` firmado, subida a TestFlight/App Store
+   Connect vía `fastlane`.
+3. Proyecto Firebase real (uno por ambiente o uno solo con distintos flavors) →
+   `google-services.json`/`GoogleService-Info.plist` por ambiente, nunca committeados (ver
+   `.gitignore`).
+4. Backend real desplegado en `qa`/`prod` (hoy solo existe local) para que
+   `API_BASE_URL_QA`/`API_BASE_URL_PROD` en `build.yml` apunten a algo real.
+
+Ninguno de estos 4 puntos es una decisión de arquitectura sin tomar — son cuentas/infra externas
+que no existen todavía. Cuando existan, se extiende `build.yml` con la firma real y un job de
+publicación por ambiente — no antes, para no dejar placeholders de credenciales tentando a usarse.
+
+**Estado**: decidido e implementado (Fase 0001) el build de validación multi-ambiente; publicación
+real a stores pendiente de las cuentas/infra listadas arriba.
 
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
