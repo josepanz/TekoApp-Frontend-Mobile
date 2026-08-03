@@ -127,3 +127,5 @@ lib/l10n/app_localizations*.dart
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
+# Node (solo para semantic-release, ver package.json)
+node_modules/
