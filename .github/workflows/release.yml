@@ -1,0 +1,282 @@
+name: Release
+
+# Versiona (semantic-release, mismo mecanismo que TekoApp-Backend/TekoApp-Web), compila los
+# instaladores (APK + AAB Android, IPA iOS) y los publica como assets de un GitHub Release.
+# Cuando existen los secrets de firma/tienda correspondientes (ver ARCHITECTURE.md, seccion
+# "CI/CD"), tambien sube el build a Google Play / App Store Connect - sin esos secrets, el
+# release en GitHub igual se crea, con instaladores sin firmar/debug-firmados (utiles para
+# sideload/testing directo, no para las stores).
+#
+# Mapeo de ambientes (igual que backend/web): develop -> dev, qa -> qa, master -> prod.
+on:
+  push:
+    branches: [develop, qa, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ================================================================
+  # Version & Publish (GitHub Release, sin assets todavia)
+  # ================================================================
+  release:
+    name: Version & Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      released: ${{ steps.version.outputs.released }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+          ref: ${{ github.ref_name }}
+
+      - name: Setup local branches para semantic-release
+        run: |
+          git fetch origin develop:develop qa:qa master:master --update-head-ok 2>/dev/null || true
+          git fetch origin --tags --force
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: npx semantic-release
+
+      - name: Capture released version
+        id: version
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$TAG" ]; then
+            echo "new_version=$TAG" >> "$GITHUB_OUTPUT"
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "Nueva versión: $TAG"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "Sin nueva versión — no hay commits relevantes desde el último release."
+          fi
+
+  # ================================================================
+  # Android: APK + AAB, firmados si existe el keystore (ver ARCHITECTURE.md)
+  # ================================================================
+  build-android:
+    name: Build Android (APK + AAB)
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new_version }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter gen-l10n
+
+      - name: Configurar firma de release (si existen los secrets)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release-keystore.jks
+          EOF
+
+      - name: Build APK + AAB release
+        run: |
+          flutter build apk --release
+          flutter build appbundle --release
+
+      - name: Renombrar con la version (evita pisar releases anteriores en el upload)
+        run: |
+          mkdir -p release-artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk "release-artifacts/tekoapp-mobile-${{ needs.release.outputs.new_version }}.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "release-artifacts/tekoapp-mobile-${{ needs.release.outputs.new_version }}.aab"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-release-artifacts
+          path: release-artifacts/
+
+      - name: Subir al GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: gh release upload "${{ needs.release.outputs.new_version }}" release-artifacts/* --clobber
+
+  # ================================================================
+  # iOS: IPA firmado - solo en qa/master (ver ARCHITECTURE.md por que no en develop) y solo si
+  # existen los secrets de firma. Sin ellos, este job no corre - el build de validacion sin firma
+  # (simulador) sigue viviendo en build.yml, separado de este release.
+  # ================================================================
+  build-ios:
+    name: Build iOS (IPA firmado)
+    needs: release
+    if: |
+      needs.release.outputs.released == 'true' &&
+      github.ref_name != 'develop' &&
+      secrets.IOS_CERTIFICATE_P12_BASE64 != '' &&
+      secrets.IOS_PROVISIONING_PROFILE_BASE64 != ''
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new_version }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter gen-l10n
+
+      - name: Importar certificado + provisioning profile
+        env:
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}
+        run: |
+          KEYCHAIN=build.keychain
+
+          # 1. Certificado -> archivo temporal, keychain temporal (se destruye con el runner)
+          echo "$IOS_CERTIFICATE_P12_BASE64" | base64 -d > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import certificate.p12 -k "$KEYCHAIN" -P "$IOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychain -d user -s "$KEYCHAIN" $(security list-keychains -d user | sed 's/"//g')
+          rm certificate.p12
+
+          # 2. Provisioning profile -> carpeta que busca Xcode
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+      - name: Generar ExportOptions.plist
+        env:
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          cat > ios/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>${IOS_TEAM_ID}</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build IPA release
+        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Renombrar con la version
+        run: |
+          mkdir -p release-artifacts
+          cp build/ios/ipa/*.ipa "release-artifacts/tekoapp-mobile-${{ needs.release.outputs.new_version }}.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-artifacts
+          path: release-artifacts/
+
+      - name: Subir al GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: gh release upload "${{ needs.release.outputs.new_version }}" release-artifacts/* --clobber
+
+  # ================================================================
+  # Google Play — track segun ambiente (ver ARCHITECTURE.md, mapeo de ambientes)
+  # ================================================================
+  publish-android-store:
+    name: Publicar en Google Play
+    needs: [release, build-android]
+    if: needs.release.outputs.released == 'true' && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-release-artifacts
+          path: release-artifacts
+
+      - name: Resolver track segun branch
+        id: track
+        run: |
+          case "${{ github.ref_name }}" in
+            master) echo "track=production" >> "$GITHUB_OUTPUT" ;;
+            qa) echo "track=internal" >> "$GITHUB_OUTPUT" ;;
+            *) echo "track=internal" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: py.com.tekoapp.mobile
+          releaseFiles: release-artifacts/*.aab
+          track: ${{ steps.track.outputs.track }}
+          status: completed
+
+  # ================================================================
+  # App Store Connect / TestFlight — solo qa (TestFlight interno) y master (App Store)
+  # ================================================================
+  publish-ios-store:
+    name: Publicar en App Store Connect
+    needs: [release, build-ios]
+    if: |
+      needs.release.outputs.released == 'true' &&
+      secrets.APP_STORE_CONNECT_API_KEY_BASE64 != ''
+    runs-on: macos-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ios-release-artifacts
+          path: release-artifacts
+
+      - name: Subir a App Store Connect (TestFlight en qa, App Store en master)
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 -d > ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
+
+          IPA=$(ls release-artifacts/*.ipa | head -1)
+
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA" \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID"
+
+          echo "Subido a App Store Connect. En qa queda disponible para el grupo interno de"
+          echo "TestFlight automaticamente. En master, sigue en estado 'Ready to Submit' —"
+          echo "la revision/publicacion final en la App Store requiere confirmarla a mano en"
+          echo "App Store Connect (no se automatiza por default, para no publicar sin revisión"
+          echo "humana de las release notes/capturas exigidas por Apple)."
