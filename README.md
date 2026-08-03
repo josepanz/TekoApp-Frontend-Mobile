@@ -25,6 +25,24 @@ Flutter no tenga que re-derivar nada de eso ni volver a preguntar.
 documentación y en qué orden seguirla. Este README da el contexto de producto y stack; el detalle
 de decisiones, specs por capacidad y el plan de implementación por fases vive en `openspec/`.
 
+### Cómo arrancar la próxima sesión (con un agente de IA)
+
+Este repo tiene un ecosistema `.claude/` completo (reglas, agentes, memoria) — un agente nuevo
+debería leer, en este orden:
+
+1. [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — dominio, stack decidido, estructura de `lib/`
+   planeada, reglas críticas y links a `rules/`/`agents/`.
+2. [`.claude/documentation/context.md`](.claude/documentation/context.md) — snapshot de estado y
+   próximo paso concreto.
+3. La sesión más reciente en `.claude/memory/sessions/` (orden alfabético, la última).
+4. [`openspec/project.md`](openspec/project.md) → [`openspec/decisions.md`](openspec/decisions.md)
+   → el archivo de fase correspondiente en `openspec/changes/` (empezar por
+   [`0001-project-bootstrap.md`](openspec/changes/0001-project-bootstrap.md) si es la primera vez
+   que se toca código en este repo).
+
+Esto ya está automatizado como protocolo en `.claude/memory/memory.md` — no hace falta pedirlo
+explícitamente, cualquier sesión que seguido este archivo debería auto-orientarse sola.
+
 ---
 
 ## Descripción
