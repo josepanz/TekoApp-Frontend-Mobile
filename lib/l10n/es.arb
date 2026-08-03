@@ -1,0 +1,21 @@
+{
+  "@@locale": "es",
+  "appTitle": "TekoApp",
+  "@appTitle": {
+    "description": "Nombre de la app, mostrado en el selector de apps del sistema"
+  },
+  "homeGreeting": "Hola, {name}",
+  "@homeGreeting": {
+    "description": "Saludo en la pantalla de inicio",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "loginTitle": "Iniciar sesión",
+  "loginEmailLabel": "Email",
+  "loginPasswordLabel": "Contraseña",
+  "loginSubmit": "Ingresar",
+  "comingSoon": "Próximamente"
+}
