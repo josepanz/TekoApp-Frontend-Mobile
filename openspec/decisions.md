@@ -112,33 +112,37 @@ test más simple mientras el proyecto es chico. Se usa ya en
 `.github/workflows/build.yml` (disparo manual, con input `environment: dev\|qa\|prod`) valida que
 compile un APK Android (`--debug`, sin keystore de release) y un build de iOS para simulador
 (`--no-codesign`), pasando el `API_BASE_URL` correspondiente al ambiente elegido vía
-`--dart-define`. **No publica a ninguna store** — no existe todavía la cuenta de Google Play
-Console, la de Apple Developer Program, ni sus certificados, ni un backend real desplegado en
-dev/qa/prod (hoy `API_BASE_URL_QA`/`API_BASE_URL_PROD` en el workflow son placeholders de URL,
-sin backend detrás).
+`--dart-define` — solo validación de compilación, nunca publica nada.
 
-**Lo que falta para releases reales a las stores** (bloqueado por cuentas/infra, no por decisión
-técnica pendiente):
+**`.github/workflows/release.yml`** (agregado después de Fase 0001, ver ARCHITECTURE.md sección
+CI/CD para el detalle completo de secrets) — versiona con semantic-release en cada push a
+`develop`/`qa`/`master`, compila APK+AAB (Android, las 3 ramas) e IPA (iOS, solo qa/master) y los
+publica como assets del GitHub Release. Si existen los secrets de firma/tienda correspondientes,
+también sube el build a Google Play / App Store Connect — **el pipeline ya está completo e
+implementado**, funciona hoy mismo sin ningún secret cargado (assets sin firma de release real) y
+se activa solo, ambiente por ambiente, a medida que se cargan los secrets.
 
-1. Cuenta de Google Play Console + keystore de firma → secrets `ANDROID_KEYSTORE_BASE64` +
-   `ANDROID_KEY_PROPERTIES`, un job de `build.yml` con `flutter build appbundle --release` +
-   `key.properties` generado desde el secret, subida vía `fastlane`/`google-play-publisher` a la
-   track correspondiente al ambiente.
+**Lo que falta para que los releases lleguen firmados a las stores** (bloqueado por cuentas/infra
+externas que hay que crear una sola vez, no por decisión técnica ni por trabajo de pipeline
+pendiente — ver ARCHITECTURE.md para el paso a paso exacto de cada secret):
+
+1. Cuenta de Google Play Console + keystore de firma → secrets `ANDROID_KEYSTORE_BASE64` /
+   `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`.
 2. Cuenta de Apple Developer Program + certificado de distribución + provisioning profile →
-   secrets equivalentes, `flutter build ipa --release` firmado, subida a TestFlight/App Store
-   Connect vía `fastlane`.
-3. Proyecto Firebase real (uno por ambiente o uno solo con distintos flavors) →
+   secrets `IOS_CERTIFICATE_P12_BASE64` / `IOS_CERTIFICATE_PASSWORD` /
+   `IOS_PROVISIONING_PROFILE_BASE64` / `IOS_TEAM_ID`.
+3. Cuenta de servicio de Play Console API + API Key de App Store Connect → secrets
+   `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` / `APP_STORE_CONNECT_API_KEY_ID` /
+   `APP_STORE_CONNECT_API_ISSUER_ID` / `APP_STORE_CONNECT_API_KEY_BASE64`.
+4. Proyecto Firebase real (uno por ambiente o uno solo con distintos flavors) →
    `google-services.json`/`GoogleService-Info.plist` por ambiente, nunca committeados (ver
-   `.gitignore`).
-4. Backend real desplegado en `qa`/`prod` (hoy solo existe local) para que
-   `API_BASE_URL_QA`/`API_BASE_URL_PROD` en `build.yml` apunten a algo real.
+   `.gitignore`) — bloquea FCM, no bloquea el release de instaladores en sí.
+5. Backend real desplegado en `qa`/`prod` (hoy solo existe local) para que
+   `API_BASE_URL_QA`/`API_BASE_URL_PROD` apunten a algo real.
 
-Ninguno de estos 4 puntos es una decisión de arquitectura sin tomar — son cuentas/infra externas
-que no existen todavía. Cuando existan, se extiende `build.yml` con la firma real y un job de
-publicación por ambiente — no antes, para no dejar placeholders de credenciales tentando a usarse.
-
-**Estado**: decidido e implementado (Fase 0001) el build de validación multi-ambiente; publicación
-real a stores pendiente de las cuentas/infra listadas arriba.
+**Estado**: decidido e implementado — build de validación multi-ambiente (Fase 0001) y pipeline de
+release completo (`release.yml`); publicación real firmada a las stores pendiente únicamente de
+cargar las credenciales de los puntos 1-3 arriba (sin trabajo de código adicional).
 
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
