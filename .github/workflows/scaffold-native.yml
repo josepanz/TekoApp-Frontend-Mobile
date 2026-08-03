@@ -82,9 +82,9 @@ jobs:
           git add android ios .metadata
           git commit -m "chore: scaffold de proyectos nativos android/ios (flutter create)
 
-Genera android/ e ios/ (no existian desde el bootstrap de la Fase 0001). applicationId/bundle id
-fijado a py.com.tekoapp.mobile en ambas plataformas, desacoplado del nombre de paquete Dart
-(tekoapp_mobile, usado en los imports de lib/ y que no puede cambiar sin romperlos)."
+          Genera android/ e ios/ (no existian desde el bootstrap de la Fase 0001). applicationId/bundle id
+          fijado a py.com.tekoapp.mobile en ambas plataformas, desacoplado del nombre de paquete Dart
+          (tekoapp_mobile, usado en los imports de lib/ y que no puede cambiar sin romperlos)."
           git push -u origin chore/scaffold-native-android-ios
 
       - name: Crear PR
