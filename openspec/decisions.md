@@ -59,14 +59,22 @@ siga mantenido cuando se llegue a esa fase).
 
 **Motivo**: ver el razonamiento completo en
 `TekoApp-Backend/.claude/documentation/notifications-push-architecture.md` — decisión tomada para
-los 3 repos: Web Push (VAPID) en `TekoApp-Web`, FCM acá. El backend ya tiene `firebase-admin` como
-dependencia (sin conectar todavía) — el trabajo de mobile depende de que el backend primero
-implemente el wiring real de envío (ver checkpoints en ese documento) antes de que tenga sentido
-construir la recepción en la app.
+los 3 repos: Web Push (VAPID) en `TekoApp-Web`, FCM acá.
 
-**Estado**: decisión tomada, **bloqueada por el backend** — no empezar la Fase 5
-(`changes/0005-realtime-and-push.md`) hasta confirmar que el backend ya envía FCM de verdad (no
-solo loguea que lo haría).
+**Estado (actualizado 2026-08-02): backend YA implementado, deja de estar bloqueado por
+infraestructura.** El backend conectó `firebase-admin` de verdad (`modules/push-provider/`,
+`FcmProviderService`) y expone:
+
+- `POST /notifications/fcm-tokens` — registrar/actualizar el token FCM del dispositivo.
+- `DELETE /notifications/fcm-tokens/:referenceId` — dar de baja un token.
+- `NotificationsProcessor` envía de verdad vía `admin.messaging().send()` cuando una notificación
+  declara el canal `fcm`, y desactiva el token si Firebase reporta
+  `messaging/registration-token-not-registered` (no reintenta indefinidamente).
+
+Lo único que sigue bloqueado es la falta de un **proyecto Firebase real** para esta app (no hay
+`google-services.json`/`GoogleService-Info.plist` todavía) y, obviamente, de código Flutter que
+consuma esos endpoints — no es un bloqueo de arquitectura backend, es trabajo de esta fase. Ver
+`changes/0005-realtime-and-push.md`, que ya refleja este desbloqueo.
 
 ## Diseño: tokens compartidos, no reinterpretados
 

@@ -3,14 +3,16 @@
 > Ver `TekoApp-Backend/.claude/documentation/notifications-push-architecture.md` para la decisión
 > completa y el estado real verificado del backend — esta spec asume que ese documento ya se leyó.
 
-## Estado de dependencia (bloqueante)
+## Estado de dependencia — actualizado 2026-08-02: backend YA listo
 
-**Esta capacidad depende de trabajo pendiente en el backend** (modelo de suscripción FCM,
-endpoint de registro de token, wiring real de `NotificationsProcessor` a Firebase Admin SDK — hoy
-solo loguea, no envía). No empezar a implementar recepción de push en mobile hasta confirmar que
-el backend ya envía FCM de verdad — ver checkpoints en el documento del backend.
+El backend implementó el modelo de suscripción FCM, `POST`/`DELETE /notifications/fcm-tokens`, y
+`NotificationsProcessor` envía FCM de verdad (`admin.messaging().send()`, ya no solo loguea) — ver
+`TekoApp-Backend/.claude/documentation/notifications-push-architecture.md` para el detalle
+completo (endpoints, modelo de datos, manejo de tokens muertos). **Verificar igual contra el
+backend real corriendo localmente antes de implementar** — no asumir que el endpoint documentado
+sigue vigente sin probarlo.
 
-## Comportamiento esperado (una vez el backend esté listo)
+## Comportamiento esperado
 
 ### Notificaciones in-app (ya funcionan hoy, no bloqueado)
 
@@ -22,11 +24,12 @@ el backend ya envía FCM de verdad — ver checkpoints en el documento del backe
   `system` — cada uno con su propio ícono/tratamiento visual esperado en la UI (no todas las
   notificaciones se ven igual).
 
-### Push (Firebase Cloud Messaging) — pendiente del backend
+### Push (Firebase Cloud Messaging) — backend listo, falta el cliente Flutter
 
 1. Al loguear (o al abrir la app con sesión activa), pedir el token FCM
-   (`FirebaseMessaging.instance.getToken()`) y registrarlo contra el endpoint que el backend debe
-   exponer (`POST /notifications/fcm-tokens`, todavía no existe — ver documento del backend).
+   (`FirebaseMessaging.instance.getToken()`) y registrarlo contra
+   `POST /notifications/fcm-tokens` (`{ token, deviceType: 'ANDROID' | 'IOS' }` — ya implementado
+   y probado del lado backend).
 2. Manejar los 3 estados de la app al recibir una notificación (`firebase_messaging` los expone
    con callbacks distintos — revisar la doc oficial del paquete al implementar, no asumir un solo
    handler):
@@ -35,9 +38,9 @@ el backend ya envía FCM de verdad — ver checkpoints en el documento del backe
    - App en background: el sistema operativo la muestra; al tocarla, navegar al detalle relevante
      (ej. el servicio/pago que originó la notificación).
    - App cerrada: mismo comportamiento que background, manejar el "cold start desde notificación".
-3. Al cerrar sesión: eliminar el token FCM registrado (`DELETE` del endpoint correspondiente,
-   todavía no existe) — evita seguir recibiendo push de una cuenta de la que el usuario ya salió
-   en ese dispositivo.
+3. Al cerrar sesión: eliminar el token FCM registrado
+   (`DELETE /notifications/fcm-tokens/:referenceId`) — evita seguir recibiendo push de una cuenta
+   de la que el usuario ya salió en ese dispositivo.
 4. Permiso de notificaciones: pedirlo explícitamente en un momento con contexto (ej. después del
    primer servicio pedido/aceptado), no apenas se abre la app por primera vez sin explicar por qué
    — mejor tasa de aceptación real, aunque esto es una decisión de UX a confirmar con el negocio,
