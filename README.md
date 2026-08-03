@@ -82,13 +82,21 @@ duplicar la definición de marca a mano.
 
 ## Cómo seguir la documentación de este repo
 
-1. [`openspec/README.md`](openspec/README.md) — cómo está organizada esta carpeta y el flujo de
-   trabajo spec-driven que se espera seguir.
-2. [`openspec/project.md`](openspec/project.md) — contexto completo: qué aprendimos construyendo
-   `TekoApp-Backend`/`TekoApp-Web` que aplica directo acá (auth, contrato de API, patrones a
-   replicar y a evitar).
-3. [`openspec/decisions.md`](openspec/decisions.md) — decisiones de arquitectura específicas de
-   mobile, una por una, con su motivo.
+Toda la documentación de referencia vive en la raíz del repo — se puede leer y usar con o sin un
+asistente de IA de por medio:
+
+1. [`ARCHITECTURE.md`](ARCHITECTURE.md) — dominio, contrato con el backend, stack, decisiones de
+   arquitectura y bugs ya encontrados. Punto de entrada si querés entender el proyecto sin depender
+   de ninguna herramienta de IA.
+2. [`CONTRIBUTING.md`](CONTRIBUTING.md) — guía paso a paso de cómo hacer un cambio en este repo
+   (pensada para alguien sin experiencia previa en Flutter).
+
+Si además trabajás con un asistente de IA, [`openspec/`](openspec/) tiene el mismo contenido de
+`ARCHITECTURE.md` organizado como specs ejecutables (formato SDD) más el plan de implementación
+por fases — es un complemento para ese flujo de trabajo, no una fuente de verdad distinta:
+
+3. [`openspec/README.md`](openspec/README.md) — cómo está organizada esa carpeta y el flujo
+   spec-driven que se espera seguir.
 4. [`openspec/specs/`](openspec/specs/) — el contrato de cada capacidad (auth, marketplace de
    servicios, pagos, notificaciones, etc.) tal como debería comportarse en Flutter.
 5. [`openspec/changes/`](openspec/changes/) — el plan de implementación en fases, cada una con
@@ -156,6 +164,6 @@ sin volver a abrir Xcode. Usar la IP LAN de la Mac en `API_BASE_URL`, no `localh
 
 ## Contacto
 
-José Panza — jpanza@bepsa.com.py
+José Panza — josepanza1@gmail.com
 
 ✨ *"Conectando talento con necesidad, donde sea, cuando sea."*
