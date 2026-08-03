@@ -56,7 +56,7 @@ jobs:
           NEW_PATH="android/app/src/main/kotlin/py/com/tekoapp/mobile"
           if [ -d "$OLD_PATH" ]; then
             mkdir -p "$(dirname "$NEW_PATH")"
-            git mv "$OLD_PATH" "$NEW_PATH"
+            mv "$OLD_PATH" "$NEW_PATH"
             sed -i "s/$OLD_ID/$NEW_ID/g" "$NEW_PATH/MainActivity.kt"
           fi
 
