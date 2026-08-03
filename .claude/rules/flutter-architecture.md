@@ -1,7 +1,7 @@
 # Arquitectura Flutter — reglas de estructura
 
-> Aplica desde que la Fase 0001 (`openspec/changes/0001-project-bootstrap.md`) cree `lib/` — no
-> hay código todavía al escribir esto.
+> `lib/` ya existe desde la Fase 0001 (`openspec/changes/0001-project-bootstrap.md`) — esta regla
+> aplica al código real, no solo al plan.
 
 ## Estructura por dominio (espejo de `features/<dominio>/` en `TekoApp-Web`)
 

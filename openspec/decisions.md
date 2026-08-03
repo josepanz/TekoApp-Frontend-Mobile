@@ -86,13 +86,37 @@ a la web por una reinterpretación manual de los mismos colores.
 — probablemente un archivo `.dart` con constantes `Color(0x...)`) sin definir todavía — es tarea
 de `changes/0002-auth-and-design-system.md`.
 
+## Testing: `flutter_test` + `mocktail`
+
+**Motivo**: decidido al ejecutar la Fase 0001 (bootstrap) — `mocktail` no depende de code
+generation (a diferencia de `mockito`, que necesita `build_runner`), lo que mantiene el ciclo de
+test más simple mientras el proyecto es chico. Se usa ya en
+`test/core/api_client/envelope_interceptor_test.dart` para mockear `ResponseInterceptorHandler`.
+
+**Estado**: decidido e implementado (Fase 0001).
+
+## CI/CD: GitHub Actions, sin firma todavía
+
+**Motivo**: mismo proveedor que `TekoApp-Backend`/`TekoApp-Web`, consistencia del ecosistema.
+`.github/workflows/ci.yml` corre `flutter analyze` + `flutter test` en cada push/PR.
+`.github/workflows/build.yml` (disparo manual) valida que compile un APK Android (`--debug`, sin
+keystore de release) y un build de iOS para simulador (`--no-codesign`) — **no publica a ninguna
+store**, porque todavía no existe la cuenta de Google Play Console ni de Apple Developer Program
+ni sus certificados. Cuando esas cuentas existan, se agrega firma real vía GitHub Secrets
+(keystore de Android en base64 + `key.properties`; certificado/provisioning profile de iOS) y un
+job de publicación separado — no antes, para no dejar placeholders de credenciales tentando a
+usarse.
+
+**Estado**: decidido e implementado (Fase 0001) el build de validación; publicación a stores
+pendiente de las cuentas reales.
+
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
-- Testing: framework de testing de Flutter (`flutter_test` + `mocktail`/`mockito`) — sin decidir
-  cuál usar para mocks, evaluar en la Fase 1.
-- CI/CD: pipeline de build/firma para iOS y Android — fuera de alcance de esta sesión de
-  documentación, decidir cuando el proyecto tenga código real para buildear.
+- Almacenamiento seguro de tokens y el flujo de login real (nonce + RSA-OAEP) — ver la sección
+  específica más arriba, sigue pendiente para la Fase 0002.
 - Offline-first vs. online-only: no se decidió si la app necesita funcionar sin conexión (ej. ver
   servicios ya cargados) — el dominio (servicios en tiempo real, ubicación en vivo) sugiere que
   online-only es razonable para el MVP, pero es una decisión de producto, no técnica, que falta
   confirmar con el negocio antes de la Fase 3.
+- Firma de release y publicación en Google Play / App Store — bloqueado por no tener las cuentas
+  todavía, no por falta de decisión técnica (ver "CI/CD" arriba).

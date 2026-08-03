@@ -2,9 +2,12 @@
 
 ## Estado de este repo
 
-**Todavía no hay código Flutter.** Lo que existe hoy es documentación SDD completa en
-`openspec/` (contexto heredado, decisiones, specs por capacidad, plan de implementación en 6
-fases) — ver `openspec/README.md` para cómo está organizada y en qué orden seguirla.
+**Fase 0001 (bootstrap) ejecutada** — existe `lib/` con la estructura de carpetas planeada,
+`core/` (api_client con unwrap de envelope, theme placeholder con colores de marca reales,
+config), `features/auth` y `features/home` con pantallas placeholder, l10n es/en, y CI
+(`.github/workflows/ci.yml` analyze+test, `build.yml` build de validación Android/iOS sin firma).
+**No hay login real ni ninguna feature de negocio implementada todavía** — eso es la Fase 0002 en
+adelante. Ver `openspec/README.md` para cómo está organizada la documentación SDD.
 
 **Protocolo de inicio de sesión** (antes de escribir código o responder cualquier pregunta de
 arquitectura): leer, en este orden, `openspec/project.md` → `openspec/decisions.md` → la sesión
@@ -54,8 +57,10 @@ lib/
 └── l10n/                  # es/en (mismo patrón de traducción incremental que TekoApp-Web)
 ```
 
-**No crear esta estructura antes de la Fase 0001** — es el plan, no el estado actual (no hay
-`lib/` todavía).
+**Ya creada en la Fase 0001** — esto ya no es solo el plan, es la estructura real de `lib/` hoy.
+`features/auth` y `features/home` existen con pantallas placeholder; el resto de los dominios
+(services, payments, ratings, etc.) se agregan siguiendo este mismo patrón a medida que avanzan
+las fases siguientes.
 
 ## Reglas críticas
 
