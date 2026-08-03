@@ -18,7 +18,10 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(l10n.loginTitle, style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                l10n.loginTitle,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 24),
               TextField(
                 decoration: InputDecoration(labelText: l10n.loginEmailLabel),

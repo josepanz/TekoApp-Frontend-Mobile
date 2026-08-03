@@ -2,7 +2,7 @@
 
 # TekoApp テコ — App Mobile (Flutter)
 
-![TekoApp Banner](../TekoApp-Backend/brand/banner.png)
+![TekoApp Banner](brand/banner.png)
 
 **La misma plataforma de servicios profesionales de TekoApp-Web, en el bolsillo.**
 
@@ -25,24 +25,8 @@ nonce+RSA-OAEP, almacenamiento seguro de tokens, primera pantalla de dominio rea
 **Empezar acá**: [`openspec/README.md`](openspec/README.md) explica cómo está organizada la
 documentación y en qué orden seguirla. Este README da el contexto de producto y stack; el detalle
 de decisiones, specs por capacidad y el plan de implementación por fases vive en `openspec/`.
-
-### Cómo arrancar la próxima sesión (con un agente de IA)
-
-Este repo tiene un ecosistema `.claude/` completo (reglas, agentes, memoria) — un agente nuevo
-debería leer, en este orden:
-
-1. [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — dominio, stack decidido, estructura de `lib/`
-   planeada, reglas críticas y links a `rules/`/`agents/`.
-2. [`.claude/documentation/context.md`](.claude/documentation/context.md) — snapshot de estado y
-   próximo paso concreto.
-3. La sesión más reciente en `.claude/memory/sessions/` (orden alfabético, la última).
-4. [`openspec/project.md`](openspec/project.md) → [`openspec/decisions.md`](openspec/decisions.md)
-   → el archivo de fase correspondiente en `openspec/changes/` (empezar por
-   [`0001-project-bootstrap.md`](openspec/changes/0001-project-bootstrap.md) si es la primera vez
-   que se toca código en este repo).
-
-Esto ya está automatizado como protocolo en `.claude/memory/memory.md` — no hace falta pedirlo
-explícitamente, cualquier sesión que seguido este archivo debería auto-orientarse sola.
+Ver [`CONTRIBUTING.md`](CONTRIBUTING.md) para la guía paso a paso de cómo hacer un cambio en este
+repo (pensada para alguien sin experiencia previa en Flutter).
 
 ---
 
@@ -75,11 +59,12 @@ replicar esa misma decisión: no hay una app "de cliente" y otra "de profesional
 
 ## Marca
 
-El manual de marca oficial (logo, banner, paleta, tipografía) vive en
-[`TekoApp-Backend/brand/`](../TekoApp-Backend/brand/)
-— es la fuente de verdad para los tres repos. Los tokens de diseño ya implementados en
-`TekoApp-Web` (`src/design-system/tokens/tokens.json`, formato W3C Design Tokens) están pensados
-para generar también un output Dart desde el mismo archivo cuando arranque este repo — ver
+Los assets de marca (logo, banner, manual completo) viven en [`brand/`](brand/) — copia local,
+independiente de la IA que asista en cada sesión. La fuente canónica es el manual de marca oficial
+de TekoApp (mismos archivos también en `TekoApp-Backend/brand/` y `TekoApp-Web/brand/`); si el
+manual cambia, actualizar los 3 repos. Los tokens de diseño ya implementados en `TekoApp-Web`
+(`src/design-system/tokens/tokens.json`, formato W3C Design Tokens) están pensados para generar
+también un output Dart desde el mismo archivo cuando arranque este repo — ver
 `openspec/specs/design-system.md` para el detalle de cómo replicar la paleta/tipografía sin
 duplicar la definición de marca a mano.
 
@@ -161,10 +146,13 @@ sin volver a abrir Xcode. Usar la IP LAN de la Mac en `API_BASE_URL`, no `localh
 
 - `.github/workflows/ci.yml` — `flutter analyze` + `flutter test` en cada push/PR a
   `develop`/`qa`/`master`.
-- `.github/workflows/build.yml` — build de validación (APK debug de Android, build de iOS para
-  simulador sin firma), disparo manual. **No publica a ninguna store todavía** — falta la cuenta
-  de Google Play Console y Apple Developer Program + sus certificados/keystore (se agregan como
-  GitHub Secrets cuando existan, nunca committeados).
+- `.github/workflows/build.yml` — build de validación por ambiente (disparo manual, elegís
+  `dev`/`qa`/`prod` — mismo mapeo de ramas que el resto del ecosistema, ver
+  `openspec/decisions.md`): APK debug de Android + build de iOS para simulador, sin firma.
+  **No publica a ninguna store todavía** — falta la cuenta de Google Play Console y Apple
+  Developer Program + sus certificados/keystore, el proyecto Firebase real, y un backend
+  desplegado en qa/prod (hoy solo corre local). Ver `openspec/decisions.md` para el detalle
+  completo de qué falta y cómo se extiende cuando esas cuentas existan.
 
 ## Contacto
 
