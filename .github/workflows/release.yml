@@ -19,6 +19,33 @@ concurrency:
 
 jobs:
   # ================================================================
+  # El contexto `secrets` no se puede evaluar directo en un `if:` de job/step (GitHub Actions lo
+  # rechaza como "Unrecognized named-value: secrets") - el patron soportado es exponerlo primero
+  # como output booleano de un job, y condicionar el resto contra `needs.check-secrets.outputs.*`.
+  # ================================================================
+  check-secrets:
+    name: Detectar que secrets de firma/stores existen
+    runs-on: ubuntu-latest
+    outputs:
+      has_android_signing: ${{ steps.check.outputs.has_android_signing }}
+      has_ios_signing: ${{ steps.check.outputs.has_ios_signing }}
+      has_play_publish: ${{ steps.check.outputs.has_play_publish }}
+      has_appstore_publish: ${{ steps.check.outputs.has_appstore_publish }}
+    steps:
+      - id: check
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          echo "has_android_signing=$([ -n "$ANDROID_KEYSTORE_BASE64" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "has_ios_signing=$([ -n "$IOS_CERTIFICATE_P12_BASE64" ] && [ -n "$IOS_PROVISIONING_PROFILE_BASE64" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "has_play_publish=$([ -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "has_appstore_publish=$([ -n "$APP_STORE_CONNECT_API_KEY_BASE64" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  # ================================================================
   # Version & Publish (GitHub Release, sin assets todavia)
   # ================================================================
   release:
@@ -76,7 +103,7 @@ jobs:
   # ================================================================
   build-android:
     name: Build Android (APK + AAB)
-    needs: release
+    needs: [release, check-secrets]
     if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -93,13 +120,18 @@ jobs:
       - run: flutter gen-l10n
 
       - name: Configurar firma de release (si existen los secrets)
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: needs.check-secrets.outputs.has_android_signing == 'true'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release-keystore.jks
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks
           cat > android/key.properties <<EOF
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
           storeFile=release-keystore.jks
           EOF
 
@@ -131,12 +163,8 @@ jobs:
   # ================================================================
   build-ios:
     name: Build iOS (IPA firmado)
-    needs: release
-    if: |
-      needs.release.outputs.released == 'true' &&
-      github.ref_name != 'develop' &&
-      secrets.IOS_CERTIFICATE_P12_BASE64 != '' &&
-      secrets.IOS_PROVISIONING_PROFILE_BASE64 != ''
+    needs: [release, check-secrets]
+    if: needs.release.outputs.released == 'true' && github.ref_name != 'develop' && needs.check-secrets.outputs.has_ios_signing == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -216,8 +244,8 @@ jobs:
   # ================================================================
   publish-android-store:
     name: Publicar en Google Play
-    needs: [release, build-android]
-    if: needs.release.outputs.released == 'true' && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != ''
+    needs: [release, check-secrets, build-android]
+    if: needs.release.outputs.released == 'true' && needs.check-secrets.outputs.has_play_publish == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -247,10 +275,8 @@ jobs:
   # ================================================================
   publish-ios-store:
     name: Publicar en App Store Connect
-    needs: [release, build-ios]
-    if: |
-      needs.release.outputs.released == 'true' &&
-      secrets.APP_STORE_CONNECT_API_KEY_BASE64 != ''
+    needs: [release, check-secrets, build-ios]
+    if: needs.release.outputs.released == 'true' && needs.check-secrets.outputs.has_appstore_publish == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/download-artifact@v4
