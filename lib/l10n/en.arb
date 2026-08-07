@@ -6,5 +6,8 @@
   "loginEmailLabel": "Email",
   "loginPasswordLabel": "Password",
   "loginSubmit": "Sign in",
-  "comingSoon": "Coming soon"
+  "comingSoon": "Coming soon",
+  "profileTitle": "My profile",
+  "networkSmokeCheckLoaded": "{count} countries loaded from the backend",
+  "networkSmokeCheckError": "Could not connect to the backend"
 }
