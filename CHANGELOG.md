@@ -1,3 +1,9 @@
+## [1.0.0-develop.2](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.1...v1.0.0-develop.2) (2026-08-07)
+
+### Features
+
+* **bootstrap:** cerrar checkpoints pendientes de la Fase 0001 ([91d56d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/91d56d557987711531e2dd502a72f5c7e35dd6b5))
+
 ## 1.0.0-develop.1 (2026-08-03)
 
 ### Bug Fixes
