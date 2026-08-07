@@ -17,5 +17,16 @@
   "loginEmailLabel": "Email",
   "loginPasswordLabel": "Contraseña",
   "loginSubmit": "Ingresar",
-  "comingSoon": "Próximamente"
+  "comingSoon": "Próximamente",
+  "profileTitle": "Mi perfil",
+  "networkSmokeCheckLoaded": "{count} países cargados desde el backend",
+  "@networkSmokeCheckLoaded": {
+    "description": "Smoke test de red de la Fase 0001 - cantidad de países obtenidos de GET /countries",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "networkSmokeCheckError": "No se pudo conectar con el backend"
 }
