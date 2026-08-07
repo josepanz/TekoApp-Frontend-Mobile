@@ -14,7 +14,8 @@ final networkSmokeCheckProvider = FutureProvider<List<String>>((ref) async {
   final response = await apiClient.raw.get<Map<String, dynamic>>('/countries');
   final data = response.data?['data'] as List<dynamic>? ?? [];
 
-  return data
-      .map((country) => (country as Map<String, dynamic>)['commonName'] as String)
-      .toList();
+  return data.map(_toCommonName).toList();
 });
+
+String _toCommonName(dynamic country) =>
+    (country as Map<String, dynamic>)['commonName'] as String;
