@@ -23,10 +23,18 @@
 
 ## Próximo paso concreto
 
-Arrancar `openspec/changes/0001-project-bootstrap.md` — leer su sección "Antes de empezar", crear
-`pubspec.yaml` + la estructura de `lib/` descrita en `.claude/CLAUDE.md`, y confirmar en
-`openspec/decisions.md` las decisiones todavía abiertas que esa fase toque (framework de testing,
-almacenamiento seguro de tokens si el bootstrap ya incluye un spike de auth).
+**Fase 0001 (bootstrap) cerrada (2026-08-07)** — estructura de `lib/`, Riverpod, go_router (con el
+mecanismo de redirect ya probado, `test/app_redirect_test.dart`), smoke test de red real contra
+`GET /countries` (`core/api_client/network_smoke_check_provider.dart`), testing/linter decididos y
+CI en verde. Ver `openspec/changes/0001-project-bootstrap.md` para el detalle de qué quedó
+pendiente de verificación manual (correr en un emulador/simulador real — no verificable desde una
+sesión sin dispositivo).
+
+Arrancar `openspec/changes/0002-auth-and-session.md` — login/logout/sesión real + sistema de
+diseño, paso a paso vía TDD. Antes de escribir código: `openspec/decisions.md` ya deja registrado
+que el `refreshToken` viaja **solo como cookie httpOnly** (`POST /auth/refresh-token` lo lee de
+`req.cookies`, nunca del body) y que el RSA es OAEP con hash SHA-256 — confirmado leyendo el
+backend real (`AuthApiController`, `AuthCookieService`, `CryptoHelper`), no asumido.
 
 ## Qué NO hacer
 
