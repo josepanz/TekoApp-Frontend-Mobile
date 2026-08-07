@@ -11,8 +11,8 @@ import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
 /// test/core/api_client/network_smoke_check_provider_test.dart) — acá se sobreescribe para que
 /// estos tests de redirección no dependan de una red real.
 List<Override> get _noNetworkOverrides => [
-  networkSmokeCheckProvider.overrideWith((ref) async => const []),
-];
+      networkSmokeCheckProvider.overrideWith((ref) async => const []),
+    ];
 
 void main() {
   testWidgets(
