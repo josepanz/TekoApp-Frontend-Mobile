@@ -44,6 +44,13 @@ class HomeScreen extends ConsumerWidget {
               label: l10n.requestServiceTitle,
               onPressed: () => context.push('/solicitar'),
             ),
+            const SizedBox(height: 12),
+            TekoButton(
+              key: const Key('home_my_services_button'),
+              label: l10n.myServicesTitle,
+              variant: TekoButtonVariant.outline,
+              onPressed: () => context.push('/mis-servicios'),
+            ),
           ],
         ),
       ),
