@@ -15,6 +15,7 @@ import 'package:tekoapp_mobile/features/professional_profile/providers/my_profes
 import 'package:tekoapp_mobile/features/professional_profile/widgets/professional_home_screen.dart';
 import 'package:tekoapp_mobile/features/professional_profile/widgets/professional_onboarding_screen.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
+import 'package:tekoapp_mobile/features/services/providers/available_services_provider.dart';
 
 const _authenticatedUser = UserSummary(
   referenceId: 'ref-1',
@@ -196,6 +197,9 @@ void main() {
             myProfessionalProfileProvider.overrideWith(
               (ref) async => _professionalProfile,
             ),
+            // Con perfil, ProfessionalHomeScreen muestra AvailableServicesScreen — sin este
+            // override pega a la red real (prohibido en tests) y pumpAndSettle nunca converge.
+            availableServicesProvider.overrideWith((ref) async => const []),
           ],
           child: const TekoApp(),
         ),
