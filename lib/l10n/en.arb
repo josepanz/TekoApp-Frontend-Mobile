@@ -90,5 +90,12 @@
   "serviceRequestProposedPrice": "Proposed price: Gs. {price}",
   "serviceRequestAccept": "Accept",
   "serviceRequestAcceptConflict": "This changed — refresh the screen",
-  "serviceRequestAcceptError": "Could not accept the proposal — try again"
+  "serviceRequestAcceptError": "Could not accept the proposal — try again",
+  "professionalServicesTitle": "My assigned services",
+  "professionalServicesLoadError": "Could not load your assigned services — try again",
+  "professionalServicesEmpty": "You don't have any assigned services yet",
+  "professionalServicesStart": "Start",
+  "professionalServicesComplete": "Complete",
+  "professionalServicesConflict": "This changed — refresh the screen",
+  "professionalServicesError": "Could not update the service — try again"
 }

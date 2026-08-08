@@ -9,6 +9,29 @@ import '../../../shared/widgets/teko_button.dart';
 import '../../services/widgets/available_services_screen.dart';
 import '../providers/my_professional_profile_provider.dart';
 
+class _ProfessionalActiveBody extends StatelessWidget {
+  const _ProfessionalActiveBody();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TekoButton(
+            key: const Key('professional_home_my_services_button'),
+            label: l10n.professionalServicesTitle,
+            variant: TekoButtonVariant.outline,
+            onPressed: () => context.push('/profesional/mis-servicios'),
+          ),
+        ),
+        const Expanded(child: AvailableServicesScreen()),
+      ],
+    );
+  }
+}
+
 /// Destino de "modo profesional" — el gate de `go_router` (`app.dart`) ya redirige acá solo si
 /// hay perfil profesional (o el servicio de perfiles no está disponible); el caso "sin perfil" se
 /// mantiene como respaldo defensivo por si esta pantalla se alcanza antes de que el redirect
@@ -31,7 +54,7 @@ class ProfessionalHomeScreen extends ConsumerWidget {
               AsyncData(value: null) => Center(
                   child: Text(l10n.professionalHomeNoProfile),
                 ),
-              AsyncData() => const AvailableServicesScreen(),
+              AsyncData() => const _ProfessionalActiveBody(),
               AsyncError() => Center(
                   child: Text(l10n.professionalHomeServiceUnavailable),
                 ),
