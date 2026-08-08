@@ -62,6 +62,13 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             TekoButton(
+              key: const Key('home_payment_history_button'),
+              label: l10n.paymentHistoryTitle,
+              variant: TekoButtonVariant.outline,
+              onPressed: () => context.push('/pagos/historial'),
+            ),
+            const SizedBox(height: 12),
+            TekoButton(
               key: const Key('home_professional_mode_button'),
               label: l10n.professionalHomeTitle,
               variant: TekoButtonVariant.ghost,

@@ -178,5 +178,42 @@
   "paymentProviderPagofacil": "Pago Fácil",
   "paymentProviderCash": "Efectivo",
   "paymentProviderDinelco": "Dinelco",
-  "paymentProviderBepsa": "Bepsa"
+  "paymentProviderBepsa": "Bepsa",
+  "paymentHistoryTitle": "Mis pagos",
+  "paymentHistoryEmpty": "Todavía no tenés pagos",
+  "paymentHistoryError": "No se pudieron cargar tus pagos — intentá de nuevo",
+  "paymentDetailTitle": "Detalle del pago",
+  "paymentDetailError": "No se pudo cargar el pago — intentá de nuevo",
+  "paymentStatusPending": "Pendiente",
+  "paymentStatusProcessing": "Procesando",
+  "paymentStatusCompleted": "Completado",
+  "paymentStatusPaid": "Pagado",
+  "paymentStatusFailed": "Fallido",
+  "paymentStatusRefunded": "Reembolsado",
+  "paymentStatusPartialRefunded": "Reembolsado parcialmente",
+  "paymentStatusCancelled": "Cancelado",
+  "paymentAmountLabel": "Monto: Gs. {amount}",
+  "@paymentAmountLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "paymentAvailableForRefundLabel": "Disponible para reembolsar: Gs. {amount}",
+  "@paymentAvailableForRefundLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "paymentRefundButton": "Reembolsar",
+  "paymentRefundDialogTitle": "Reembolsar pago",
+  "paymentRefundAmountLabel": "Monto a reembolsar",
+  "paymentRefundAmountRequired": "Ingresá un monto válido",
+  "paymentRefundSubmit": "Confirmar reembolso",
+  "paymentRefundCancel": "Cancelar",
+  "paymentRefundError": "No se pudo procesar el reembolso — intentá de nuevo",
+  "paymentRefundSuccess": "Reembolso procesado"
 }
