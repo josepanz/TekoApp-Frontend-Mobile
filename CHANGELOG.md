@@ -1,3 +1,9 @@
+## [1.0.0-develop.22](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.21...v1.0.0-develop.22) (2026-08-08)
+
+### Features
+
+* **payments:** models and repository for payment methods ([52c9ea3](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/52c9ea33e71aa2f6d946245a1eefc4abec859989))
+
 ## [1.0.0-develop.21](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.20...v1.0.0-develop.21) (2026-08-08)
 
 ### Documentation
