@@ -99,4 +99,133 @@ void main() {
       findsOneWidget,
     );
   });
+
+  Map<String, dynamic> pendingServiceJson() {
+    return {
+      'id': 'service-uuid-1',
+      'userId': 1,
+      'professionalId': null,
+      'categoryId': 3,
+      'serviceTypeId': 4,
+      'title': 'Reparación de cañería',
+      'description': 'Se necesita reparar una cañería rota',
+      'status': 'PENDING',
+      'latitude': -25.2,
+      'longitude': -57.5,
+      'address': 'Av. España 1234',
+      'isUrgent': false,
+      'createdAt': '2026-08-08T10:00:00.000Z',
+    };
+  }
+
+  testWidgets(
+    'muestra un estado vacío de propuestas cuando el servicio está PENDING sin propuestas',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: pendingServiceJson(),
+        ),
+      );
+      when(
+        () => dio.get<Map<String, dynamic>>(
+          '/services/service-uuid-1/requests',
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(
+            path: '/services/service-uuid-1/requests',
+          ),
+          data: {'data': <Map<String, dynamic>>[]},
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Todavía no recibiste propuestas'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'acepta una propuesta competidora sobre mi servicio PENDING',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: pendingServiceJson(),
+        ),
+      );
+      when(
+        () => dio.get<Map<String, dynamic>>(
+          '/services/service-uuid-1/requests',
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(
+            path: '/services/service-uuid-1/requests',
+          ),
+          data: {
+            'data': [
+              {
+                'id': 'request-uuid-1',
+                'serviceId': 'service-uuid-1',
+                'professionalId': 2,
+                'status': 'PENDING',
+                'proposedPrice': 120000,
+                'createdAt': '2026-08-08T10:00:00.000Z',
+              },
+            ],
+          },
+        ),
+      );
+      when(
+        () => dio.put<Map<String, dynamic>>(
+          '/services/service-uuid-1/requests/request-uuid-1',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(
+            path: '/services/service-uuid-1/requests/request-uuid-1',
+          ),
+          data: {
+            'id': 'request-uuid-1',
+            'serviceId': 'service-uuid-1',
+            'professionalId': 2,
+            'status': 'ACCEPTED',
+            'createdAt': '2026-08-08T10:00:00.000Z',
+          },
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert (propuesta visible antes de aceptar)
+      expect(find.text('Profesional #2'), findsOneWidget);
+      expect(find.text('Precio propuesto: Gs. 120000'), findsOneWidget);
+
+      // Act (aceptar)
+      await tester.tap(find.byKey(const Key('accept_request_request-uuid-1')));
+      await tester.pumpAndSettle();
+
+      // Assert
+      verify(
+        () => dio.put<Map<String, dynamic>>(
+          '/services/service-uuid-1/requests/request-uuid-1',
+          data: any(named: 'data'),
+        ),
+      ).called(1);
+    },
+  );
 }
