@@ -1,10 +1,11 @@
-/// Estado de sesión mínimo para que `go_router` pueda armar sus guards desde la Fase 0001.
+import 'user_summary.dart';
+
+/// Estado de sesión real desde la Fase 0002 — antes placeholder, ver `session_provider.dart`.
 ///
-/// A propósito NO incluye tokens ni datos de usuario todavía — el flujo real de login
-/// (nonce + RSA-OAEP + Basic Auth de cliente, ver `.claude/rules/auth.md`) y el mecanismo de
-/// almacenamiento seguro se implementan en la Fase 0002, una vez confirmado el paquete de storage
-/// en `openspec/decisions.md`. Este placeholder deja el punto de extensión listo sin adelantarse
-/// a esa decisión.
+/// `SessionUnknown` es el estado inicial mientras `GET /auth/scope` (con el `accessToken`
+/// guardado, si existe) todavía no resolvió. `SessionServiceUnavailable` es un estado propio,
+/// distinto de `SessionUnauthenticated` — 5xx/sin conexión NUNCA deben tratarse como "no hay
+/// sesión" (ver `openspec/specs/auth-and-session.md`, mismo bug ya corregido en `TekoApp-Web`).
 sealed class SessionState {
   const SessionState();
 }
@@ -14,9 +15,15 @@ class SessionUnknown extends SessionState {
 }
 
 class SessionAuthenticated extends SessionState {
-  const SessionAuthenticated();
+  const SessionAuthenticated(this.user);
+
+  final UserSummary user;
 }
 
 class SessionUnauthenticated extends SessionState {
   const SessionUnauthenticated();
+}
+
+class SessionServiceUnavailable extends SessionState {
+  const SessionServiceUnavailable();
 }

@@ -1,13 +1,14 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../core/api_client/api_client.dart';
+import '../../../core/auth/client_basic_auth.dart';
 import '../../../core/auth/rsa_encryptor.dart';
-import '../../../core/config/env.dart';
+import '../../../core/auth/token_storage_keys.dart';
+import '../../../core/auth/user_summary.dart';
 import '../models/login_failure.dart';
 import '../models/login_result.dart';
+import '../models/scope_failure.dart';
 
 /// Llamadas a `/auth/*` — equivalente a `features/auth` en TekoApp-Web, pero sin BFF: acá el
 /// secret de Basic Auth de cliente vive en la config de la app, no server-side (ver
@@ -19,23 +20,23 @@ class AuthRepository {
   final ApiClient _apiClient;
   final FlutterSecureStorage _secureStorage;
 
-  static const accessTokenStorageKey = 'access_token';
+  static const accessTokenStorageKey = TokenStorageKeys.accessToken;
 
-  Options get _basicAuthOptions {
-    const credentials = '${Env.basicAuthClientId}:${Env.basicAuthClientSecret}';
-    return Options(
-      headers: {
-        'Authorization': 'Basic ${base64Encode(utf8.encode(credentials))}',
-      },
-    );
-  }
+  Future<String?> readAccessToken() =>
+      _secureStorage.read(key: TokenStorageKeys.accessToken);
+
+  /// Limpia el estado local de sesión. El `refreshToken` (cookie) se limpia aparte al hacer
+  /// logout explícito (Paso 5) — acá solo se usa cuando un refresh automático falla (ver
+  /// `RefreshTokenInterceptor`), momento en el que esa cookie ya dejó de ser válida igual.
+  Future<void> clearSession() =>
+      _secureStorage.delete(key: TokenStorageKeys.accessToken);
 
   /// `GET /auth/public-key` — clave pública RSA para cifrar el login (ver
   /// `openspec/decisions.md`, sección "Cifrado RSA del login").
   Future<String> fetchPublicKeyPem() async {
     final response = await _apiClient.raw.get<Map<String, dynamic>>(
       '/auth/public-key',
-      options: _basicAuthOptions,
+      options: ClientBasicAuth.options(),
     );
     return response.data!['publicKeyPem'] as String;
   }
@@ -44,7 +45,7 @@ class AuthRepository {
   Future<String> fetchNonce() async {
     final response = await _apiClient.raw.post<Map<String, dynamic>>(
       '/auth/nonce',
-      options: _basicAuthOptions,
+      options: ClientBasicAuth.options(),
     );
     return response.data!['nonce'] as String;
   }
@@ -67,13 +68,13 @@ class AuthRepository {
       final response = await _apiClient.raw.post<Map<String, dynamic>>(
         '/auth/login',
         data: {'email': email, 'encryptedPassword': encryptedPassword},
-        options: _basicAuthOptions,
+        options: ClientBasicAuth.options(),
       );
 
       final accessToken = response.data?['accessToken'] as String?;
       if (accessToken != null) {
         await _secureStorage.write(
-          key: accessTokenStorageKey,
+          key: TokenStorageKeys.accessToken,
           value: accessToken,
         );
       }
@@ -85,14 +86,34 @@ class AuthRepository {
         accessToken: accessToken,
       );
     } on DioException catch (error) {
-      throw _classify(error);
+      throw _classifyLogin(error);
+    }
+  }
+
+  /// `GET /auth/scope` — datos frescos del usuario (nunca decodificar el JWT localmente, ver
+  /// `.claude/rules/auth.md`). Un 401 ya intentó refrescar transparentemente vía
+  /// `RefreshTokenInterceptor`; si llega acá es porque el refresh también falló (sesión vencida de
+  /// verdad). 5xx/sin conexión son un estado distinto — nunca implican cerrar sesión.
+  Future<UserSummary> fetchScope() async {
+    try {
+      final response = await _apiClient.raw.get<Map<String, dynamic>>(
+        '/auth/scope',
+      );
+      return UserSummary.fromJson(
+        response.data!['user'] as Map<String, dynamic>,
+      );
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const SessionExpiredFailure();
+      }
+      throw const ScopeUnavailableFailure();
     }
   }
 
   /// 401 → credenciales inválidas (mensaje genérico, nunca distinguir causa). Cualquier otra
   /// respuesta del servidor → servicio no disponible. Sin respuesta (timeout/sin red) → sin
   /// conexión. Nunca colapsar estos 3 casos (ver `specs/auth-and-session.md`).
-  LoginFailure _classify(DioException error) {
+  LoginFailure _classifyLogin(DioException error) {
     if (error.response?.statusCode == 401) {
       return const InvalidCredentialsFailure();
     }
