@@ -11,16 +11,21 @@ con la paleta/tipografía de marca (no con los colores default de Flutter).
 
 ## Tareas — Auth
 
-- [ ] Confirmar en `decisions.md` el paquete de almacenamiento seguro de tokens (candidato:
+- [x] Confirmar en `decisions.md` el paquete de almacenamiento seguro de tokens (candidato:
       `flutter_secure_storage`) y el paquete de cifrado RSA-OAEP (candidato: `pointycastle`) —
       **verificar que el padding OAEP produzca un resultado que el backend descifre
       correctamente antes de dar esto por resuelto** (probar contra el backend local real, no
-      solo contra una implementación RSA genérica — el detalle exacto del padding importa).
-- [ ] Implementar el flujo completo: `POST /auth/nonce` → cifrar → `POST /auth/login` → guardar
-      tokens → `GET /auth/scope` → navegar a home.
-- [ ] Interceptor de `dio`: adjuntar Bearer token, refresh automático en 401 (ver
-      `specs/api-client.md`).
-- [ ] Pantalla de login con los 3 estados de error distinguidos (credenciales inválidas / sin
+      solo contra una implementación RSA genérica — el detalle exacto del padding importa). —
+      verificado empíricamente con un round-trip cross-language (pointycastle → Node), no solo
+      leyendo RFCs. `refreshToken` viaja solo como cookie httpOnly (hallazgo real, no asumido) →
+      `cookie_jar` + adapter sobre `flutter_secure_storage`.
+- [x] Implementar el flujo completo: `POST /auth/nonce` → cifrar → `POST /auth/login` → guardar
+      tokens → `GET /auth/scope` → navegar a home. — requirió agregar `GET /auth/public-key` al
+      backend (mobile no tiene BFF para guardar la clave server-side, ver
+      josepanz/TekoApp-Backend#23).
+- [x] Interceptor de `dio`: adjuntar Bearer token, refresh automático en 401 (ver
+      `specs/api-client.md`). — `BearerAuthInterceptor` + `RefreshTokenInterceptor`.
+- [x] Pantalla de login con los 3 estados de error distinguidos (credenciales inválidas / sin
       conexión / servidor no disponible) — ver `specs/auth-and-session.md`.
 - [ ] Logout: limpiar tokens, navegar a login.
 - [ ] Pantalla "Mi perfil": ver + editar nombre/apellido/teléfono + avatar (`PUT /auth/me`,

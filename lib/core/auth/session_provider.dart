@@ -44,6 +44,12 @@ class SessionNotifier extends Notifier<SessionState> {
     state = SessionAuthenticated(user);
   }
 
+  /// Llamar tras un `AuthRepository.login()` exitoso — `login()` no devuelve los datos de
+  /// usuario, así que la sesión se resuelve pidiendo `GET /auth/scope` fresco (mismo camino que
+  /// la restauración al abrir la app, ver `_refreshScope`).
+  Future<void> refreshAfterLogin() =>
+      _refreshScope(ref.read(authRepositoryProvider));
+
   Future<void> logout() async {
     await ref.read(authRepositoryProvider).clearSession();
     state = const SessionUnauthenticated();
