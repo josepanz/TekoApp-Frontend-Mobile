@@ -1,3 +1,9 @@
+## [1.0.0-develop.13](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.12...v1.0.0-develop.13) (2026-08-08)
+
+### Features
+
+* **services:** modelos y repositorio compartido de Service/ServiceRequest ([717d7a8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/717d7a89975df19083ceacc873944347a8963828))
+
 ## [1.0.0-develop.12](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.11...v1.0.0-develop.12) (2026-08-08)
 
 ### Features
