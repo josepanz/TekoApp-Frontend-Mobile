@@ -1,3 +1,9 @@
+## [1.0.0-develop.20](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.19...v1.0.0-develop.20) (2026-08-08)
+
+### Documentation
+
+* cerrar checklist de código de la Fase 0003 ([886bf19](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/886bf19c731ead4783aaffb845694df421cb06aa)), closes [41-#49](https://github.com/josepanz/41-/issues/49)
+
 ## [1.0.0-develop.19](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.18...v1.0.0-develop.19) (2026-08-08)
 
 ### Features
