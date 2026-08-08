@@ -55,11 +55,11 @@ void main() {
     'serviceTypesProvider expone un estado vacío cuando el backend no tiene tipos activos',
     () async {
       // Arrange
-      when(
-        () => dio.get<List<dynamic>>('/service-types'),
-      ).thenAnswer(
+      when(() => dio.get<List<dynamic>>('/service-types')).thenAnswer(
         (_) async => Response(
-            requestOptions: RequestOptions(path: '/service-types'), data: []),
+          requestOptions: RequestOptions(path: '/service-types'),
+          data: [],
+        ),
       );
 
       // Act
