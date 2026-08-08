@@ -1,3 +1,9 @@
+## [1.0.0-develop.9](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.8...v1.0.0-develop.9) (2026-08-08)
+
+### Features
+
+* **design-system:** widgets base compartidos (Button, Card, Avatar, Badge, Input) ([7caccaf](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7caccaf15417a623f46b02e90914e6d3bc05d24b))
+
 ## [1.0.0-develop.8](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.7...v1.0.0-develop.8) (2026-08-08)
 
 ### Features
