@@ -14,5 +14,17 @@ class Env {
     defaultValue: 'http://10.0.2.2:3000/tekoapp-backend/api',
   );
 
+  /// Secret de Basic Auth de *cliente* (no de usuario) que exigen los endpoints pre-login
+  /// (`/auth/nonce`, `/auth/login`, `/auth/public-key`, ver `BasicAuthGuard` del backend). Mobile
+  /// no tiene servidor propio para ocultarlo (ver `.claude/rules/auth.md`, "Qué NO replicar del
+  /// BFF de TekoApp-Web") — vive en el binario/config de la app, asumido extraíble con esfuerzo de
+  /// reversing, igual que cualquier secret embebido en un cliente móvil.
+  static const String basicAuthClientId = String.fromEnvironment(
+    'BASIC_AUTH_CLIENT_ID',
+  );
+  static const String basicAuthClientSecret = String.fromEnvironment(
+    'BASIC_AUTH_CLIENT_SECRET',
+  );
+
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
 }

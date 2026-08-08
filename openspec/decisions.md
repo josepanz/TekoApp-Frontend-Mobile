@@ -73,15 +73,28 @@ adapter de la interfaz `Storage` de `cookie_jar` que lea/escriba a través de
 
 **Padding exacto — no es un detalle a "verificar más adelante", ya está confirmado leyendo
 `CryptoHelper.decrypt`/`AuthPasswordService` del backend**: `RSA_PKCS1_OAEP_PADDING` con
-`oaepHash: 'sha256'` — en `pointycastle` esto es `OAEPEncoding(RSAEngine())` con digest SHA-256
-tanto para el hash principal como para MGF1 (Node usa el mismo hash para ambos cuando se pasa un
-solo `oaepHash`). El payload cifrado es el JSON completo `{"password":"...","nonce":"..."}`
+`oaepHash: 'sha256'` — en `pointycastle` esto es `OAEPEncoding.withSHA256(RSAEngine())`, que usa
+ese mismo digest tanto para el hash principal como para MGF1 (`mgf1Hash = hash` en `init()`,
+código de `pointycastle/asymmetric/oaep.dart`) — igual que Node cuando se pasa un solo `oaepHash`.
+El payload cifrado es el JSON completo `{"password":"...","nonce":"..."}`
 (`AuthPasswordService.decryptLoginPayload`), no solo el password.
 
-**Estado**: decidido. Pendiente: validar en código (Fase 0002, `core/auth/rsa_encryptor.dart`) que
-un round-trip cifrado con la clave pública de prueba / descifrado con la privada de prueba
-reproduce el JSON original — la validación final real (contra la clave pública real del backend)
-la hace José corriendo la app contra el backend local.
+**Nota sobre el doc-comment de `pointycastle`**: su propio código fuente advierte que implementa
+"RSAES-OAEP v2.0 (RFC 2437)", no v2.1+/RFC 3447 (que es lo que usa OpenSSL/Node), y las marca como
+incompatibles. **Verificado empíricamente que no es un problema real** para este caso: se generó un
+par de claves con Node (`crypto.generateKeyPairSync`), se cifró `{password, nonce}` con
+`RsaEncryptor` (pointycastle) y se descifró con `crypto.privateDecrypt` + `RSA_PKCS1_OAEP_PADDING`/
+`oaepHash: 'sha256'` (la llamada exacta de `CryptoHelper.decrypt`) — el JSON recuperado fue
+byte-a-byte idéntico al original. La "incompatibilidad" de la que habla pointycastle es solo un
+detalle de longitud en la serialización interna (un byte `0x00` inicial que v2.1+ antepone antes de
+la primitiva RSA) que no cambia el entero cifrado para claves RSA reales — no aplica en la
+práctica. Test de round-trip (con claves de prueba propias, mismo mecanismo) en
+`test/core/auth/rsa_encryptor_test.dart`.
+
+**Estado**: decidido e implementado — `core/auth/rsa_encryptor.dart`, con compatibilidad cruzada
+con Node ya verificada (no solo asumida). Pendiente únicamente: José corriendo la app contra el
+backend local para confirmar el flujo end-to-end con la clave pública real (vía
+`GET /auth/public-key`).
 
 ## Notificaciones push: Firebase Cloud Messaging
 
