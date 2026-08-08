@@ -117,11 +117,21 @@ por fases — es un complemento para ese flujo de trabajo, no una fuente de verd
 
 ### Levantar la app
 
+Los endpoints pre-login (`/auth/nonce`, `/auth/login`, `/auth/public-key`) exigen Basic Auth de
+**cliente** (no de usuario) — el mismo mecanismo que ya usa `TekoApp-Web`
+(`BasicAuthGuard`/`ApiClientCredential` del backend). Hoy `TekoApp-Backend/prisma/seed.ts` solo
+siembra el cliente `tekoapp-web` (clientId `tekoapp-web`, secret `WEB_CLIENT_SECRET` o
+`dev-only-change-me` si no está seteada) — reusarlo para desarrollo local hasta que el backend
+sume un client id propio de mobile:
+
 ```bash
 # Emulador/dispositivo Android, apuntando al backend local (10.0.2.2 = alias del host desde el
 # emulador Android; en un dispositivo físico o iOS Simulator, reemplazar por la IP LAN de la
 # máquina que corre el backend, ej. 192.168.1.50)
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/tekoapp-backend/api
+flutter run \
+  --dart-define=API_BASE_URL=http://10.0.2.2:3000/tekoapp-backend/api \
+  --dart-define=BASIC_AUTH_CLIENT_ID=tekoapp-web \
+  --dart-define=BASIC_AUTH_CLIENT_SECRET=dev-only-change-me
 ```
 
 ### Android — dispositivo físico por USB
@@ -142,7 +152,10 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/tekoapp-backend/api
 
 ```bash
 open -a Simulator
-flutter run --dart-define=API_BASE_URL=http://localhost:3000/tekoapp-backend/api
+flutter run \
+  --dart-define=API_BASE_URL=http://localhost:3000/tekoapp-backend/api \
+  --dart-define=BASIC_AUTH_CLIENT_ID=tekoapp-web \
+  --dart-define=BASIC_AUTH_CLIENT_SECRET=dev-only-change-me
 ```
 
 **Dispositivo físico**: conectar por USB, confiar en la computadora desde el teléfono, abrir

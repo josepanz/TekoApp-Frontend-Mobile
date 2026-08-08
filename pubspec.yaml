@@ -28,6 +28,21 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # Cifrado RSA-OAEP del login — ver openspec/decisions.md ("Cifrado RSA del login").
+  pointycastle: ^3.9.1
+  # Parseo de la clave pública PEM (GET /auth/public-key) a RSAPublicKey de pointycastle.
+  basic_utils: ^5.7.0
+
+  # Almacenamiento seguro del accessToken y del cookie jar del refreshToken — ver
+  # openspec/decisions.md ("Almacenamiento seguro de tokens").
+  flutter_secure_storage: ^9.2.2
+
+  # refreshToken viaja SOLO como cookie httpOnly (nunca en el body) — ver
+  # openspec/decisions.md. cookie_jar + dio_cookie_manager son los únicos paquetes viables para
+  # que dio participe en ese intercambio de cookies.
+  cookie_jar: ^4.0.8
+  dio_cookie_manager: ^3.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
