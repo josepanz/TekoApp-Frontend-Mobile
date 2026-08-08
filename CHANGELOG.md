@@ -1,3 +1,9 @@
+## [1.0.0-develop.16](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.15...v1.0.0-develop.16) (2026-08-08)
+
+### Features
+
+* **professional:** selector de modo + gate + onboarding de perfil ([0eaede1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0eaede17edfcfa3ed37066d0c3f6839e3052d0b8))
+
 ## [1.0.0-develop.15](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.14...v1.0.0-develop.15) (2026-08-08)
 
 ### Features
