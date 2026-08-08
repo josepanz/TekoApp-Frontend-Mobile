@@ -33,5 +33,6 @@
   "loginPasswordRequired": "Ingresá tu contraseña",
   "loginErrorInvalidCredentials": "Email o contraseña incorrectos",
   "loginErrorNoConnection": "Sin conexión — revisá tu internet e intentá de nuevo",
-  "loginErrorServiceUnavailable": "El servicio no está disponible — intentá de nuevo en unos minutos"
+  "loginErrorServiceUnavailable": "El servicio no está disponible — intentá de nuevo en unos minutos",
+  "logout": "Cerrar sesión"
 }

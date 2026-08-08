@@ -1,4 +1,5 @@
 import 'package:basic_utils/basic_utils.dart';
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,9 +13,12 @@ class _MockDio extends Mock implements Dio {}
 
 class _MockSecureStorage extends Mock implements FlutterSecureStorage {}
 
+class _MockCookieJar extends Mock implements CookieJar {}
+
 void main() {
   late _MockDio dio;
   late _MockSecureStorage secureStorage;
+  late _MockCookieJar cookieJar;
   late AuthRepository repository;
   late String testPublicKeyPem;
 
@@ -29,10 +33,12 @@ void main() {
   setUp(() {
     dio = _MockDio();
     secureStorage = _MockSecureStorage();
+    cookieJar = _MockCookieJar();
     when(() => dio.interceptors).thenReturn(Interceptors());
     repository = AuthRepository(
       ApiClient(dio: dio),
       secureStorage: secureStorage,
+      cookieJar: cookieJar,
     );
   });
 
@@ -250,11 +256,13 @@ void main() {
       expect(result, 'stored-token');
     });
 
-    test('borra el accessToken guardado', () async {
+    test('borra el accessToken guardado y la cookie del refreshToken',
+        () async {
       // Arrange
       when(
         () => secureStorage.delete(key: AuthRepository.accessTokenStorageKey),
       ).thenAnswer((_) async {});
+      when(() => cookieJar.deleteAll()).thenAnswer((_) async {});
 
       // Act
       await repository.clearSession();
@@ -263,6 +271,7 @@ void main() {
       verify(
         () => secureStorage.delete(key: AuthRepository.accessTokenStorageKey),
       ).called(1);
+      verify(() => cookieJar.deleteAll()).called(1);
     });
   });
 
