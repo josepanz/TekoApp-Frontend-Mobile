@@ -27,7 +27,9 @@ con la paleta/tipografía de marca (no con los colores default de Flutter).
       `specs/api-client.md`). — `BearerAuthInterceptor` + `RefreshTokenInterceptor`.
 - [x] Pantalla de login con los 3 estados de error distinguidos (credenciales inválidas / sin
       conexión / servidor no disponible) — ver `specs/auth-and-session.md`.
-- [ ] Logout: limpiar tokens, navegar a login.
+- [x] Logout: limpiar tokens, navegar a login. — `AuthRepository.clearSession()` limpia
+      `accessToken` + la cookie `refreshToken`; la navegación a `/login` la dispara sola el guard
+      de `go_router` (`refreshListenable` en `app.dart`, ver `openspec/decisions.md`).
 - [ ] Pantalla "Mi perfil": ver + editar nombre/apellido/teléfono + avatar (`PUT /auth/me`,
       `POST /uploads/avatar`) — ver `project.md` sobre `avatarKey` vs `avatarUrl`.
 

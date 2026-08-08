@@ -47,9 +47,19 @@ sesión sin dispositivo).
   `SessionServiceUnavailable` (5xx/sin red NUNCA implica "sin sesión", ver
   `specs/auth-and-session.md`).
 
-**Sigue**: pantalla de login real (3 estados de error visibles) + logout + reemplazar el guard
-dummy de `go_router` (Fase 0001) por uno basado en `sessionProvider` de verdad — ver
-`openspec/changes/0002-auth-and-design-system.md`.
+- `LoginScreen` real (formulario + 3 estados de error visibles) + `LoginController`, navega a `/`
+  al loguear.
+- Guard real de `go_router`: `SessionAuthenticated` pasa, `SessionServiceUnavailable` nunca
+  redirige a login (ver `specs/auth-and-session.md`), el resto sí. `refreshListenable` conecta
+  `sessionProvider` al router para que el logout dispare el redirect solo, sin navegación
+  imperativa — ver `app.dart`.
+- Logout real en `ProfileScreen` (`AuthRepository.clearSession()` limpia `accessToken` + la cookie
+  `refreshToken`).
+
+**Sigue**: sistema de diseño (tokens Dart, `ThemeData` real, widgets base) y "Mi perfil" (ver +
+editar + avatar) — ver `openspec/changes/0002-auth-and-design-system.md`. El checkpoint de salida
+de esta fase (login real contra el backend, persistencia entre reinicios, refresh en un token
+vencido de verdad) queda pendiente de que José lo corra con el backend local levantado.
 
 ## Qué NO hacer
 

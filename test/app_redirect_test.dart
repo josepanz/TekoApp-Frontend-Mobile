@@ -5,6 +5,7 @@ import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
+import 'package:tekoapp_mobile/core/auth/user_summary.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
@@ -72,6 +73,57 @@ void main() {
 
       // Assert
       expect(find.byType(LoginScreen), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'no redirige a una ruta protegida cuando la sesión está autenticada',
+    (tester) async {
+      // Arrange
+      const user = UserSummary(
+        referenceId: 'ref-1',
+        email: 'a@b.com',
+        firstName: 'Ana',
+        lastName: 'Pérez',
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: _overridesWithSession(const SessionAuthenticated(user)),
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+
+      // Act
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.byType(ProfileScreen), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'no redirige a una ruta protegida ante servicio no disponible (nunca se trata como sin sesión)',
+    (tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: _overridesWithSession(const SessionServiceUnavailable()),
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+
+      // Act
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.byType(ProfileScreen), findsOneWidget);
+      expect(find.byType(LoginScreen), findsNothing);
     },
   );
 }
