@@ -62,7 +62,6 @@
   "serviceStatusCancelled": "Cancelled",
   "professionalHomeTitle": "Professional mode",
   "professionalHomeNoProfile": "You don't have a professional profile yet",
-  "professionalHomeActive": "Your professional profile is active",
   "professionalHomeServiceUnavailable": "We couldn't load your professional profile — check your connection and try again",
   "professionalHomeBackToClient": "Back to client mode",
   "professionalOnboardingTitle": "Activate professional profile",
@@ -77,5 +76,11 @@
   "professionalOnboardingSkillsLabel": "Skills, comma-separated (optional)",
   "professionalOnboardingSubmit": "Activate profile",
   "professionalOnboardingErrorValidation": "Check the entered data",
-  "professionalOnboardingErrorServiceUnavailable": "Could not activate your profile — try again in a few minutes"
+  "professionalOnboardingErrorServiceUnavailable": "Could not activate your profile — try again in a few minutes",
+  "availableServicesError": "Could not load available services — try again",
+  "availableServicesEmpty": "No services available in your category right now",
+  "availableServicesProposeButton": "Propose myself",
+  "availableServicesProposeSuccess": "You proposed yourself for this service",
+  "availableServicesProposeConflict": "This service already changed — refresh the screen",
+  "availableServicesProposeError": "Could not send your proposal — try again"
 }

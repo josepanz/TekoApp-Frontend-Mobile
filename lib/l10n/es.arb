@@ -88,7 +88,6 @@
   "serviceStatusCancelled": "Cancelado",
   "professionalHomeTitle": "Modo profesional",
   "professionalHomeNoProfile": "Todavía no tenés un perfil profesional",
-  "professionalHomeActive": "Tu perfil profesional está activo",
   "professionalHomeServiceUnavailable": "No pudimos cargar tu perfil profesional — revisá tu conexión e intentá de nuevo",
   "professionalHomeBackToClient": "Volver a modo cliente",
   "professionalOnboardingTitle": "Activar perfil profesional",
@@ -103,5 +102,11 @@
   "professionalOnboardingSkillsLabel": "Habilidades, separadas por coma (opcional)",
   "professionalOnboardingSubmit": "Activar perfil",
   "professionalOnboardingErrorValidation": "Revisá los datos ingresados",
-  "professionalOnboardingErrorServiceUnavailable": "No se pudo activar tu perfil — intentá de nuevo en unos minutos"
+  "professionalOnboardingErrorServiceUnavailable": "No se pudo activar tu perfil — intentá de nuevo en unos minutos",
+  "availableServicesError": "No se pudieron cargar los servicios disponibles — intentá de nuevo",
+  "availableServicesEmpty": "No hay servicios disponibles en tu categoría por ahora",
+  "availableServicesProposeButton": "Proponerme",
+  "availableServicesProposeSuccess": "Te propusiste para este servicio",
+  "availableServicesProposeConflict": "Este servicio ya cambió — actualizá la pantalla",
+  "availableServicesProposeError": "No se pudo enviar tu propuesta — intentá de nuevo"
 }

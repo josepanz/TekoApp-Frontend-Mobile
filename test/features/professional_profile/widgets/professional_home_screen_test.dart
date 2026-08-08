@@ -11,6 +11,8 @@ import 'package:tekoapp_mobile/features/professional_profile/models/professional
 import 'package:tekoapp_mobile/features/professional_profile/models/professional_status.dart';
 import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'package:tekoapp_mobile/features/professional_profile/widgets/professional_home_screen.dart';
+import 'package:tekoapp_mobile/features/services/providers/available_services_provider.dart';
+import 'package:tekoapp_mobile/features/services/widgets/available_services_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 const _profile = ProfessionalProfile(
@@ -54,6 +56,9 @@ Future<void> _pumpScreen(
             _ => Completer<ProfessionalProfile?>().future,
           };
         }),
+        // AvailableServicesScreen (mostrada cuando hay perfil) pide la red real si no se
+        // overridea — sin datos relevantes para estos tests, alcanza con una lista vacía.
+        availableServicesProvider.overrideWith((ref) async => const []),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -72,15 +77,16 @@ Future<void> _pumpScreen(
 }
 
 void main() {
-  testWidgets('muestra el perfil activo cuando ya existe uno', (
-    tester,
-  ) async {
-    // Arrange & Act
-    await _pumpScreen(tester, profileState: const AsyncData(_profile));
+  testWidgets(
+    'muestra el listado de servicios disponibles cuando ya existe un perfil',
+    (tester) async {
+      // Arrange & Act
+      await _pumpScreen(tester, profileState: const AsyncData(_profile));
 
-    // Assert
-    expect(find.text('Tu perfil profesional está activo'), findsOneWidget);
-  });
+      // Assert
+      expect(find.byType(AvailableServicesScreen), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'muestra un mensaje de servicio no disponible ante un error',
