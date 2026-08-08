@@ -14,5 +14,6 @@
   "loginPasswordRequired": "Enter your password",
   "loginErrorInvalidCredentials": "Incorrect email or password",
   "loginErrorNoConnection": "No connection — check your internet and try again",
-  "loginErrorServiceUnavailable": "The service is unavailable — try again in a few minutes"
+  "loginErrorServiceUnavailable": "The service is unavailable — try again in a few minutes",
+  "logout": "Sign out"
 }

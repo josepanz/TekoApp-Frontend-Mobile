@@ -1,3 +1,4 @@
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -14,22 +15,30 @@ import '../models/scope_failure.dart';
 /// secret de Basic Auth de cliente vive en la config de la app, no server-side (ver
 /// `.claude/rules/auth.md`, sección "Qué NO replicar del BFF de TekoApp-Web").
 class AuthRepository {
-  AuthRepository(this._apiClient, {FlutterSecureStorage? secureStorage})
-      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  AuthRepository(
+    this._apiClient, {
+    FlutterSecureStorage? secureStorage,
+    CookieJar? cookieJar,
+  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _cookieJar = cookieJar;
 
   final ApiClient _apiClient;
   final FlutterSecureStorage _secureStorage;
+  final CookieJar? _cookieJar;
 
   static const accessTokenStorageKey = TokenStorageKeys.accessToken;
 
   Future<String?> readAccessToken() =>
       _secureStorage.read(key: TokenStorageKeys.accessToken);
 
-  /// Limpia el estado local de sesión. El `refreshToken` (cookie) se limpia aparte al hacer
-  /// logout explícito (Paso 5) — acá solo se usa cuando un refresh automático falla (ver
-  /// `RefreshTokenInterceptor`), momento en el que esa cookie ya dejó de ser válida igual.
-  Future<void> clearSession() =>
-      _secureStorage.delete(key: TokenStorageKeys.accessToken);
+  /// Limpia el estado local de sesión por completo: `accessToken` + la cookie `refreshToken` (si
+  /// hay un cookie jar disponible — en tests no siempre se inyecta uno). Se usa tanto en logout
+  /// explícito como cuando un refresh automático falla (ver `RefreshTokenInterceptor`) — en ambos
+  /// casos el refresh token dejó de ser válido, no tiene sentido conservar la cookie.
+  Future<void> clearSession() async {
+    await _secureStorage.delete(key: TokenStorageKeys.accessToken);
+    await _cookieJar?.deleteAll();
+  }
 
   /// `GET /auth/public-key` — clave pública RSA para cifrar el login (ver
   /// `openspec/decisions.md`, sección "Cifrado RSA del login").
