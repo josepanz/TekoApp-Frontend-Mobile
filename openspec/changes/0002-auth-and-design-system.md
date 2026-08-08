@@ -42,9 +42,11 @@ con la paleta/tipografía de marca (no con los colores default de Flutter).
 - [x] `ThemeData` de Flutter (claro + oscuro) armado desde esos tokens — nunca colores
       hardcodeados en widgets. `core/theme/app_theme.dart`, colores semánticos extra
       (éxito/alerta/info) vía `TekoSemanticColors` (`ThemeExtension`).
-- [ ] Widgets base compartidos en `shared/`: Button, Card, Avatar, Badge, Input — con las
+- [x] Widgets base compartidos en `shared/`: Button, Card, Avatar, Badge, Input — con las
       variantes que ya existen en `TekoApp-Web/src/components/ui/` como referencia de qué
-      variantes hacen falta (no reinventar desde cero qué botones/estados existen).
+      variantes hacen falta (no reinventar desde cero qué botones/estados existen). —
+      `TekoButton` (primary/secondary/outline/ghost/destructive), `TekoCard`, `TekoAvatar`
+      (fallback a iniciales), `TekoBadge` (siempre con texto), `TekoInput`.
 - [x] Tipografía Poppins cargada (4 pesos) y aplicada como default de la app. — vía `google_fonts`
       (runtime, no asset local empaquetado — ver `decisions.md`).
 
