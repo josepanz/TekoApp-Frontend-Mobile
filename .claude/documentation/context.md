@@ -55,11 +55,22 @@ sesión sin dispositivo).
   imperativa — ver `app.dart`.
 - Logout real en `ProfileScreen` (`AuthRepository.clearSession()` limpia `accessToken` + la cookie
   `refreshToken`).
+- Sistema de diseño completo: `lib/design_system/tokens.generated.dart` (paleta real, portada de
+  `tokens.json` vía un script Node de un solo uso — OKLCH→sRGB, no automatizado en `build.mjs`
+  todavía), `ThemeData` claro/oscuro real, Poppins vía `google_fonts`, widgets base compartidos
+  (`TekoButton`/`TekoCard`/`TekoAvatar`/`TekoBadge`/`TekoInput`).
+- "Mi perfil" real: ver/editar nombre/apellido/teléfono + avatar (`ProfileRepository`,
+  `UpdateProfileController`/`UploadAvatarController`).
+- Test e2e (`test/e2e/login_profile_logout_test.dart`): login → home → Mi perfil → logout, de
+  punta a punta contra el código real (solo mockea la red) — corre como test de widgets, no
+  `integration_test/`, porque este entorno no tiene emulador/dispositivo (ver
+  `.claude/rules/test.md`).
 
-**Sigue**: sistema de diseño (tokens Dart, `ThemeData` real, widgets base) y "Mi perfil" (ver +
-editar + avatar) — ver `openspec/changes/0002-auth-and-design-system.md`. El checkpoint de salida
-de esta fase (login real contra el backend, persistencia entre reinicios, refresh en un token
-vencido de verdad) queda pendiente de que José lo corra con el backend local levantado.
+**Fase 0002 (checklist de código) completa.** Queda pendiente únicamente lo que requiere un
+dispositivo/backend real y no es código: el checkpoint de salida (login contra el backend local
+con una cuenta de seed, persistencia entre reinicios, refresh de un token vencido de verdad,
+comparación visual con `TekoApp-Web`, subida de avatar de punta a punta) — tarea de José. Después
+de eso, la Fase 0003 (`openspec/changes/0003-services-marketplace-core.md`) es el siguiente paso.
 
 ## Qué NO hacer
 

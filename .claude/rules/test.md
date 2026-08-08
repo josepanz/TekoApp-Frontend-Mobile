@@ -25,11 +25,21 @@ Decidido en la Fase 0001 (ver `openspec/decisions.md`) — sin code generation, 
 `mockito`. Ver `test/core/api_client/envelope_interceptor_test.dart` como ejemplo del patrón
 (`class _MockHandler extends Mock implements X {}`).
 
-## Pendiente de decidir
+## E2E: decidido — flujo completo como test de widgets, no `integration_test/` todavía
 
-- Si hay e2e (`integration_test`) y qué flujos cubre — probablemente login + un flujo CRUD
-  representativo, mismo alcance que Playwright en `TekoApp-Web`, no buscar 100% de cobertura e2e.
-  La carpeta `integration_test/` ya existe (vacía) desde la Fase 0001, lista para cuando se decida.
+**Decisión (2026-08-07)**: el flujo e2e (login → home → Mi perfil → logout, mismo alcance que
+Playwright en `TekoApp-Web` — no se busca 100% de cobertura e2e) vive en
+`test/e2e/login_profile_logout_test.dart` como un test de widgets normal (`flutter test`), no en
+`integration_test/`. Motivo: este entorno de desarrollo no tenía un emulador/dispositivo
+disponible para correr `integration_test` de verdad (`flutter test integration_test/` necesita un
+device real, a diferencia de un test de widgets normal). El test en sí SÍ es end-to-end real —
+arranca la app completa sin fijar `sessionProvider` a mano, solo mockea el límite de red (`Dio`) y
+el `MethodChannel` de `flutter_secure_storage` — solo corre en el binding de test en vez de en un
+device.
+
+`integration_test/` (paquete ya declarado en `pubspec.yaml`) sigue vacío — correr la suite ahí
+requiere un emulador Android o simulador iOS real, tarea de quien tenga uno disponible, no un
+cambio de código.
 
 ## Comandos (una vez exista `pubspec.yaml`)
 
