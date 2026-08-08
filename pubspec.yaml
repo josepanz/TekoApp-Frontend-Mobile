@@ -43,6 +43,9 @@ dependencies:
   cookie_jar: ^4.0.8
   dio_cookie_manager: ^3.1.1
 
+  # Tipografía única de marca (Poppins, 4 pesos) — ver openspec/specs/design-system.md.
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -61,5 +64,5 @@ flutter:
   uses-material-design: true
   generate: true # habilita l10n vía flutter_localizations (ver l10n.yaml)
 
-  # Sin assets/fonts propios todavía — el manual de marca (tipografía Poppins, íconos) se
-  # incorpora en la Fase 0002 (design-system) junto con el output Dart de tokens.json.
+  # Poppins se carga en runtime vía google_fonts (core/theme/app_theme.dart), no como asset local
+  # empaquetado — ver openspec/decisions.md.

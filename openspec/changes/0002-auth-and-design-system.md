@@ -35,17 +35,18 @@ con la paleta/tipografía de marca (no con los colores default de Flutter).
 
 ## Tareas — Sistema de diseño
 
-- [ ] Resolver la generación del output Dart desde `tokens.json` (ver `specs/design-system.md`) —
-      agregar el formato nuevo a `TekoApp-Web/src/design-system/tokens/build.mjs` (toca el OTRO
-      repo, coordinarlo) o, si no es viable en el corto plazo, generar el archivo Dart una vez a
-      mano a partir del `tokens.json` actual y dejar documentado en `decisions.md` que falta
-      automatizarlo.
-- [ ] `ThemeData` de Flutter (claro + oscuro) armado desde esos tokens — nunca colores
-      hardcodeados en widgets.
+- [x] Resolver la generación del output Dart desde `tokens.json` (ver `specs/design-system.md`) —
+      generado a mano con un script Node de un solo uso (OKLCH→sRGB, ver `openspec/decisions.md`).
+      **Pendiente real**: agregar el formato nuevo a `TekoApp-Web/src/design-system/tokens/build.mjs`
+      para que se regenere solo — toca el OTRO repo, no se hizo en esta sesión sin pedido explícito.
+- [x] `ThemeData` de Flutter (claro + oscuro) armado desde esos tokens — nunca colores
+      hardcodeados en widgets. `core/theme/app_theme.dart`, colores semánticos extra
+      (éxito/alerta/info) vía `TekoSemanticColors` (`ThemeExtension`).
 - [ ] Widgets base compartidos en `shared/`: Button, Card, Avatar, Badge, Input — con las
       variantes que ya existen en `TekoApp-Web/src/components/ui/` como referencia de qué
       variantes hacen falta (no reinventar desde cero qué botones/estados existen).
-- [ ] Tipografía Poppins cargada (4 pesos) y aplicada como default de la app.
+- [x] Tipografía Poppins cargada (4 pesos) y aplicada como default de la app. — vía `google_fonts`
+      (runtime, no asset local empaquetado — ver `decisions.md`).
 
 ## Checkpoint de salida
 
