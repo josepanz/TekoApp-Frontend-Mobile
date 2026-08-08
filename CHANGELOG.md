@@ -1,3 +1,9 @@
+## [1.0.0-develop.19](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.18...v1.0.0-develop.19) (2026-08-08)
+
+### Features
+
+* **services:** modo profesional — marcar en progreso / completado ([094f7b0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/094f7b01a481f739d1cd1417f96be568be938002))
+
 ## [1.0.0-develop.18](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.17...v1.0.0-develop.18) (2026-08-08)
 
 ### Features
