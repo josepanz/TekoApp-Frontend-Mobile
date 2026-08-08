@@ -12,6 +12,7 @@ import 'features/professional_profile/widgets/professional_home_screen.dart';
 import 'features/professional_profile/widgets/professional_onboarding_screen.dart';
 import 'features/profile/widgets/profile_screen.dart';
 import 'features/services/widgets/my_services_screen.dart';
+import 'features/services/widgets/professional_services_screen.dart';
 import 'features/services/widgets/request_service_screen.dart';
 import 'features/services/widgets/service_detail_screen.dart';
 import 'l10n/app_localizations.dart';
@@ -26,12 +27,13 @@ const _protectedPaths = {
   '/mis-servicios/:id',
   '/profesional',
   '/profesional/onboarding',
+  '/profesional/mis-servicios',
 };
 
 /// Rutas de modo profesional que requieren un perfil profesional YA activo — `/profesional/
 /// onboarding` queda afuera a propósito (es el destino del redirect cuando no hay perfil, incluir
 /// esta ruta acá causaría un loop).
-const _professionalGatedPaths = {'/profesional'};
+const _professionalGatedPaths = {'/profesional', '/profesional/mis-servicios'};
 
 /// Puente `sessionProvider` (Riverpod) → `Listenable` (lo que espera `GoRouter.refreshListenable`)
 /// — cuando la sesión cambia, `go_router` reevalúa `redirect` para la ruta ACTUAL sin recrear el
@@ -108,6 +110,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profesional/onboarding',
         builder: (context, state) => const ProfessionalOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/profesional/mis-servicios',
+        builder: (context, state) => const ProfessionalServicesScreen(),
       ),
     ],
   );

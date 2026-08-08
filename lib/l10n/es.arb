@@ -130,5 +130,12 @@
   },
   "serviceRequestAccept": "Aceptar",
   "serviceRequestAcceptConflict": "Esto cambió — actualizá la pantalla",
-  "serviceRequestAcceptError": "No se pudo aceptar la propuesta — intentá de nuevo"
+  "serviceRequestAcceptError": "No se pudo aceptar la propuesta — intentá de nuevo",
+  "professionalServicesTitle": "Mis servicios asignados",
+  "professionalServicesLoadError": "No se pudieron cargar tus servicios asignados — intentá de nuevo",
+  "professionalServicesEmpty": "Todavía no tenés servicios asignados",
+  "professionalServicesStart": "Iniciar",
+  "professionalServicesComplete": "Completar",
+  "professionalServicesConflict": "Esto cambió — actualizá la pantalla",
+  "professionalServicesError": "No se pudo actualizar el servicio — intentá de nuevo"
 }
