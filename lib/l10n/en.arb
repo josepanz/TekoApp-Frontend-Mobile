@@ -15,5 +15,18 @@
   "loginErrorInvalidCredentials": "Incorrect email or password",
   "loginErrorNoConnection": "No connection — check your internet and try again",
   "loginErrorServiceUnavailable": "The service is unavailable — try again in a few minutes",
-  "logout": "Sign out"
+  "logout": "Sign out",
+  "profileChangeAvatar": "Change profile photo",
+  "profileFirstNameLabel": "First name",
+  "profileFirstNameRequired": "Enter your first name",
+  "profileLastNameLabel": "Last name",
+  "profileLastNameRequired": "Enter your last name",
+  "profilePhoneLabel": "Phone",
+  "profileSave": "Save changes",
+  "profileErrorValidation": "Check the entered data",
+  "profileErrorServiceUnavailable": "Could not save — try again in a few minutes",
+  "avatarErrorTooLarge": "The image is too large (5 MB max)",
+  "avatarErrorUnsupportedType": "Unsupported image format",
+  "avatarErrorUpload": "Could not upload the image — try again",
+  "profileServiceUnavailable": "We couldn't load your profile — check your connection and try again"
 }
