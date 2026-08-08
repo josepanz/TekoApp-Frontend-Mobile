@@ -52,6 +52,10 @@ dependencies:
   # porque se importa directo en profile_repository.dart.
   http_parser: ^4.0.2
 
+  # Ubicación actual del dispositivo para "pedir servicio" (latitude/longitude) — ver
+  # openspec/decisions.md ("Geolocalización para pedir servicio"). Sin selector de mapa todavía.
+  geolocator: ^13.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
