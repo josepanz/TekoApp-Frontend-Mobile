@@ -262,6 +262,56 @@ decidido todavía, y el checkpoint de esta fase no lo exige).
 **Estado**: decidido para el alcance de la Fase 0003. Selector de pin en mapa queda pendiente para
 cuando se aborde `realtime-location`.
 
+## Fase 0004 — pagos y calificaciones: hallazgos verificados contra el backend real
+
+Antes de escribir código se releyó `specs/payments.md` y el código real de `TekoApp-Backend`
+(controllers/DTOs/schema), no solo el spec — se encontraron varias divergencias entre lo
+documentado y el contrato real, ya corregidas del lado backend (PR #24/#25 de `TekoApp-Backend`,
+2026-08-08) antes de construir mobile sobre él.
+
+- **Monto del pago = `Service.finalAmount`**: ya existe en `ServiceDetailResponseDTO` (opcional,
+  numérico) — se agrega a `Service` (mobile) y se manda tal cual en `CreatePaymentDto.amount`,
+  nunca editable por el usuario en la pantalla de confirmación.
+- **`professionalId` en `POST /payments` viaja como UUID** (`referenceId` del profesional) — el
+  backend tenía un bug real (`Number(dto.professionalId)` sobre un campo `@IsUUID()`, daba `NaN`)
+  que ya se corrigió (`PaymentDbService.findProfessionalByReferenceId`). Mobile manda
+  `service.professional!.referenceId`, no el `id` Int.
+- **`POST /promotions/validate` (preview, sin efecto) vs `POST /promotions/apply` (efecto real,
+  incrementa el uso)**: mobile llama `validate` cuando el usuario ingresa el código (para mostrar
+  el descuento) y `apply` recién al confirmar el pago — nunca `apply` como preview.
+- **`CreatePaymentDto` no tiene campo de promoción** — el flujo real es aplicar la promoción
+  primero (`apply` con `serviceAmount = service.finalAmount`) para obtener el `finalAmount` con
+  descuento, y mandar ESE valor como `amount` en `POST /payments`.
+- **Monto disponible para reembolso** = `payment.totalAmount - (payment.refundDetails?.refundedAmount
+  ?? 0)` — no hay un campo `availableForRefund` explícito en el DTO, se calcula client-side con
+  estos dos campos ya expuestos (confirmado leyendo `payment-db.service.ts`).
+- **No existe un endpoint de "historial de transacciones" (`PaymentTransaction[]`) expuesto por la
+  API** — el alcance de "detalle de transacciones" de esta fase se reduce a los campos propios de
+  cada `Payment` (estado, fechas, `refundDetails`), no se fabrica una lista que el backend no da.
+- **Mensajes de error textuales del backend en casos puntuales** (`CANNOT_DELETE_ONLY_METHOD`,
+  errores de reembolso): el shape real de error es `{success:false, error:{code, message, error,
+  timestamp, path}}` (`HttpExceptionFilter`), y `EnvelopeInterceptor` (mobile) solo desenvuelve
+  respuestas exitosas — el mensaje crudo llega intacto en
+  `dioException.response?.data['error']['message']`. Se agrega una variante de `Failure` que carga
+  ese mensaje textual en vez de solo clasificar por status code (nuevo patrón vs. Fase 0003).
+- **Calificación**: `professionalId`/`clientId` van como UUID (`referenceId`) — confirmado en
+  `RatingsService`, sin el bug de pagos. `serviceRequestId` no está en `ServiceDetailResponseDTO`
+  — se resuelve reusando `fetchServiceRequests(serviceId)` (ya existe desde la Fase 0003, Paso 8) y
+  tomando el que está `ACCEPTED`. Para ocultar "calificar" si ya se calificó (pedido explícito de
+  la tarea, no solo manejo de error 400) se usa `GET /ratings/service/:serviceRequestId` (ya
+  existe) para chequear antes de mostrar el botón.
+- **Gestión de métodos de pago sin integración real de tokenización**: no hay SDK de proveedor de
+  pagos en esta fase — el formulario captura `type`/`provider`/`name`/`details` (campos de texto
+  simples, ej. últimos 4 dígitos ingresados a mano) y los manda tal cual a `POST /payments/methods`
+  — alcanza para "gestión de métodos de pago propios", sin flujo de alta real con proveedor, mismo
+  criterio de scope ya aplicado a geolocalización/paginación en la Fase 0003.
+
+**Estado**: decidido para el alcance de la Fase 0004. La estandarización de PK (`id`+`referenceId`)
+en los 6 modelos del backend (Services/ServiceRequests/Payments/PaymentMethodEntity/
+PaymentTransaction/Rating) ya estaba hecha a nivel de schema antes de esta fase — el contrato
+público (`id`=UUID en la respuesta) no cambió, así que no afecta nada de lo ya construido en
+Mobile.
+
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
 - Implementación del flujo de login real (nonce + RSA-OAEP + almacenamiento de tokens) — el

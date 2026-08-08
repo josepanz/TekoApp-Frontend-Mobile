@@ -102,7 +102,13 @@ las fases siguientes.
 
 ## graphify
 
-Todavía no hay código para generar un grafo (`lib/` no existe). Una vez que la Fase 0001 cree las
-primeras carpetas, correr `/graphify .` para generar `graphify-out/` — a partir de ahí, mismo
-protocolo que los otros 2 repos: `graphify query "<pregunta>"` antes de grep crudo,
-`graphify update .` después de cada cambio de código.
+Este proyecto tiene un grafo de conocimiento en `graphify-out/` (comunidades, relaciones
+cross-file), generado 2026-08-08 sobre `lib/`, `.claude/`, `openspec/`, `.github/`, etc.
+
+- Para preguntas sobre el código, primero correr `graphify query "<pregunta>"` cuando
+  `graphify-out/graph.json` exista. Usar `graphify path "<A>" "<B>"` para relaciones y
+  `graphify explain "<concepto>"` para conceptos puntuales.
+- Leer `graphify-out/GRAPH_REPORT.md` solo para revisión de arquitectura amplia.
+- Después de modificar código, correr `graphify update .` para mantener el grafo al día (solo AST,
+  sin costo de API) — las 3 fases construidas hasta ahora (0001-0003) están en el grafo; correr
+  `graphify update .` antes de auditorías grandes si pasó mucho tiempo desde la última.
