@@ -2,6 +2,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
+import 'package:tekoapp_mobile/core/auth/session_provider.dart';
+import 'package:tekoapp_mobile/core/auth/session_state.dart';
+
+/// `sessionProvider` real llama a `flutter_secure_storage` al construirse (ver
+/// `core/auth/session_provider.dart`) — sin un mock de plataforma disponible en `flutter_test`,
+/// eso dispara una excepción de plugin no manejada. Se fija un estado sincrónico acá, la
+/// orquestación real de sesión tiene su propia suite (`test/core/auth/session_provider_test.dart`).
+class _FixedSessionNotifier extends SessionNotifier {
+  _FixedSessionNotifier(this._fixed);
+  final SessionState _fixed;
+
+  @override
+  SessionState build() => _fixed;
+}
 
 void main() {
   testWidgets(
@@ -14,6 +28,9 @@ void main() {
         ProviderScope(
           overrides: [
             networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            sessionProvider.overrideWith(
+              () => _FixedSessionNotifier(const SessionUnauthenticated()),
+            ),
           ],
           child: const TekoApp(),
         ),
