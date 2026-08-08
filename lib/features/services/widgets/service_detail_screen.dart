@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
@@ -80,6 +81,14 @@ class _ServiceDetailBody extends StatelessWidget {
             Text(l10n.serviceRequestsTitle, style: textTheme.titleMedium),
             const SizedBox(height: 8),
             _ServiceRequestsSection(serviceId: service.id),
+          ],
+          if (service.status == ServiceStatus.completed) ...[
+            const SizedBox(height: 24),
+            TekoButton(
+              key: Key('pay_service_button_${service.id}'),
+              label: l10n.payServiceButton,
+              onPressed: () => context.push('/pagos/pagar/${service.id}'),
+            ),
           ],
         ],
       ),
