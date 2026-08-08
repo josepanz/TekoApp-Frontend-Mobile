@@ -1,3 +1,9 @@
+## [1.0.0-develop.5](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.4...v1.0.0-develop.5) (2026-08-08)
+
+### Features
+
+* **auth:** interceptor de refresh automatico + sessionProvider real ([e729c0d](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e729c0dbe2d645cf6f8ef5a9ac9436bf744b6bb1))
+
 ## [1.0.0-develop.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.3...v1.0.0-develop.4) (2026-08-08)
 
 ### Features
