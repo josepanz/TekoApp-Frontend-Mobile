@@ -58,15 +58,96 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ProfileScreen), findsOneWidget);
 
-      // Act — se busca por tipo, no por texto, para no depender del locale resuelto en el test
+      // Act — se busca por Key, no por texto, para no depender del locale resuelto en el test
       // (el binding de flutter_test resuelve `en` por default, ver test/features/auth/widgets/
-      // login_screen_test.dart para el mismo problema con un locale forzado en su lugar).
-      await tester.tap(find.byType(FilledButton));
+      // login_screen_test.dart para el mismo problema con un locale forzado en su lugar) ni de
+      // qué otros botones tenga la pantalla.
+      await tester.tap(find.byKey(const Key('profile_logout_button')));
       await tester.pumpAndSettle();
 
       // Assert
       verify(() => repository.clearSession()).called(1);
       expect(find.byType(LoginScreen), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'precarga los datos actuales del usuario en el formulario',
+    (tester) async {
+      // Arrange
+      const user = UserSummary(
+        referenceId: 'ref-1',
+        email: 'ana@test.com',
+        firstName: 'Ana',
+        lastName: 'Pérez',
+        phoneNumber: '+595981234567',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            sessionProvider.overrideWith(
+              () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+
+      // Act
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Ana'), findsOneWidget);
+      expect(find.text('Pérez'), findsOneWidget);
+      expect(find.text('+595981234567'), findsOneWidget);
+      expect(find.text('ana@test.com'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'muestra un error de validación si se borra el nombre y se intenta guardar',
+    (tester) async {
+      // Arrange
+      const user = UserSummary(
+        referenceId: 'ref-1',
+        email: 'ana@test.com',
+        firstName: 'Ana',
+        lastName: 'Pérez',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            sessionProvider.overrideWith(
+              () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Act
+      await tester.enterText(find.text('Ana'), '');
+      await tester.tap(find.byKey(const Key('profile_save_button')));
+      await tester.pump();
+
+      // Assert — no se fija el locale del test (`TekoApp` no expone un parámetro `locale` para
+      // forzarlo desde afuera, ver test/features/auth/widgets/login_screen_test.dart para el
+      // mismo problema resuelto ahí con un `MaterialApp` propio) — se acepta cualquiera de los 2
+      // idiomas soportados en vez de asumir cuál resolvió el binding de test.
+      final errorShown = find.text('Ingresá tu nombre').evaluate().isNotEmpty ||
+          find.text('Enter your first name').evaluate().isNotEmpty;
+      expect(errorShown, isTrue);
     },
   );
 }

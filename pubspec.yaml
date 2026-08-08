@@ -46,6 +46,12 @@ dependencies:
   # Tipografía única de marca (Poppins, 4 pesos) — ver openspec/specs/design-system.md.
   google_fonts: ^6.2.1
 
+  # Selección de imagen para el avatar de "Mi perfil" (POST /uploads/avatar).
+  image_picker: ^1.1.2
+  # MediaType para el multipart del avatar — dependencia transitiva de dio, se fija explícita
+  # porque se importa directo en profile_repository.dart.
+  http_parser: ^4.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
