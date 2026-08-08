@@ -233,5 +233,14 @@
   "paymentRefundSubmit": "Confirmar reembolso",
   "paymentRefundCancel": "Cancelar",
   "paymentRefundError": "No se pudo procesar el reembolso — intentá de nuevo",
-  "paymentRefundSuccess": "Reembolso procesado"
+  "paymentRefundSuccess": "Reembolso procesado",
+  "rateProfessionalButton": "Calificar profesional",
+  "rateClientButton": "Calificar cliente",
+  "ratingDialogTitle": "Calificar",
+  "ratingCommentLabel": "Comentario (opcional)",
+  "ratingSubmitButton": "Enviar",
+  "ratingCancelButton": "Cancelar",
+  "ratingRequired": "Elegí una calificación",
+  "ratingSuccessMessage": "Calificación enviada",
+  "ratingError": "No se pudo enviar la calificación — intentá de nuevo"
 }
