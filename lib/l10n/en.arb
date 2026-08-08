@@ -48,5 +48,16 @@
   "requestServiceSubmit": "Confirm",
   "requestServiceErrorValidation": "Check the entered data",
   "requestServiceErrorServiceUnavailable": "Could not create the service — try again in a few minutes",
-  "requestServiceCatalogError": "Could not load the catalog"
+  "requestServiceCatalogError": "Could not load the catalog",
+  "myServicesTitle": "My services",
+  "myServicesError": "Could not load your services — try again",
+  "myServicesEmpty": "You haven't requested any service yet",
+  "serviceDetailTitle": "Service detail",
+  "serviceDetailError": "Could not load the service — try again",
+  "serviceDetailProfessional": "Assigned professional: {name}",
+  "serviceStatusPending": "Pending",
+  "serviceStatusAccepted": "Accepted",
+  "serviceStatusInProgress": "In progress",
+  "serviceStatusCompleted": "Completed",
+  "serviceStatusCancelled": "Cancelled"
 }
