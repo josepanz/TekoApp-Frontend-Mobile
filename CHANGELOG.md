@@ -1,3 +1,9 @@
+## [1.0.0-develop.17](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.16...v1.0.0-develop.17) (2026-08-08)
+
+### Features
+
+* **services:** modo profesional — servicios disponibles + proponerse ([ed09fcc](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ed09fcc2e56fba4744249f8b313965dbab69a836))
+
 ## [1.0.0-develop.16](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.15...v1.0.0-develop.16) (2026-08-08)
 
 ### Features
