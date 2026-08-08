@@ -1,3 +1,9 @@
+## [1.0.0-develop.10](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.9...v1.0.0-develop.10) (2026-08-08)
+
+### Features
+
+* **profile:** pantalla Mi perfil real (ver/editar + avatar) ([cf67422](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/cf67422600983c76e52cae5c77fef6d8b283d4bc))
+
 ## [1.0.0-develop.9](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.8...v1.0.0-develop.9) (2026-08-08)
 
 ### Features
