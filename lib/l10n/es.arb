@@ -67,5 +67,23 @@
   "requestServiceSubmit": "Confirmar",
   "requestServiceErrorValidation": "Revisá los datos ingresados",
   "requestServiceErrorServiceUnavailable": "No se pudo crear el servicio — intentá de nuevo en unos minutos",
-  "requestServiceCatalogError": "No se pudo cargar el catálogo"
+  "requestServiceCatalogError": "No se pudo cargar el catálogo",
+  "myServicesTitle": "Mis servicios",
+  "myServicesError": "No se pudieron cargar tus servicios — intentá de nuevo",
+  "myServicesEmpty": "Todavía no pediste ningún servicio",
+  "serviceDetailTitle": "Detalle del servicio",
+  "serviceDetailError": "No se pudo cargar el servicio — intentá de nuevo",
+  "serviceDetailProfessional": "Profesional asignado: {name}",
+  "@serviceDetailProfessional": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "serviceStatusPending": "Pendiente",
+  "serviceStatusAccepted": "Aceptado",
+  "serviceStatusInProgress": "En progreso",
+  "serviceStatusCompleted": "Completado",
+  "serviceStatusCancelled": "Cancelado"
 }
