@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/api_client/network_smoke_check_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_button.dart';
 
 /// Pantalla de inicio placeholder — el selector de modo (cliente/profesional, ver
 /// `.claude/rules/flutter-architecture.md#multi-rol-en-una-sola-app`) y el contenido real llegan
@@ -35,6 +37,12 @@ class HomeScreen extends ConsumerWidget {
               errorMessage: l10n.networkSmokeCheckError,
               builder: (context, data) =>
                   Text(l10n.networkSmokeCheckLoaded(data.length)),
+            ),
+            const SizedBox(height: 24),
+            TekoButton(
+              key: const Key('home_request_service_button'),
+              label: l10n.requestServiceTitle,
+              onPressed: () => context.push('/solicitar'),
             ),
           ],
         ),

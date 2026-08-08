@@ -14,6 +14,7 @@ class TekoInput extends StatelessWidget {
     this.enabled = true,
     this.validator,
     this.initialValue,
+    this.maxLines = 1,
   });
 
   final String label;
@@ -23,6 +24,7 @@ class TekoInput extends StatelessWidget {
   final bool enabled;
   final String? Function(String?)? validator;
   final String? initialValue;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,7 @@ class TekoInput extends StatelessWidget {
       keyboardType: keyboardType,
       enabled: enabled,
       validator: validator,
+      maxLines: maxLines,
       decoration:
           InputDecoration(labelText: label, border: const OutlineInputBorder()),
     );
