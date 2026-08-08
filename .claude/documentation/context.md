@@ -82,8 +82,21 @@ completado. Divergencias deliberadas documentadas en `openspec/decisions.md` y e
 capturar precio/horas todavía). Checkpoint de salida (dos usuarios reales, DB real, conflicto 409
 real) pendiente — tarea de José, mismo criterio que fases anteriores.
 
-**Próximo paso**: Fase 0004 (`openspec/changes/0004-payments-and-ratings.md`, pagos y
-calificaciones) o la que José decida priorizar — no hay código de esa fase todavía.
+**Fase 0004 (pagos y calificaciones, checklist de código) completa (2026-08-08)** — 7 PRs
+(#51-#57): decisiones + grafo de conocimiento, métodos de pago (modelo/repo/pantalla), promociones
+(validate/apply), pagar un servicio completado (monto server-side, promoción opcional), historial
+de pagos + reembolso parcial/total, calificación bidireccional. Antes de este paso se auditó y
+corrigió `TekoApp-Backend` (PRs #24-#27: bug real de `professionalId` en pagos, 2 condiciones de
+carrera en métodos de pago, endpoint faltante `GET /payments/methods`, y un bug que bloqueaba dos
+reembolsos parciales consecutivos sobre el mismo pago — el propio checkpoint de esta fase lo exige
+explícitamente). Divergencia documentada en `openspec/decisions.md`: se simplificó el manejo de
+`ALREADY_EXISTS_FOR_SERVICE` a mostrar el mensaje del backend tal cual, sin el redirect especial a
+historial que el plan original proponía (evita matching frágil contra texto traducible). Checkpoint
+de salida (pago real con promoción real, dos reembolsos parciales reales, calificar y confirmar que
+no se puede de nuevo) pendiente — tarea de José, mismo criterio que fases anteriores.
+
+**Próximo paso**: Fase 0005 (`openspec/changes/0005-realtime-and-push.md`) o la que José decida
+priorizar.
 
 ## Qué NO hacer
 
