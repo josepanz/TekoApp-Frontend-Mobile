@@ -1,3 +1,9 @@
+## [1.0.0-develop.23](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.22...v1.0.0-develop.23) (2026-08-08)
+
+### Features
+
+* **payments:** payment methods screen (list, add, set default, delete) ([8a4d786](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8a4d786521ee86631cade33af20470fb17e24f5f))
+
 ## [1.0.0-develop.22](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.21...v1.0.0-develop.22) (2026-08-08)
 
 ### Features
