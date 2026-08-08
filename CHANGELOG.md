@@ -1,3 +1,9 @@
+## [1.0.0-develop.18](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.17...v1.0.0-develop.18) (2026-08-08)
+
+### Features
+
+* **services:** modo cliente — ver propuestas competidoras y elegir una ([be8e41b](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/be8e41bfde560e7978a61d9f4da616a10a3a19d0))
+
 ## [1.0.0-develop.17](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.16...v1.0.0-develop.17) (2026-08-08)
 
 ### Features
