@@ -1,3 +1,9 @@
+## [1.0.0-develop.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.3...v1.0.0-develop.4) (2026-08-08)
+
+### Features
+
+* **auth:** cifrado RSA-OAEP, cookie jar seguro y AuthRepository real ([d91c183](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d91c183a288e9e0a53920da176c2ccece6f41937))
+
 ## [1.0.0-develop.3](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.2...v1.0.0-develop.3) (2026-08-08)
 
 ### Documentation
