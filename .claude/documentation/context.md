@@ -66,11 +66,24 @@ sesión sin dispositivo).
   `integration_test/`, porque este entorno no tiene emulador/dispositivo (ver
   `.claude/rules/test.md`).
 
-**Fase 0002 (checklist de código) completa.** Queda pendiente únicamente lo que requiere un
+**Fase 0002 (checklist de código) completa.** Quedó pendiente únicamente lo que requiere un
 dispositivo/backend real y no es código: el checkpoint de salida (login contra el backend local
 con una cuenta de seed, persistencia entre reinicios, refresh de un token vencido de verdad,
-comparación visual con `TekoApp-Web`, subida de avatar de punta a punta) — tarea de José. Después
-de eso, la Fase 0003 (`openspec/changes/0003-services-marketplace-core.md`) es el siguiente paso.
+comparación visual con `TekoApp-Web`, subida de avatar de punta a punta) — tarea de José.
+
+**Fase 0003 (marketplace de servicios, checklist de código) completa (2026-08-08)** — 9 PRs
+(#41-#49): catálogo de categorías/tipos, modelos+repositorio de `Service`/`ServiceRequest` con
+manejo explícito de 409, pedir servicio (con ubicación vía `geolocator`), mis servicios
+(listado+detalle), selector de modo cliente/profesional + gate + onboarding de perfil profesional,
+servicios disponibles + proponerse, ver propuestas competidoras y aceptar una, marcar en progreso/
+completado. Divergencias deliberadas documentadas en `openspec/decisions.md` y en el propio
+`changes/0003-services-marketplace-core.md` (modelo de `ServiceRequests` en vez del atajo que usa
+`TekoApp-Web`, Pasos 5+6 del plan fusionados en un solo PR, proponerse de un solo toque sin
+capturar precio/horas todavía). Checkpoint de salida (dos usuarios reales, DB real, conflicto 409
+real) pendiente — tarea de José, mismo criterio que fases anteriores.
+
+**Próximo paso**: Fase 0004 (`openspec/changes/0004-payments-and-ratings.md`, pagos y
+calificaciones) o la que José decida priorizar — no hay código de esa fase todavía.
 
 ## Qué NO hacer
 
