@@ -10,23 +10,43 @@ import 'features/home/widgets/home_screen.dart';
 import 'features/profile/widgets/profile_screen.dart';
 import 'l10n/app_localizations.dart';
 
-/// Rutas que requieren sesión — hoy `sessionProvider` es un placeholder siempre-sin-sesión (ver
-/// `core/auth/session_provider.dart`), así que esto redirige siempre a `/login`. El propósito de
-/// esta lista no es gatear nada todavía, es dejar probado el mecanismo de redirect de `go_router`
-/// antes de conectar sesión real en la Fase 0002 (ver checkpoint de
-/// `openspec/changes/0001-project-bootstrap.md`).
+/// Rutas que requieren sesión (ver `core/auth/session_provider.dart`).
 const _protectedPaths = {'/perfil'};
 
+/// Puente `sessionProvider` (Riverpod) → `Listenable` (lo que espera `GoRouter.refreshListenable`)
+/// — cuando la sesión cambia, `go_router` reevalúa `redirect` para la ruta ACTUAL sin recrear el
+/// router ni resetear el stack de navegación (a diferencia de reconstruir el `GoRouter` entero).
+class _SessionRefreshListenable extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
+/// El `GoRouter` se construye una sola vez (`Provider`, no se reconstruye al cambiar la sesión).
+/// El logout dispara el redirect automáticamente: al pasar a `SessionUnauthenticated` estando en
+/// `/perfil` (protegida), `refreshListenable` hace que `go_router` reevalúe y redirija solo. El
+/// login sí necesita navegación explícita (`LoginScreen` hace `context.go('/')`) porque `/login`
+/// no es una ruta protegida — no hay una regla de "ya autenticado, salir de acá" todavía.
 final routerProvider = Provider<GoRouter>((ref) {
+  final refreshListenable = _SessionRefreshListenable();
+  ref.listen<SessionState>(sessionProvider, (previous, next) {
+    refreshListenable.notify();
+  });
+  ref.onDispose(refreshListenable.dispose);
+
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refreshListenable,
     redirect: (context, state) {
       final session = ref.read(sessionProvider);
       final isProtected = _protectedPaths.contains(state.matchedLocation);
-      if (isProtected && session is SessionUnauthenticated) {
-        return '/login';
-      }
-      return null;
+      if (!isProtected) return null;
+      if (session is SessionAuthenticated) return null;
+      // 5xx/sin conexión NUNCA implica "no hay sesión" (ver specs/auth-and-session.md) — la
+      // propia pantalla muestra el estado de error, no se redirige a login.
+      if (session is SessionServiceUnavailable) return null;
+      // SessionUnknown (todavía resolviendo GET /auth/scope al abrir la app) se trata igual que
+      // sin sesión — solo importa si el usuario aterriza directo en una ruta protegida antes de
+      // que la sesión inicial resuelva (deep linking, fuera de alcance hoy).
+      return '/login';
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
