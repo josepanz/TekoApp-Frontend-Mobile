@@ -8,11 +8,20 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
 import 'features/profile/widgets/profile_screen.dart';
+import 'features/services/widgets/my_services_screen.dart';
 import 'features/services/widgets/request_service_screen.dart';
+import 'features/services/widgets/service_detail_screen.dart';
 import 'l10n/app_localizations.dart';
 
-/// Rutas que requieren sesión (ver `core/auth/session_provider.dart`).
-const _protectedPaths = {'/perfil', '/solicitar'};
+/// Rutas que requieren sesión (ver `core/auth/session_provider.dart`) — se comparan contra
+/// `state.fullPath` (la plantilla, ej. `/mis-servicios/:id`), no `state.matchedLocation` (que trae
+/// el valor real del parámetro interpolado, distinto en cada visita).
+const _protectedPaths = {
+  '/perfil',
+  '/solicitar',
+  '/mis-servicios',
+  '/mis-servicios/:id',
+};
 
 /// Puente `sessionProvider` (Riverpod) → `Listenable` (lo que espera `GoRouter.refreshListenable`)
 /// — cuando la sesión cambia, `go_router` reevalúa `redirect` para la ruta ACTUAL sin recrear el
@@ -38,7 +47,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshListenable,
     redirect: (context, state) {
       final session = ref.read(sessionProvider);
-      final isProtected = _protectedPaths.contains(state.matchedLocation);
+      final isProtected = _protectedPaths.contains(
+        state.fullPath ?? state.matchedLocation,
+      );
       if (!isProtected) return null;
       if (session is SessionAuthenticated) return null;
       // 5xx/sin conexión NUNCA implica "no hay sesión" (ver specs/auth-and-session.md) — la
@@ -59,6 +70,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/solicitar',
         builder: (context, state) => const RequestServiceScreen(),
+      ),
+      GoRoute(
+        path: '/mis-servicios',
+        builder: (context, state) => const MyServicesScreen(),
+      ),
+      GoRoute(
+        path: '/mis-servicios/:id',
+        builder: (context, state) =>
+            ServiceDetailScreen(serviceId: state.pathParameters['id']!),
       ),
     ],
   );
