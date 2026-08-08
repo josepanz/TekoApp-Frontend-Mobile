@@ -7,8 +7,32 @@ import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/auth/user_summary.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
+import 'package:tekoapp_mobile/features/categories/providers/categories_provider.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
+import 'package:tekoapp_mobile/features/professional_profile/models/professional_profile.dart';
+import 'package:tekoapp_mobile/features/professional_profile/models/professional_status.dart';
+import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
+import 'package:tekoapp_mobile/features/professional_profile/widgets/professional_home_screen.dart';
+import 'package:tekoapp_mobile/features/professional_profile/widgets/professional_onboarding_screen.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
+
+const _authenticatedUser = UserSummary(
+  referenceId: 'ref-1',
+  email: 'a@b.com',
+  firstName: 'Ana',
+  lastName: 'Pérez',
+);
+
+const _professionalProfile = ProfessionalProfile(
+  id: 2,
+  referenceId: 'prof-uuid-1',
+  categoryId: 3,
+  description: 'Plomero',
+  hourlyRate: 50000,
+  status: ProfessionalStatus.pending,
+  isAvailable: false,
+  isOnline: false,
+);
 
 /// `sessionProvider` real llama a `flutter_secure_storage` al construirse — sin mock de
 /// plataforma en `flutter_test`, eso dispara una excepción de plugin no manejada (ver
@@ -124,6 +148,98 @@ void main() {
       // Assert
       expect(find.byType(ProfileScreen), findsOneWidget);
       expect(find.byType(LoginScreen), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'redirige a /profesional/onboarding cuando todavía no hay perfil profesional',
+    (tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._overridesWithSession(
+              const SessionAuthenticated(_authenticatedUser),
+            ),
+            myProfessionalProfileProvider.overrideWith((ref) async => null),
+            // ProfessionalOnboardingScreen pide el catálogo de categorías — sin este override
+            // pega a la red real (prohibido en tests, ver `.claude/rules/test.md`) y
+            // `pumpAndSettle` nunca converge mientras el spinner de carga sigue animando.
+            categoriesProvider.overrideWith((ref) async => const []),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+
+      // Act
+      router.go('/profesional');
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.byType(ProfessionalOnboardingScreen), findsOneWidget);
+      expect(find.byType(ProfessionalHomeScreen), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'no redirige a /profesional cuando ya existe un perfil profesional',
+    (tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._overridesWithSession(
+              const SessionAuthenticated(_authenticatedUser),
+            ),
+            myProfessionalProfileProvider.overrideWith(
+              (ref) async => _professionalProfile,
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+
+      // Act
+      router.go('/profesional');
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.byType(ProfessionalHomeScreen), findsOneWidget);
+      expect(find.byType(ProfessionalOnboardingScreen), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'no redirige a /profesional ante servicio de perfiles no disponible',
+    (tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._overridesWithSession(
+              const SessionAuthenticated(_authenticatedUser),
+            ),
+            myProfessionalProfileProvider.overrideWith(
+              (ref) async => throw Exception('servicio no disponible'),
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+
+      // Act
+      router.go('/profesional');
+      await tester.pumpAndSettle();
+
+      // Assert — el gate deja pasar, la propia pantalla muestra su estado de error.
+      expect(find.byType(ProfessionalHomeScreen), findsOneWidget);
+      expect(find.byType(ProfessionalOnboardingScreen), findsNothing);
     },
   );
 }
