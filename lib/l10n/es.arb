@@ -108,5 +108,27 @@
   "availableServicesProposeButton": "Proponerme",
   "availableServicesProposeSuccess": "Te propusiste para este servicio",
   "availableServicesProposeConflict": "Este servicio ya cambió — actualizá la pantalla",
-  "availableServicesProposeError": "No se pudo enviar tu propuesta — intentá de nuevo"
+  "availableServicesProposeError": "No se pudo enviar tu propuesta — intentá de nuevo",
+  "serviceRequestsTitle": "Propuestas",
+  "serviceRequestsError": "No se pudieron cargar las propuestas",
+  "serviceRequestsEmpty": "Todavía no recibiste propuestas",
+  "serviceRequestProfessionalLabel": "Profesional #{id}",
+  "@serviceRequestProfessionalLabel": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "serviceRequestProposedPrice": "Precio propuesto: Gs. {price}",
+  "@serviceRequestProposedPrice": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "serviceRequestAccept": "Aceptar",
+  "serviceRequestAcceptConflict": "Esto cambió — actualizá la pantalla",
+  "serviceRequestAcceptError": "No se pudo aceptar la propuesta — intentá de nuevo"
 }
