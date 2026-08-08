@@ -1,3 +1,9 @@
+## [1.0.0-develop.12](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.11...v1.0.0-develop.12) (2026-08-08)
+
+### Features
+
+* **categories:** catálogo de categorías y tipos de servicio ([142f450](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/142f45080c028ed5742a38ac9893d3f205705b34))
+
 ## [1.0.0-develop.11](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.10...v1.0.0-develop.11) (2026-08-08)
 
 ### Documentation
