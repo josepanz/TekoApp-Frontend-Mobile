@@ -1,3 +1,9 @@
+## [1.0.0-develop.26](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.25...v1.0.0-develop.26) (2026-08-08)
+
+### Features
+
+* **payments:** pay a completed service ([a29591f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/a29591f58778194e2cb6188dd0286605779dc997))
+
 ## [1.0.0-develop.25](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.24...v1.0.0-develop.25) (2026-08-08)
 
 ### Features
