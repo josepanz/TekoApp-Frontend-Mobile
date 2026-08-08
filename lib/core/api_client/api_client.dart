@@ -1,6 +1,8 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import '../auth/bearer_auth_interceptor.dart';
+import '../auth/refresh_token_interceptor.dart';
 import '../config/env.dart';
 import 'envelope_interceptor.dart';
 
@@ -8,16 +10,18 @@ import 'envelope_interceptor.dart';
 /// dominio crea su propio `Dio` (ver `.claude/rules/flutter-architecture.md`).
 ///
 /// `cookieJar` adjunta/captura el `refreshToken` (viaja solo como cookie httpOnly, ver
-/// `openspec/decisions.md`) — se pasa `null` en tests/smoke-checks que no lo necesitan. El
-/// interceptor de Bearer/refresh-en-401 se agrega en un paso posterior de la Fase 0002. Este
-/// cliente ya desenvuelve el envelope `{success,data,message,timestamp,path}` del backend (mismo
-/// contrato que `core/api-client/client.ts` en TekoApp-Web).
+/// `openspec/decisions.md`) — se pasa `null` en tests/smoke-checks que no lo necesitan. Orden de
+/// interceptors: Bearer (adjunta el `accessToken`) → refresh-en-401 (lo renueva si hace falta) →
+/// envelope (desenvuelve `{success,data,message,timestamp,path}`, mismo contrato que
+/// `core/api-client/client.ts` en TekoApp-Web).
 class ApiClient {
   ApiClient({Dio? dio, CookieJar? cookieJar})
       : _dio = dio ?? _buildDefaultDio() {
     if (cookieJar != null) {
       _dio.interceptors.add(CookieManager(cookieJar));
     }
+    _dio.interceptors.add(BearerAuthInterceptor());
+    _dio.interceptors.add(RefreshTokenInterceptor(_dio));
     _dio.interceptors.add(EnvelopeInterceptor());
   }
 
