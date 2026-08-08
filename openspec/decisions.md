@@ -195,14 +195,79 @@ pendiente — ver ARCHITECTURE.md para el paso a paso exacto de cada secret):
 release completo (`release.yml`); publicación real firmada a las stores pendiente únicamente de
 cargar las credenciales de los puntos 1-3 arriba (sin trabajo de código adicional).
 
+## i18n: `flutter_localizations` + `intl` (formalizado 2026-08-08, ya en uso desde la Fase 0002)
+
+**Motivo**: `specs/i18n.md` lo dejaba como "a evaluar contra `easy_localization` antes de
+implementar" — en la práctica, la Fase 0002 ya lo adoptó de hecho (`l10n.yaml`, `generate: true`
+en `pubspec.yaml`, `lib/l10n/es.arb`/`en.arb`) porque es el camino estándar del SDK de Flutter
+(sin dependencia externa, generación de código en build time) y ya viene funcionando sin fricción
+en 2 fases. No hay motivo real para reabrir la comparación.
+
+**Estado**: decidido, formalizando acá una decisión ya tomada en la práctica — no hay cambio de
+código en esta entrada.
+
+## Offline-first vs. online-only: **online-only** (confirmado con José, 2026-08-08)
+
+**Motivo**: el dominio de esta fase (servicios que cambian de estado en tiempo casi real,
+competencia entre profesionales por un mismo servicio) hace que cualquier dato cacheado localmente
+quede obsoleto rápido — una lista "offline" mostraría estados que ya no son ciertos, más riesgoso
+que útil. Online-only también evita agregar una capa de persistencia/sincronización (Hive/sqflite)
+a una fase que ya es grande.
+
+**Cómo aplica en código**: ningún listado (`categorías`, `mis servicios`, `disponibles`,
+`propuestas`) se persiste entre reinicios de la app — Riverpod cachea en memoria solo dentro de la
+sesión activa (mismo comportamiento que ya tiene `sessionProvider`), cada pantalla refetchea al
+entrar o al reintentar tras un error. Revisitar si en producción se detecta que la app se usa en
+zonas de conectividad inestable.
+
+**Estado**: decidido, aplica desde la Fase 0003 en adelante salvo que se reabra explícitamente.
+
+## Aceptación de servicio: modelo `ServiceRequests` competidoras (divergencia deliberada de `TekoApp-Web`)
+
+**Motivo**: el backend soporta dos mecanismos para que un profesional se quede con un `Service`
+PENDING: (1) `POST /services/:id/accept` — atajo "primero que acepta, gana", sin negociación, es
+lo único que usa `TekoApp-Web` hoy; (2) `POST /services/:id/requests` (proponerse) +
+`PUT /services/:id/requests/:requestId` (el cliente elige una) — con auto-rechazo transaccional
+server-side de las demás propuestas competidoras al aceptar una. `specs/services-marketplace.md` y
+las tareas de `changes/0003-services-marketplace-core.md` piden explícitamente el flujo (2) — mobile
+implementa ese, no el atajo del web.
+
+**Por qué no es un bug ni una inconsistencia a "corregir"**: son dos mecanismos reales que el
+backend ya sostiene en paralelo (verificado en `services.controller.ts`/`services-db.service.ts`)
+— web usó el más simple porque le alcanzaba para su alcance actual, mobile necesita el otro porque
+su spec pide competencia entre profesionales. Si en el futuro se quiere unificar el comportamiento
+entre web y mobile, es una decisión de producto aparte, no un fix.
+
+**Estado**: decidido, implementar en los Pasos 2/7/8 de la Fase 0003.
+
+## Paginación de listados de servicios: solo primera página por ahora
+
+**Motivo**: `GET /services` pagina (`page`/`pageSize`), pero ni la spec ni el checkpoint de la
+Fase 0003 piden scroll infinito — agregar esa capa ahora es scope extra no pedido (KISS). Se
+consume la respuesta paginada tal cual (`{data, pagination}`) pero la UI solo pide/muestra la
+primera página.
+
+**Estado**: decidido para el alcance de la Fase 0003. Revisitar (scroll infinito o paginación
+explícita en UI) si en producción las listas superan una página cómodamente navegable.
+
+## Geolocalización para "pedir servicio": `geolocator`, sin mapa interactivo todavía
+
+**Motivo**: la Fase 0003 solo necesita capturar `latitude`/`longitude`/`address` al crear un
+`Service` — no tracking en vivo ni "profesionales cercanos" (eso es `specs/realtime-location.md`,
+fuera de alcance de esta fase). `geolocator` es el paquete estándar del ecosistema Flutter para
+permisos + posición actual del dispositivo; alcanza con un botón "usar mi ubicación actual" +
+campo de dirección de texto libre, sin selector de pin en mapa (ningún paquete de mapas está
+decidido todavía, y el checkpoint de esta fase no lo exige).
+
+**Estado**: decidido para el alcance de la Fase 0003. Selector de pin en mapa queda pendiente para
+cuando se aborde `realtime-location`.
+
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
 - Implementación del flujo de login real (nonce + RSA-OAEP + almacenamiento de tokens) — el
   mecanismo ya está decidido y verificado contra el backend real (ver las secciones específicas
   más arriba), el código en sí es tarea de la Fase 0002.
-- Offline-first vs. online-only: no se decidió si la app necesita funcionar sin conexión (ej. ver
-  servicios ya cargados) — el dominio (servicios en tiempo real, ubicación en vivo) sugiere que
-  online-only es razonable para el MVP, pero es una decisión de producto, no técnica, que falta
-  confirmar con el negocio antes de la Fase 3.
 - Firma de release y publicación en Google Play / App Store — bloqueado por no tener las cuentas
   todavía, no por falta de decisión técnica (ver "CI/CD" arriba).
+- Selector de pin en mapa para ubicación (ver "Geolocalización" arriba) — paquete de mapas sin
+  decidir, pendiente de `specs/realtime-location.md`.
