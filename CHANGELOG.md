@@ -1,3 +1,9 @@
+## [1.0.0-develop.24](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.23...v1.0.0-develop.24) (2026-08-08)
+
+### Features
+
+* **promotions:** models and repository for validate/apply ([9f60301](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/9f603012fc3ba581c95fde565a2750f10e98c3f4))
+
 ## [1.0.0-develop.23](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.22...v1.0.0-develop.23) (2026-08-08)
 
 ### Features
