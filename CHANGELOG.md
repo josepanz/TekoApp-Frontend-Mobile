@@ -1,3 +1,9 @@
+## [1.0.0-develop.11](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.10...v1.0.0-develop.11) (2026-08-08)
+
+### Documentation
+
+* formalizar decisiones de la Fase 0003 (marketplace de servicios) ([9e6ef28](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/9e6ef28baedcb7092ab99afce104671231669820))
+
 ## [1.0.0-develop.10](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.9...v1.0.0-develop.10) (2026-08-08)
 
 ### Features
