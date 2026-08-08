@@ -1,3 +1,9 @@
+## [1.0.0-develop.7](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.6...v1.0.0-develop.7) (2026-08-08)
+
+### Features
+
+* **auth:** logout real + guard de go_router basado en sesion real ([fc79655](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/fc796557bed16a307d80a7b914284f6084865b6e))
+
 ## [1.0.0-develop.6](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.5...v1.0.0-develop.6) (2026-08-08)
 
 ### Features
