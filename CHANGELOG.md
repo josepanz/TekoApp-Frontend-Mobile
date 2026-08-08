@@ -1,3 +1,9 @@
+## [1.0.0-develop.25](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.24...v1.0.0-develop.25) (2026-08-08)
+
+### Features
+
+* **payments:** payment history and refund screens ([f2ae344](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f2ae34416af8b951599820ce4af5174633aae6a9))
+
 ## [1.0.0-develop.24](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.23...v1.0.0-develop.24) (2026-08-08)
 
 ### Features
