@@ -1,3 +1,9 @@
+## [1.0.0-develop.28](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.27...v1.0.0-develop.28) (2026-08-08)
+
+### Documentation
+
+* close Fase 0004 (payments and ratings) ([2a341e2](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2a341e283ebb2f7a682d37f41a70270b0bb31e82))
+
 ## [1.0.0-develop.27](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.26...v1.0.0-develop.27) (2026-08-08)
 
 ### Features
