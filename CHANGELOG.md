@@ -1,3 +1,9 @@
+## [1.0.0-develop.8](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.7...v1.0.0-develop.8) (2026-08-08)
+
+### Features
+
+* **design-system:** tokens reales, ThemeData de marca y Poppins ([db15ed1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/db15ed1189bfbf9647a80de9754ece9acbbb5307)), closes [#28A745](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/28A745) [#0D1B2A](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/0D1B2A) [#F5F7FA](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/F5F7FA)
+
 ## [1.0.0-develop.7](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.6...v1.0.0-develop.7) (2026-08-08)
 
 ### Features
