@@ -123,9 +123,19 @@ consuma esos endpoints — no es un bloqueo de arquitectura backend, es trabajo 
 sin duplicar la definición de marca. Evita que mobile termine con una paleta ligeramente distinta
 a la web por una reinterpretación manual de los mismos colores.
 
-**Estado**: decidido, mecanismo de generación (qué formato de Style Dictionary produce Dart válido
-— probablemente un archivo `.dart` con constantes `Color(0x...)`) sin definir todavía — es tarea
-de `changes/0002-auth-and-design-system.md`.
+**Estado (actualizado 2026-08-07)**: `lib/design_system/tokens.generated.dart` ya existe con
+constantes `Color(0x...)` para toda la paleta (`TekoPrimitives`) y el mapeo semántico claro/oscuro
+(`TekoThemeColors.light`/`.dark`), pero **generado a mano con un script Node de un solo uso**
+(convierte cada `oklch(L C H)` de `tokens.json` a sRGB con el algoritmo de CSS Color Module Level
+4 — Dart no tiene soporte nativo para OKLCH), no por un formato nuevo en
+`TekoApp-Web/src/design-system/tokens/build.mjs`. Se verificó que reproduce exacto los anclajes de
+marca ya documentados (`primary.500`→`#28A745`, `neutral.900`→`#0D1B2A`, `neutral.50`→`#F5F7FA`).
+
+**Pendiente real**: agregar un formato `dart/teko-theme` a `build.mjs` (mismo patrón que el
+formato `css/teko-theme` que ya existe ahí) para que este archivo se regenere solo cuando
+`tokens.json` cambie — hoy, un cambio de paleta en `TekoApp-Web` NO se refleja acá hasta que
+alguien vuelva a correr el script a mano. Tocaría `TekoApp-Web` (otro repo), no se hizo en esta
+sesión para no expandir el alcance sin que José lo pida explícitamente.
 
 ## Testing: `flutter_test` + `mocktail`
 
