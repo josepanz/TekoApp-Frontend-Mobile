@@ -1,3 +1,9 @@
+## [1.0.0-develop.15](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.14...v1.0.0-develop.15) (2026-08-08)
+
+### Features
+
+* **services:** modo cliente — mis servicios (listado + detalle) ([411590f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/411590fbdfae0e4d3f84db972b1bff5aa206ad24))
+
 ## [1.0.0-develop.14](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.13...v1.0.0-develop.14) (2026-08-08)
 
 ### Features
