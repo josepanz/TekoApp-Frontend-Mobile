@@ -29,6 +29,30 @@ class ServiceCategorySummary {
   }
 }
 
+/// Cliente dueño del servicio — el backend lo expone bajo la clave JSON `users` (así, en plural,
+/// pese a ser un solo objeto: `ServiceDetailResponseDTO.users`). Necesario para que el
+/// profesional pueda calificar al cliente (`referenceId` es lo que pide
+/// `CreateProfessionalToClientRatingRequestDTO.clientId`).
+class ServiceClientSummary {
+  const ServiceClientSummary({
+    required this.referenceId,
+    required this.firstName,
+    required this.lastName,
+  });
+
+  final String referenceId;
+  final String firstName;
+  final String lastName;
+
+  factory ServiceClientSummary.fromJson(Map<String, dynamic> json) {
+    return ServiceClientSummary(
+      referenceId: json['referenceId'] as String,
+      firstName: json['firstName'] as String,
+      lastName: json['lastName'] as String,
+    );
+  }
+}
+
 /// Profesional asignado, con el nombre ya aplanado desde `professional.user` — la UI de esta fase
 /// solo necesita mostrar un nombre, no el resto del perfil del usuario.
 class ServiceProfessionalSummary {
@@ -91,6 +115,7 @@ class Service {
     this.cancellationReason,
     this.category,
     this.professional,
+    this.client,
   });
 
   final String id;
@@ -118,6 +143,7 @@ class Service {
   final DateTime createdAt;
   final ServiceCategorySummary? category;
   final ServiceProfessionalSummary? professional;
+  final ServiceClientSummary? client;
 
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
@@ -153,6 +179,9 @@ class Service {
           ? ServiceProfessionalSummary.fromJson(
               json['professional'] as Map<String, dynamic>,
             )
+          : null,
+      client: json['users'] != null
+          ? ServiceClientSummary.fromJson(json['users'] as Map<String, dynamic>)
           : null,
     );
   }

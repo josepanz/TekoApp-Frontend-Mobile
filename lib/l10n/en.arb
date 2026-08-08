@@ -172,5 +172,14 @@
   "paymentRefundSubmit": "Confirm refund",
   "paymentRefundCancel": "Cancel",
   "paymentRefundError": "Could not process the refund — try again",
-  "paymentRefundSuccess": "Refund processed"
+  "paymentRefundSuccess": "Refund processed",
+  "rateProfessionalButton": "Rate professional",
+  "rateClientButton": "Rate client",
+  "ratingDialogTitle": "Rate",
+  "ratingCommentLabel": "Comment (optional)",
+  "ratingSubmitButton": "Submit",
+  "ratingCancelButton": "Cancel",
+  "ratingRequired": "Choose a rating",
+  "ratingSuccessMessage": "Rating submitted",
+  "ratingError": "Could not submit the rating — try again"
 }
