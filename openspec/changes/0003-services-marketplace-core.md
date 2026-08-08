@@ -12,23 +12,40 @@ completarlo — sin pagos ni notificaciones push todavía (esos son fases separa
 
 ## Tareas
 
-- [ ] Catálogo de categorías/tipos de servicio (`GET /categories`, listado simple, sin necesidad
+- [x] Catálogo de categorías/tipos de servicio (`GET /categories`, listado simple, sin necesidad
       de admin todavía).
-- [ ] Modo cliente: pantalla "pedir servicio" (categoría → tipo → descripción → ubicación →
+- [x] Modo cliente: pantalla "pedir servicio" (categoría → tipo → descripción → ubicación →
       confirmar) → crea `Service` en PENDING.
-- [ ] Modo cliente: listado de "mis servicios" con detalle por servicio.
-- [ ] Modo profesional: activar/completar perfil profesional (crear `Professionals` si no existe
+- [x] Modo cliente: listado de "mis servicios" con detalle por servicio.
+- [x] Modo profesional: activar/completar perfil profesional (crear `Professionals` si no existe
       — flujo de onboarding profesional, separado del onboarding de usuario básico).
-- [ ] Modo profesional: listado de servicios disponibles en mi categoría (PENDING sin profesional
+- [x] Modo profesional: listado de servicios disponibles en mi categoría (PENDING sin profesional
       asignado) + acción de proponer (`ServiceRequest`).
-- [ ] Modo cliente: ver `ServiceRequests` competidoras sobre mi servicio PENDING, elegir una
+- [x] Modo cliente: ver `ServiceRequests` competidoras sobre mi servicio PENDING, elegir una
       (acepta esa, las demás quedan implícitamente descartadas).
-- [ ] Modo profesional: marcar servicio asignado como en progreso / completado.
-- [ ] Manejo de 409 (conflicto de estado) en cualquier acción de cambio de estado — mensaje
+- [x] Modo profesional: marcar servicio asignado como en progreso / completado.
+- [x] Manejo de 409 (conflicto de estado) en cualquier acción de cambio de estado — mensaje
       "esto cambió, actualizá la pantalla", nunca un error genérico (ver `project.md`).
-- [ ] Traducir a es/en todo texto visible de esta fase a medida que se escribe, no al final.
+- [x] Traducir a es/en todo texto visible de esta fase a medida que se escribe, no al final.
+
+Checklist de código completo — ver PRs #41-#49 en `TekoApp-Frontend-Mobile`. Divergencias
+deliberadas respecto al plan original, documentadas en `openspec/decisions.md`:
+- Se implementó el flujo de `ServiceRequests` competidoras (no el atajo `POST /services/:id/accept`
+  que usa `TekoApp-Web` hoy) porque la spec de esta fase lo pide explícitamente.
+- Los Pasos 5 y 6 del plan de ejecución se fusionaron en un solo PR (selector de modo + gate +
+  onboarding) — resultaron ser una sola unidad real de trabajo, el gate necesita `GET
+  /professionals/me` para decidir el redirect.
+- Proponerse (`ServiceRequest`) es de un solo toque, sin capturar precio/horas/mensaje en esta
+  fase — el checkpoint no lo exige, queda como mejora de UX futura.
+- El nombre del profesional en las propuestas competidoras se omite (`ServiceRequestDetailResponseDTO`
+  no lo anida) — se muestra solo por `id`, resolverlo requeriría `GET /professionals/:id` por
+  propuesta, fuera de alcance.
 
 ## Checkpoint de salida
+
+Pendiente — requiere backend local corriendo + dos cuentas de prueba reales (una cliente, una
+profesional) en dispositivo/emulador real, no verificable desde esta sesión sin esos recursos.
+Responsabilidad de José, mismo criterio que las Fases 0001/0002.
 
 - [ ] Flujo completo de punta a punta con dos usuarios de prueba reales (uno actuando de cliente,
       otro de profesional, en dos dispositivos/emuladores distintos o alternando sesión): pedir
