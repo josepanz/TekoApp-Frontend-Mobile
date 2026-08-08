@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/features/auth/data/auth_repository.dart';
 import 'package:tekoapp_mobile/features/auth/models/login_failure.dart';
+import 'package:tekoapp_mobile/features/auth/models/scope_failure.dart';
 
 class _MockDio extends Mock implements Dio {}
 
@@ -230,6 +231,104 @@ void main() {
         await expectLater(
           repository.login(email: 'user@test.com', password: 'pass'),
           throwsA(isA<NoConnectionFailure>()),
+        );
+      },
+    );
+  });
+
+  group('readAccessToken / clearSession', () {
+    test('lee el accessToken guardado', () async {
+      // Arrange
+      when(
+        () => secureStorage.read(key: AuthRepository.accessTokenStorageKey),
+      ).thenAnswer((_) async => 'stored-token');
+
+      // Act
+      final result = await repository.readAccessToken();
+
+      // Assert
+      expect(result, 'stored-token');
+    });
+
+    test('borra el accessToken guardado', () async {
+      // Arrange
+      when(
+        () => secureStorage.delete(key: AuthRepository.accessTokenStorageKey),
+      ).thenAnswer((_) async {});
+
+      // Act
+      await repository.clearSession();
+
+      // Assert
+      verify(
+        () => secureStorage.delete(key: AuthRepository.accessTokenStorageKey),
+      ).called(1);
+    });
+  });
+
+  group('fetchScope', () {
+    test('devuelve el UserSummary mapeado desde GET /auth/scope', () async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/auth/scope'),
+      ).thenAnswer(
+        (_) async => jsonResponse('/auth/scope', {
+          'user': {
+            'id': 'ref-uuid-1',
+            'email': 'user@test.com',
+            'firstName': 'Ana',
+            'lastName': 'Pérez',
+          },
+          'roles': <Map<String, dynamic>>[],
+          'permissions': <Map<String, dynamic>>[],
+        }),
+      );
+
+      // Act
+      final result = await repository.fetchScope();
+
+      // Assert
+      expect(result.referenceId, 'ref-uuid-1');
+      expect(result.email, 'user@test.com');
+    });
+
+    test(
+      'lanza SessionExpiredFailure cuando el backend responde 401 (refresh ya falló)',
+      () async {
+        // Arrange
+        when(() => dio.get<Map<String, dynamic>>('/auth/scope')).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/auth/scope'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/auth/scope'),
+              statusCode: 401,
+            ),
+          ),
+        );
+
+        // Act & Assert
+        await expectLater(
+          repository.fetchScope(),
+          throwsA(isA<SessionExpiredFailure>()),
+        );
+      },
+    );
+
+    test(
+      'lanza ScopeUnavailableFailure ante 5xx o sin conexión (nunca cierra sesión)',
+      () async {
+        // Arrange
+        when(() => dio.get<Map<String, dynamic>>('/auth/scope')).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/auth/scope'),
+            type: DioExceptionType.connectionError,
+          ),
+        );
+
+        // Act & Assert
+        await expectLater(
+          repository.fetchScope(),
+          throwsA(isA<ScopeUnavailableFailure>()),
         );
       },
     );

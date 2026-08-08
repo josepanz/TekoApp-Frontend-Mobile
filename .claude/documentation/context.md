@@ -30,11 +30,26 @@ CI en verde. Ver `openspec/changes/0001-project-bootstrap.md` para el detalle de
 pendiente de verificación manual (correr en un emulador/simulador real — no verificable desde una
 sesión sin dispositivo).
 
-Arrancar `openspec/changes/0002-auth-and-session.md` — login/logout/sesión real + sistema de
-diseño, paso a paso vía TDD. Antes de escribir código: `openspec/decisions.md` ya deja registrado
-que el `refreshToken` viaja **solo como cookie httpOnly** (`POST /auth/refresh-token` lo lee de
-`req.cookies`, nunca del body) y que el RSA es OAEP con hash SHA-256 — confirmado leyendo el
-backend real (`AuthApiController`, `AuthCookieService`, `CryptoHelper`), no asumido.
+**Fase 0002 (auth) en curso** — hecho hasta ahora, paso a paso vía TDD:
+
+- Backend: nuevo endpoint público-para-cliente `GET /auth/public-key` (josepanz/TekoApp-Backend#23)
+  — mobile no tiene BFF para guardar `BACKEND_JWT_PUBLIC_KEY` server-side como sí hace `TekoApp-Web`.
+- `core/auth/rsa_encryptor.dart` — OAEP-SHA256 (`pointycastle`), compatibilidad cruzada con Node
+  verificada empíricamente (no solo por lectura de RFCs, ver `openspec/decisions.md`).
+- `core/auth/secure_cookie_storage.dart`/`cookie_jar_provider.dart` — el `refreshToken` viaja
+  **solo como cookie httpOnly** (nunca en el body), persistida vía `flutter_secure_storage`.
+- `features/auth/data/auth_repository.dart` — `login()`/`fetchScope()` reales, con los 3 estados
+  de error del checklist (credenciales inválidas / sin conexión / servidor no disponible).
+- `core/auth/bearer_auth_interceptor.dart` + `refresh_token_interceptor.dart` — Bearer automático
+  + refresh transparente en 401 (nunca en los propios endpoints pre-login).
+- `core/auth/session_provider.dart` — `sessionProvider` real (antes placeholder
+  siempre-sin-sesión): `SessionUnknown` → `SessionAuthenticated`/`SessionUnauthenticated`/
+  `SessionServiceUnavailable` (5xx/sin red NUNCA implica "sin sesión", ver
+  `specs/auth-and-session.md`).
+
+**Sigue**: pantalla de login real (3 estados de error visibles) + logout + reemplazar el guard
+dummy de `go_router` (Fase 0001) por uno basado en `sessionProvider` de verdad — ver
+`openspec/changes/0002-auth-and-design-system.md`.
 
 ## Qué NO hacer
 

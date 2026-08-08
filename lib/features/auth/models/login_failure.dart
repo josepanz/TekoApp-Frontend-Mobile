@@ -1,5 +1,5 @@
 /// Los 3 estados de error del login que la UI debe distinguir (ver
-/// `openspec/changes/0002-auth-and-session.md` y `openspec/specs/auth-and-session.md`) — nunca
+/// `openspec/changes/0002-auth-and-design-system.md` y `openspec/specs/auth-and-session.md`) — nunca
 /// colapsar 401 con 5xx/sin-conexión ("credenciales inválidas" es un mensaje de seguridad
 /// deliberadamente genérico, no aplica a fallas de red o del servidor).
 sealed class LoginFailure implements Exception {
