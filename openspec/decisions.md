@@ -295,11 +295,23 @@ documentado y el contrato real, ya corregidas del lado backend (PR #24/#25 de `T
   `dioException.response?.data['error']['message']`. Se agrega una variante de `Failure` que carga
   ese mensaje textual en vez de solo clasificar por status code (nuevo patrón vs. Fase 0003).
 - **Calificación**: `professionalId`/`clientId` van como UUID (`referenceId`) — confirmado en
-  `RatingsService`, sin el bug de pagos. `serviceRequestId` no está en `ServiceDetailResponseDTO`
-  — se resuelve reusando `fetchServiceRequests(serviceId)` (ya existe desde la Fase 0003, Paso 8) y
-  tomando el que está `ACCEPTED`. Para ocultar "calificar" si ya se calificó (pedido explícito de
-  la tarea, no solo manejo de error 400) se usa `GET /ratings/service/:serviceRequestId` (ya
-  existe) para chequear antes de mostrar el botón.
+  `RatingsService`, sin el bug de pagos. **Corrección tras leer el código real** (la primera
+  hipótesis, basada en el nombre del campo, era incorrecta): pese a que
+  `CreateRatingRequestDTO`/`CreateProfessionalToClientRatingRequestDTO` y el endpoint
+  `GET /ratings/service/:serviceRequestId` nombran el campo/parámetro `serviceRequestId`,
+  `ratings.service.ts#resolveServiceId` SIEMPRE lo resuelve vía `findServiceByReferenceId` — es
+  decir, en los tres casos el valor esperado es el `referenceId` (UUID) del propio `Service`, NO
+  el de un `ServiceRequest` (propuesta). No hace falta resolver ninguna propuesta `ACCEPTED`: se
+  manda `service.id` directamente (ya disponible en `serviceDetailProvider`). Queda documentado
+  como una inconsistencia de nombres real pero inofensiva del backend (mismo dato, nombre
+  confuso) — no se corrigió ahí porque renombrar el campo del body sería un cambio de contrato
+  público sin beneficio funcional, dado que esta fase recién empieza a consumirlo. Para ocultar
+  "calificar" si ya se calificó (pedido explícito de la tarea, no solo manejo de error 400) se usa
+  `GET /ratings/service/:id` (mandando el `service.id`) para chequear antes de mostrar el botón.
+- **`Service.client`** (mobile) — se agregó al modelo, mapeado desde la clave JSON `users` de
+  `ServiceDetailResponseDTO` (así, en singular pese al nombre plural — otro detalle de naming real
+  del backend, documentado en el propio modelo). Necesario para que el profesional pueda calificar
+  al cliente (`CreateProfessionalToClientRatingRequestDTO.clientId`).
 - **Gestión de métodos de pago sin integración real de tokenización**: no hay SDK de proveedor de
   pagos en esta fase — el formulario captura `type`/`provider`/`name`/`details` (campos de texto
   simples, ej. últimos 4 dígitos ingresados a mano) y los manda tal cual a `POST /payments/methods`

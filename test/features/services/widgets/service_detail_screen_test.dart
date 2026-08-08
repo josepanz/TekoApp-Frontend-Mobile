@@ -228,4 +228,169 @@ void main() {
       ).called(1);
     },
   );
+
+  Map<String, dynamic> completedServiceJson() {
+    return {
+      'id': 'service-uuid-1',
+      'userId': 1,
+      'professionalId': 2,
+      'categoryId': 3,
+      'serviceTypeId': 4,
+      'title': 'Reparación de cañería',
+      'description': 'Se necesita reparar una cañería rota',
+      'status': 'COMPLETED',
+      'latitude': -25.2,
+      'longitude': -57.5,
+      'address': 'Av. España 1234',
+      'isUrgent': false,
+      'createdAt': '2026-08-08T10:00:00.000Z',
+      'professional': {
+        'id': 2,
+        'referenceId': 'prof-uuid-1',
+        'user': {'firstName': 'Ana', 'lastName': 'Pérez'},
+      },
+    };
+  }
+
+  testWidgets(
+    'ofrece calificar al profesional cuando el servicio está completado y no se calificó antes',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: completedServiceJson(),
+        ),
+      );
+      when(
+        () => dio.get<List<dynamic>>('/ratings/service/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(
+            path: '/ratings/service/service-uuid-1',
+          ),
+          data: [],
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Calificar profesional'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'oculta el botón de calificar si ya existe una calificación cliente→profesional',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: completedServiceJson(),
+        ),
+      );
+      when(
+        () => dio.get<List<dynamic>>('/ratings/service/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(
+            path: '/ratings/service/service-uuid-1',
+          ),
+          data: [
+            {
+              'id': 'rating-uuid-1',
+              'userId': 1,
+              'professionalId': 2,
+              'type': 'CLIENT_TO_PROFESSIONAL',
+              'rating': 5,
+              'review': null,
+              'isAnonymous': false,
+              'isActive': true,
+              'createdAt': '2026-08-08T10:00:00.000Z',
+            },
+          ],
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Calificar profesional'), findsNothing);
+    },
+  );
+
+  testWidgets('envía la calificación del profesional al confirmar el diálogo', (
+    tester,
+  ) async {
+    // Arrange
+    when(
+      () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+        data: completedServiceJson(),
+      ),
+    );
+    when(
+      () => dio.get<List<dynamic>>('/ratings/service/service-uuid-1'),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(
+          path: '/ratings/service/service-uuid-1',
+        ),
+        data: [],
+      ),
+    );
+    when(
+      () => dio.post<Map<String, dynamic>>(
+        '/ratings',
+        data: any(named: 'data'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/ratings'),
+        data: {
+          'id': 'rating-uuid-1',
+          'userId': 1,
+          'professionalId': 2,
+          'type': 'CLIENT_TO_PROFESSIONAL',
+          'rating': 5,
+          'review': null,
+          'isAnonymous': false,
+          'isActive': true,
+          'createdAt': '2026-08-08T10:00:00.000Z',
+        },
+      ),
+    );
+
+    // Act
+    await _pumpScreen(tester, dio);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calificar profesional'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rate_star_5')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rate_dialog_submit_button')));
+    await tester.pumpAndSettle();
+
+    // Assert
+    final sentData = verify(
+      () => dio.post<Map<String, dynamic>>(
+        '/ratings',
+        data: captureAny(named: 'data'),
+      ),
+    ).captured.single as Map<String, dynamic>;
+    expect(sentData['professionalId'], 'prof-uuid-1');
+    expect(sentData['rating'], 5.0);
+    expect(find.text('Calificación enviada'), findsOneWidget);
+  });
 }
