@@ -82,5 +82,13 @@
   "availableServicesProposeButton": "Propose myself",
   "availableServicesProposeSuccess": "You proposed yourself for this service",
   "availableServicesProposeConflict": "This service already changed — refresh the screen",
-  "availableServicesProposeError": "Could not send your proposal — try again"
+  "availableServicesProposeError": "Could not send your proposal — try again",
+  "serviceRequestsTitle": "Proposals",
+  "serviceRequestsError": "Could not load the proposals",
+  "serviceRequestsEmpty": "You haven't received any proposals yet",
+  "serviceRequestProfessionalLabel": "Professional #{id}",
+  "serviceRequestProposedPrice": "Proposed price: Gs. {price}",
+  "serviceRequestAccept": "Accept",
+  "serviceRequestAcceptConflict": "This changed — refresh the screen",
+  "serviceRequestAcceptError": "Could not accept the proposal — try again"
 }
