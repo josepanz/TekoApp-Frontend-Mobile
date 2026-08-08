@@ -7,6 +7,8 @@ import 'core/auth/session_state.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
+import 'features/payments/widgets/add_payment_method_screen.dart';
+import 'features/payments/widgets/payment_methods_screen.dart';
 import 'features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'features/professional_profile/widgets/professional_home_screen.dart';
 import 'features/professional_profile/widgets/professional_onboarding_screen.dart';
@@ -28,6 +30,8 @@ const _protectedPaths = {
   '/profesional',
   '/profesional/onboarding',
   '/profesional/mis-servicios',
+  '/pagos/metodos',
+  '/pagos/metodos/nuevo',
 };
 
 /// Rutas de modo profesional que requieren un perfil profesional YA activo — `/profesional/
@@ -114,6 +118,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profesional/mis-servicios',
         builder: (context, state) => const ProfessionalServicesScreen(),
+      ),
+      GoRoute(
+        path: '/pagos/metodos',
+        builder: (context, state) => const PaymentMethodsScreen(),
+      ),
+      GoRoute(
+        path: '/pagos/metodos/nuevo',
+        builder: (context, state) => const AddPaymentMethodScreen(),
       ),
     ],
   );

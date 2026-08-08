@@ -55,6 +55,13 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             TekoButton(
+              key: const Key('home_payment_methods_button'),
+              label: l10n.paymentMethodsTitle,
+              variant: TekoButtonVariant.outline,
+              onPressed: () => context.push('/pagos/metodos'),
+            ),
+            const SizedBox(height: 12),
+            TekoButton(
               key: const Key('home_professional_mode_button'),
               label: l10n.professionalHomeTitle,
               variant: TekoButtonVariant.ghost,
