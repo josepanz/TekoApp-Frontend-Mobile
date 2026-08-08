@@ -182,6 +182,24 @@
   "paymentHistoryTitle": "Mis pagos",
   "paymentHistoryEmpty": "Todavía no tenés pagos",
   "paymentHistoryError": "No se pudieron cargar tus pagos — intentá de nuevo",
+  "payServiceTitle": "Pagar servicio",
+  "payServicePromoCodeLabel": "Código de promoción (opcional)",
+  "payServiceValidatePromoButton": "Validar",
+  "payServiceDiscountApplied": "Descuento: Gs. {amount}",
+  "@payServiceDiscountApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "payServiceMethodLabel": "Método de pago",
+  "payServiceMethodRequired": "Elegí un método de pago",
+  "payServiceNoMethodsMessage": "No tenés métodos de pago guardados",
+  "payServiceAddMethodLink": "Agregar un método de pago",
+  "payServiceConfirmButton": "Confirmar pago",
+  "payServiceError": "No se pudo procesar el pago — intentá de nuevo",
+  "payServiceButton": "Pagar",
   "paymentDetailTitle": "Detalle del pago",
   "paymentDetailError": "No se pudo cargar el pago — intentá de nuevo",
   "paymentStatusPending": "Pendiente",

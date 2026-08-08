@@ -8,6 +8,7 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
 import 'features/payments/widgets/add_payment_method_screen.dart';
+import 'features/payments/widgets/pay_service_screen.dart';
 import 'features/payments/widgets/payment_detail_screen.dart';
 import 'features/payments/widgets/payment_history_screen.dart';
 import 'features/payments/widgets/payment_methods_screen.dart';
@@ -36,6 +37,7 @@ const _protectedPaths = {
   '/pagos/metodos/nuevo',
   '/pagos/historial',
   '/pagos/historial/:id',
+  '/pagos/pagar/:serviceId',
 };
 
 /// Rutas de modo profesional que requieren un perfil profesional YA activo — `/profesional/
@@ -139,6 +141,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/pagos/historial/:id',
         builder: (context, state) =>
             PaymentDetailScreen(paymentId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/pagos/pagar/:serviceId',
+        builder: (context, state) =>
+            PayServiceScreen(serviceId: state.pathParameters['serviceId']!),
       ),
     ],
   );
