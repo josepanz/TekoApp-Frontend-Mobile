@@ -6,6 +6,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
+import '../../ratings/models/rating_failure.dart';
+import '../../ratings/models/rating_type.dart';
+import '../../ratings/providers/rate_controller_provider.dart';
+import '../../ratings/providers/service_ratings_provider.dart';
+import '../../ratings/widgets/rate_dialog.dart';
 import '../models/service.dart';
 import '../models/service_failure.dart';
 import '../models/service_request.dart';
@@ -89,6 +94,10 @@ class _ServiceDetailBody extends StatelessWidget {
               label: l10n.payServiceButton,
               onPressed: () => context.push('/pagos/pagar/${service.id}'),
             ),
+            if (service.professional != null) ...[
+              const SizedBox(height: 12),
+              _RateProfessionalButton(service: service),
+            ],
           ],
         ],
       ),
@@ -185,6 +194,64 @@ class _ServiceRequestsSection extends ConsumerWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Botón "calificar profesional" — se oculta si ya existe una calificación
+/// `CLIENT_TO_PROFESSIONAL` para este servicio (pedido explícito de la tarea, no solo manejar el
+/// 400 `ALREADY_RATED`).
+class _RateProfessionalButton extends ConsumerWidget {
+  const _RateProfessionalButton({required this.service});
+
+  final Service service;
+
+  Future<void> _rate(BuildContext context, WidgetRef ref) async {
+    final result = await showRateDialog(context);
+    if (result == null || !context.mounted) return;
+    final (stars, comment) = result;
+
+    await ref.read(rateControllerProvider.notifier).rateProfessional(
+          professionalReferenceId: service.professional!.referenceId,
+          serviceId: service.id,
+          rating: stars,
+          comment: comment,
+        );
+    if (!context.mounted) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.read(rateControllerProvider);
+    final message = switch (state.error) {
+      null => l10n.ratingSuccessMessage,
+      RatingValidationFailure(:final backendMessage) =>
+        backendMessage ?? l10n.ratingError,
+      _ => l10n.ratingError,
+    };
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final ratingsAsync = ref.watch(serviceRatingsProvider(service.id));
+    final alreadyRated = ratingsAsync.valueOrNull?.any(
+      (rating) => rating.type == RatingType.clientToProfessional,
+    );
+    if (alreadyRated != false) {
+      // Todavía cargando, error, o ya calificado — no ofrecer la acción en ninguno de esos casos
+      // (el error de red no bloquea el resto de la pantalla, solo esta acción puntual).
+      return const SizedBox.shrink();
+    }
+
+    final rateState = ref.watch(rateControllerProvider);
+    return TekoButton(
+      key: Key('rate_professional_button_${service.id}'),
+      label: l10n.rateProfessionalButton,
+      variant: TekoButtonVariant.outline,
+      loading: rateState.isLoading,
+      onPressed: rateState.isLoading ? null : () => _rate(context, ref),
     );
   }
 }
