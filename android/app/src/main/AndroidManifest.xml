@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ubicación actual para "pedir servicio" (geolocator) — solo mientras la app está en uso,
+         ver openspec/decisions.md ("Geolocalización para pedir servicio"). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="tekoapp_mobile"
         android:name="${applicationName}"

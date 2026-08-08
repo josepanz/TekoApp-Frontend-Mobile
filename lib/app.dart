@@ -8,10 +8,11 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
 import 'features/profile/widgets/profile_screen.dart';
+import 'features/services/widgets/request_service_screen.dart';
 import 'l10n/app_localizations.dart';
 
 /// Rutas que requieren sesión (ver `core/auth/session_provider.dart`).
-const _protectedPaths = {'/perfil'};
+const _protectedPaths = {'/perfil', '/solicitar'};
 
 /// Puente `sessionProvider` (Riverpod) → `Listenable` (lo que espera `GoRouter.refreshListenable`)
 /// — cuando la sesión cambia, `go_router` reevalúa `redirect` para la ruta ACTUAL sin recrear el
@@ -54,6 +55,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/perfil',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/solicitar',
+        builder: (context, state) => const RequestServiceScreen(),
       ),
     ],
   );
