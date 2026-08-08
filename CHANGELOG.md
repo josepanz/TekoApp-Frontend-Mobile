@@ -1,3 +1,9 @@
+## [1.0.0-develop.27](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.26...v1.0.0-develop.27) (2026-08-08)
+
+### Features
+
+* **ratings:** bidirectional rating on service completion ([84b0206](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/84b020698d547277c0427ae487e399e23157bb2e))
+
 ## [1.0.0-develop.26](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.25...v1.0.0-develop.26) (2026-08-08)
 
 ### Features
