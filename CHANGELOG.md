@@ -1,3 +1,9 @@
+## [1.0.0-develop.6](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.5...v1.0.0-develop.6) (2026-08-08)
+
+### Features
+
+* **auth:** pantalla de login real con los 3 estados de error ([e48dbec](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e48dbec55a5fc9f15953589fe6c4163bbe48c109))
+
 ## [1.0.0-develop.5](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.4...v1.0.0-develop.5) (2026-08-08)
 
 ### Features
