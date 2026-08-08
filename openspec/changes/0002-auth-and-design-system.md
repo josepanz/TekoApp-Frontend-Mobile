@@ -30,8 +30,11 @@ con la paleta/tipografía de marca (no con los colores default de Flutter).
 - [x] Logout: limpiar tokens, navegar a login. — `AuthRepository.clearSession()` limpia
       `accessToken` + la cookie `refreshToken`; la navegación a `/login` la dispara sola el guard
       de `go_router` (`refreshListenable` en `app.dart`, ver `openspec/decisions.md`).
-- [ ] Pantalla "Mi perfil": ver + editar nombre/apellido/teléfono + avatar (`PUT /auth/me`,
-      `POST /uploads/avatar`) — ver `project.md` sobre `avatarKey` vs `avatarUrl`.
+- [x] Pantalla "Mi perfil": ver + editar nombre/apellido/teléfono + avatar (`PUT /auth/me`,
+      `POST /uploads/avatar`) — ver `project.md` sobre `avatarKey` vs `avatarUrl`. Subida de
+      avatar valida tamaño (5MB, mismo límite que el backend) y tipo ANTES de la request. `PUT
+      /auth/me` no devuelve `phoneNumber` en su respuesta (`MeResponseDTO`) — tras guardar, se
+      refresca la sesión completa vía `GET /auth/scope` en vez de confiar en un eco optimista.
 
 ## Tareas — Sistema de diseño
 
