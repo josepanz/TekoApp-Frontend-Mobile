@@ -34,5 +34,18 @@
   "loginErrorInvalidCredentials": "Email o contraseña incorrectos",
   "loginErrorNoConnection": "Sin conexión — revisá tu internet e intentá de nuevo",
   "loginErrorServiceUnavailable": "El servicio no está disponible — intentá de nuevo en unos minutos",
-  "logout": "Cerrar sesión"
+  "logout": "Cerrar sesión",
+  "profileChangeAvatar": "Cambiar foto de perfil",
+  "profileFirstNameLabel": "Nombre",
+  "profileFirstNameRequired": "Ingresá tu nombre",
+  "profileLastNameLabel": "Apellido",
+  "profileLastNameRequired": "Ingresá tu apellido",
+  "profilePhoneLabel": "Teléfono",
+  "profileSave": "Guardar cambios",
+  "profileErrorValidation": "Revisá los datos ingresados",
+  "profileErrorServiceUnavailable": "No se pudo guardar — intentá de nuevo en unos minutos",
+  "avatarErrorTooLarge": "La imagen es muy pesada (máximo 5 MB)",
+  "avatarErrorUnsupportedType": "Formato de imagen no soportado",
+  "avatarErrorUpload": "No se pudo subir la imagen — intentá de nuevo",
+  "profileServiceUnavailable": "No pudimos cargar tu perfil — revisá tu conexión e intentá de nuevo"
 }
