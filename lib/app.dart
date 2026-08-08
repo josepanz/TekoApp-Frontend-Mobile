@@ -7,6 +7,9 @@ import 'core/auth/session_state.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
+import 'features/professional_profile/providers/my_professional_profile_provider.dart';
+import 'features/professional_profile/widgets/professional_home_screen.dart';
+import 'features/professional_profile/widgets/professional_onboarding_screen.dart';
 import 'features/profile/widgets/profile_screen.dart';
 import 'features/services/widgets/my_services_screen.dart';
 import 'features/services/widgets/request_service_screen.dart';
@@ -21,7 +24,14 @@ const _protectedPaths = {
   '/solicitar',
   '/mis-servicios',
   '/mis-servicios/:id',
+  '/profesional',
+  '/profesional/onboarding',
 };
+
+/// Rutas de modo profesional que requieren un perfil profesional YA activo — `/profesional/
+/// onboarding` queda afuera a propósito (es el destino del redirect cuando no hay perfil, incluir
+/// esta ruta acá causaría un loop).
+const _professionalGatedPaths = {'/profesional'};
 
 /// Puente `sessionProvider` (Riverpod) → `Listenable` (lo que espera `GoRouter.refreshListenable`)
 /// — cuando la sesión cambia, `go_router` reevalúa `redirect` para la ruta ACTUAL sin recrear el
@@ -45,20 +55,31 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     refreshListenable: refreshListenable,
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final session = ref.read(sessionProvider);
-      final isProtected = _protectedPaths.contains(
-        state.fullPath ?? state.matchedLocation,
-      );
+      final path = state.fullPath ?? state.matchedLocation;
+      final isProtected = _protectedPaths.contains(path);
       if (!isProtected) return null;
-      if (session is SessionAuthenticated) return null;
-      // 5xx/sin conexión NUNCA implica "no hay sesión" (ver specs/auth-and-session.md) — la
-      // propia pantalla muestra el estado de error, no se redirige a login.
-      if (session is SessionServiceUnavailable) return null;
-      // SessionUnknown (todavía resolviendo GET /auth/scope al abrir la app) se trata igual que
-      // sin sesión — solo importa si el usuario aterriza directo en una ruta protegida antes de
-      // que la sesión inicial resuelva (deep linking, fuera de alcance hoy).
-      return '/login';
+      if (session is! SessionAuthenticated) {
+        // 5xx/sin conexión NUNCA implica "no hay sesión" (ver specs/auth-and-session.md) — la
+        // propia pantalla muestra el estado de error, no se redirige a login.
+        if (session is SessionServiceUnavailable) return null;
+        // SessionUnknown (todavía resolviendo GET /auth/scope al abrir la app) se trata igual
+        // que sin sesión — solo importa si el usuario aterriza directo en una ruta protegida
+        // antes de que la sesión inicial resuelva (deep linking, fuera de alcance hoy).
+        return '/login';
+      }
+
+      if (_professionalGatedPaths.contains(path)) {
+        try {
+          final profile = await ref.read(myProfessionalProfileProvider.future);
+          if (profile == null) return '/profesional/onboarding';
+        } catch (_) {
+          // Servicio de perfiles no disponible — dejar pasar, `ProfessionalHomeScreen` muestra
+          // su propio estado de error (mismo criterio que `SessionServiceUnavailable`).
+        }
+      }
+      return null;
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
@@ -79,6 +100,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/mis-servicios/:id',
         builder: (context, state) =>
             ServiceDetailScreen(serviceId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/profesional',
+        builder: (context, state) => const ProfessionalHomeScreen(),
+      ),
+      GoRoute(
+        path: '/profesional/onboarding',
+        builder: (context, state) => const ProfessionalOnboardingScreen(),
       ),
     ],
   );
