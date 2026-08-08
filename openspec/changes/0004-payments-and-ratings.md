@@ -10,19 +10,19 @@ Cerrar el ciclo económico del servicio: pagar un servicio completado y califica
 
 ## Tareas
 
-- [ ] Gestión de métodos de pago propios (agregar/eliminar/marcar default) — respetar la regla de
+- [x] Gestión de métodos de pago propios (agregar/eliminar/marcar default) — respetar la regla de
       "no se puede eliminar el único método activo".
-- [ ] Pantalla de pago de un servicio completado: elegir método, confirmar monto (calculado
+- [x] Pantalla de pago de un servicio completado: elegir método, confirmar monto (calculado
       server-side), procesar.
-- [ ] Aplicar código de promoción antes de pagar (validación server-side, nunca calcular el
+- [x] Aplicar código de promoción antes de pagar (validación server-side, nunca calcular el
       descuento final client-side).
-- [ ] Historial de pagos propios (como cliente y como profesional) con detalle de transacciones.
-- [ ] Flujo de reembolso (solo sobre pagos COMPLETED, mostrando el monto disponible real para
+- [x] Historial de pagos propios (como cliente y como profesional) con detalle de transacciones.
+- [x] Flujo de reembolso (solo sobre pagos COMPLETED, mostrando el monto disponible real para
       reembolsar, no asumiendo que siempre es el total).
-- [ ] Calificación bidireccional al completar un servicio: cliente califica profesional y
+- [x] Calificación bidireccional al completar un servicio: cliente califica profesional y
       viceversa — ocultar la opción si ya se calificó (el backend rechaza el duplicado, pero la UI
       no debería ni ofrecerlo).
-- [ ] Traducir a es/en todo texto nuevo de esta fase.
+- [x] Traducir a es/en todo texto nuevo de esta fase.
 
 ## Checkpoint de salida
 
