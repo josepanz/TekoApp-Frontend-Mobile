@@ -42,18 +42,46 @@ documentos), y es el cliente HTTP de facto en el ecosistema Flutter para necesid
 
 **Estado**: decidido en esta sesión, no implementado.
 
-## Almacenamiento seguro de tokens: pendiente de confirmar
+## Almacenamiento seguro de tokens: decidido (verificado contra el backend real, 2026-08-07)
 
-**Candidato**: `flutter_secure_storage` (usa Keychain en iOS, EncryptedSharedPreferences/Keystore
-en Android).
+**`accessToken`**: `flutter_secure_storage` (usa Keychain en iOS, EncryptedSharedPreferences/
+Keystore en Android). Viaja en el body JSON de `POST /auth/login`
+(`AuthApiController.login` lo devuelve explícito) y se adjunta manualmente como
+`Authorization: Bearer <token>` — confirmado en `JwtStrategy` (backend) que acepta
+`ExtractJwt.fromAuthHeaderAsBearerToken()`, funciona igual sin servidor intermedio.
 
-**Motivo del candidato**: es el estándar para guardar tokens de auth en Flutter sin depender de
-`shared_preferences` plano (que no está cifrado).
+**`refreshToken`: NUNCA viaja en el body JSON — descubrimiento real, no un candidato a evaluar.**
+Leyendo `AuthApiController`/`AuthCookieService` del backend: el login lo setea **solo** como cookie
+`httpOnly`+`sameSite=strict` (`res.cookie('refreshToken', ...)`), y `POST /auth/refresh-token` lo
+lee de `req.cookies?.refreshToken`, nunca de un header ni de un campo del body. `sameSite=strict`
+es una restricción de navegador — no afecta a un cliente HTTP nativo como `dio`, que sí puede
+mandar y recibir cookies con un cookie jar propio.
 
-**Estado**: **NO decidido todavía** — confirmar explícitamente en la Fase 2 (`changes/0002-...`)
-antes de implementar el flujo de login, no asumir este paquete sin evaluarlo primero contra
-alternativas activas en ese momento (el ecosistema Flutter cambia rápido; verificar que el paquete
-siga mantenido cuando se llegue a esa fase).
+**Decisión**: `cookie_jar` (`PersistCookieJar`) + `dio_cookie_manager` como interceptor de `dio`
+para capturar el `Set-Cookie` del login y reenviarlo en el refresh — no hay forma de evitarlo dado
+el contrato real. Para que la persistencia entre reinicios de la app sea "almacenamiento seguro" de
+verdad (`PersistCookieJar` con su `Storage` default escribe JSON plano en disco), envolver con un
+adapter de la interfaz `Storage` de `cookie_jar` que lea/escriba a través de
+`flutter_secure_storage` en vez de archivo plano.
+
+**Estado**: decidido, pendiente de implementar en la Fase 0002 (`core/auth/cookie_jar_provider.dart`).
+
+## Cifrado RSA del login: `pointycastle`, padding OAEP-SHA256 (verificado contra el backend real, 2026-08-07)
+
+**Motivo del candidato**: no hay equivalente directo en Dart del helper Node de `TekoApp-Web`;
+`pointycastle` es la librería RSA activa y mantenida del ecosistema Flutter.
+
+**Padding exacto — no es un detalle a "verificar más adelante", ya está confirmado leyendo
+`CryptoHelper.decrypt`/`AuthPasswordService` del backend**: `RSA_PKCS1_OAEP_PADDING` con
+`oaepHash: 'sha256'` — en `pointycastle` esto es `OAEPEncoding(RSAEngine())` con digest SHA-256
+tanto para el hash principal como para MGF1 (Node usa el mismo hash para ambos cuando se pasa un
+solo `oaepHash`). El payload cifrado es el JSON completo `{"password":"...","nonce":"..."}`
+(`AuthPasswordService.decryptLoginPayload`), no solo el password.
+
+**Estado**: decidido. Pendiente: validar en código (Fase 0002, `core/auth/rsa_encryptor.dart`) que
+un round-trip cifrado con la clave pública de prueba / descifrado con la privada de prueba
+reproduce el JSON original — la validación final real (contra la clave pública real del backend)
+la hace José corriendo la app contra el backend local.
 
 ## Notificaciones push: Firebase Cloud Messaging
 
@@ -146,8 +174,9 @@ cargar las credenciales de los puntos 1-3 arriba (sin trabajo de código adicion
 
 ## Qué NO se decidió todavía (pendiente explícito, no un olvido)
 
-- Almacenamiento seguro de tokens y el flujo de login real (nonce + RSA-OAEP) — ver la sección
-  específica más arriba, sigue pendiente para la Fase 0002.
+- Implementación del flujo de login real (nonce + RSA-OAEP + almacenamiento de tokens) — el
+  mecanismo ya está decidido y verificado contra el backend real (ver las secciones específicas
+  más arriba), el código en sí es tarea de la Fase 0002.
 - Offline-first vs. online-only: no se decidió si la app necesita funcionar sin conexión (ej. ver
   servicios ya cargados) — el dominio (servicios en tiempo real, ubicación en vivo) sugiere que
   online-only es razonable para el MVP, pero es una decisión de producto, no técnica, que falta
