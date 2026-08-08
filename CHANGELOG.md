@@ -1,3 +1,9 @@
+## [1.0.0-develop.21](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.20...v1.0.0-develop.21) (2026-08-08)
+
+### Documentation
+
+* Fase 0004 decisions + build knowledge graph for the repo ([9abc0d7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/9abc0d7d892a13516c928f5b1ddbdc5f3508640d))
+
 ## [1.0.0-develop.20](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.19...v1.0.0-develop.20) (2026-08-08)
 
 ### Documentation
