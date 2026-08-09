@@ -1,3 +1,9 @@
+## [1.0.0-develop.29](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.28...v1.0.0-develop.29) (2026-08-09)
+
+### Documentation
+
+* document backlog of 5 requested features + dev-demo guide pointer ([fc21075](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/fc21075267cf9141175a6f0a13ecb9c449d8a8dd))
+
 ## [1.0.0-develop.28](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.27...v1.0.0-develop.28) (2026-08-08)
 
 ### Documentation

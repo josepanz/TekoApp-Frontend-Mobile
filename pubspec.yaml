@@ -3,7 +3,7 @@ description: >-
   TekoApp — marketplace de servicios profesionales. App Flutter (iOS + Android) para clientes y
   profesionales, mismo backend que TekoApp-Web.
 publish_to: "none"
-version: 1.0.0-develop.28+42
+version: 1.0.0-develop.29+43
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
