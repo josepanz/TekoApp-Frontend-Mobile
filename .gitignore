@@ -129,3 +129,7 @@ lib/l10n/app_localizations*.dart
 !/dev/ci/**/Gemfile.lock
 # Node (solo para semantic-release, ver package.json)
 node_modules/
+
+# Valores locales para `flutter run --dart-define-from-file=` (secret de Basic Auth incluido,
+# nunca committear) — ver .claude/documentation/entorno-dev-demo.md
+dart_defines.local.json
