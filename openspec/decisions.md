@@ -333,3 +333,88 @@ Mobile.
   todavía, no por falta de decisión técnica (ver "CI/CD" arriba).
 - Selector de pin en mapa para ubicación (ver "Geolocalización" arriba) — paquete de mapas sin
   decidir, pendiente de `specs/realtime-location.md`.
+
+## Backlog — features grandes pedidas 2026-08-08, pendientes de spec dedicada (NO implementadas)
+
+José pidió estas 5 ampliaciones en la misma sesión en la que se cerró la Fase 0004. Ninguna se
+implementa todavía — cada una necesita su propio `openspec/changes/000N-*.md` (0006 en adelante —
+Fase 0005 ya está reservada para realtime/push) antes de escribir código, porque tocan los 3 repos
+a la vez y 2 de ellas (propinas, marco legal/tributario) tienen implicancias financieras/legales
+que no se deciden por default.
+
+### 1. `id`/`referenceId` — estandarizar exposición en TODOS los dominios (decisión final)
+
+El contrato estándar para TODA entidad de negocio (los 6 dominios que hoy solo exponen el UUID
+bajo `id`, y también los que ya separan ambos como `Category`/`Professionals`) es exponer
+**ambos** campos, siempre, en detalle Y en listado:
+- `id` (Int secuencial): solo para ordenamiento — **nunca** se usa como clave de consulta/lookup.
+- `referenceId` (UUID): la única clave válida para consultar, rutear o hacer deep-link — como ya
+  documenta `flutter-architecture.md` en este repo.
+
+**Ejecutar ahora, en dev, no después de publicar** — el mismo cambio de contrato es barato hoy (sin
+usuarios reales, sin apps ya instaladas desde una tienda) y caro después (forzaría versionar la
+API y actualizar clientes instalados). Alcance: backend agrega `id` a las respuestas de los 6
+dominios que hoy solo devuelven `referenceId` bajo la clave `id`; Mobile/Web se actualizan en el
+mismo ciclo de release para usar `id` únicamente en columnas de orden/sort de listados, nunca para
+navegar o pedir detalle. Ver `TekoApp-Backend/.claude/rules/database-conventions.md` para el
+estado de schema (ya migrado, solo falta el contrato de respuesta).
+
+### 2. Propinas (tips) al pagar un servicio
+
+- Entidad separada (tabla propia, FK a `Payment`) — nunca fusionada al monto del pago.
+- Visible en el detalle Y en el listado de pagos con un ícono/tooltip que indique "incluye
+  propina" (no un monto mezclado que haya que inferir).
+- **No entra en el cálculo de comisión de la plataforma** — la comisión se calcula solo sobre el
+  monto del `Payment` (servicio); la propina es 100% del profesional.
+- 3 modos de cálculo: porcentaje configurable, monto fijo, o monto libre decidido por el cliente
+  sin restricción de porcentaje. Opcional u obligatoria según parámetro configurable/legislación
+  del país (ver ítem 4 — algunas jurisdicciones regulan si una propina puede ser obligatoria).
+
+### 3. Calificaciones — anonimato entre usuarios, transparencia total para admins, KPIs para todos
+
+- El anonimato es **entre cliente y profesional únicamente** — ninguno de los dos puede ver ni
+  matchear/correlacionar quién lo calificó cruzando contra sus pedidos/servicios recientes.
+- **Los administradores de TekoApp en la web ven todo sin restricción** si lo desean: identidad,
+  orden, filtros, quién dijo qué — explícitamente para prevenir/responder actos legales y mejorar
+  el rastreo de casos (disputas, moderación, abuso). Sus KPIs (por servicio, mes, día, etc.)
+  también quedan completamente atribuibles internamente.
+- **Clientes y profesionales también ven sus propios KPIs/dashboard** (servicios y calificaciones
+  por día, semana, mes, etc.) — pensado como enganche visual, no solo para admins — pero sin
+  quién/cuándo se dijo cada comentario puntual. El listado detallado de sus propias calificaciones
+  (con comentarios) no necesita ser una pantalla prominente — puede vivir en un lugar secundario
+  de la navegación, no en el home ni destacado.
+
+### 4. Marco legal + tributario multi-país (Paraguay, Mercosur, EE.UU., internacional) — todo parametrizable
+
+Alcance inicial: Paraguay, todos los países del Mercosur, Estados Unidos, e internacional (base
+tipo GDPR como paraguas), extensible a medida que el proyecto entre a nuevos países. Objetivo:
+blindar legalmente la recolección de datos — documentar, por cada dato recabado (incluyendo
+fotos), **qué es, por qué se guarda y con qué objetivo** (principio de minimización/limitación de
+propósito); y una cláusula de deslinde de responsabilidad explícita sobre contenido generado por
+el usuario (lo que el usuario diga, suba o publique, incluyendo fotos). Incluye el **protocolo de
+IVA/impuestos** según la legislación de cada país mencionado (tasas, aplicabilidad, requisitos de
+facturación) y contrato cliente↔profesional con firma digital al aceptar un servicio.
+
+**Todo debe ser parametrizable** — no hardcodear tasas de IVA, textos legales por país, ni reglas
+de propina por jurisdicción: tabla de configuración por país/región, editable sin deploy de
+código. Este principio de "parametrizable por defecto" aplica en general a toda esta ampliación,
+no solo a impuestos.
+
+**Límite explícito de esta sesión**: no soy asesor legal ni impositivo. Puedo modelar el flujo
+técnico (captura de consentimiento, versionado de ToS/política de privacidad con auditoría de
+aceptación por timestamp+hash, flujo de firma digital, tabla de configuración de tasas de IVA por
+país/región), pero el **contenido legal y las tasas impositivas reales deben venir de asesoría
+legal/impositiva real por país, no redactarse por inferencia de un LLM** — marcar esto como
+prerrequisito antes de que esta feature sea usable en producción, no como un detalle a completar
+después.
+
+### 5. Branding centralizado y versionado (Web + Mobile)
+
+Logo, banner, tipografía, colorimetría y **hasta el nombre de la app** deben poder cambiarse desde
+un punto centralizado — vía parámetro/valor/variable, sin tocar código disperso — para poder
+rebrandear fácilmente (ya existe `tokens.json` en `TekoApp-Web/src/design-system/tokens/` como
+fuente de verdad de marca consumida por ambos fronts, ver `design-system.md` de este repo; esta
+ampliación es formalizar/completar ese mecanismo para que cubra también logo/banner/nombre de app,
+no solo color/tipografía). Requiere un `.md` versionado documentando cómo cambiar cada valor y el
+historial de versiones de marca — vive junto al `tokens.json` o en `openspec/specs/` según
+corresponda cuando se escriba la spec dedicada.
