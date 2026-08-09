@@ -1,5 +1,10 @@
 # Contexto actual — TekoApp-Frontend-Mobile
 
+> Para correr esta app en un Android físico por USB (sin Android Studio) contra el backend local,
+> ver `TekoApp-Backend/.claude/documentation/entorno-dev-demo.md` — incluye el
+> `dart_defines.local.json` de este repo y el `MOBILE_CLIENT_SECRET` que debe coincidir con el
+> `.env` del backend.
+
 > Leer esto + la última sesión de `.claude/memory/sessions/` al empezar cualquier sesión nueva
 > (ver `.claude/memory/memory.md`). Este archivo es un snapshot de alto nivel — el detalle vivo
 > vive en `openspec/` (que SÍ hay que mantener actualizado a medida que se avanza, este archivo
