@@ -6,15 +6,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
+import 'package:tekoapp_mobile/core/auth/access_token_reader_provider.dart';
 import 'package:tekoapp_mobile/features/services/widgets/service_detail_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 class _MockDio extends Mock implements Dio {}
 
+/// Sin token: el tracking en vivo del profesional asignado (`assignedProfessionalLocationProvider`)
+/// corta antes de tocar el socket real — evita que estos tests toquen el `MethodChannel` real de
+/// `flutter_secure_storage`.
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) {
   return tester.pumpWidget(
     ProviderScope(
-      overrides: [apiClientProvider.overrideWithValue(ApiClient(dio: dio))],
+      overrides: [
+        apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
+        accessTokenReaderProvider.overrideWithValue(() async => null),
+      ],
       child: const MaterialApp(
         locale: Locale('es'),
         localizationsDelegates: [
@@ -69,6 +76,17 @@ void main() {
         },
       ),
     );
+    when(
+      () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+    ).thenThrow(
+      DioException(
+        requestOptions: RequestOptions(path: '/locations/professional/2'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/locations/professional/2'),
+          statusCode: 404,
+        ),
+      ),
+    );
 
     // Act
     await _pumpScreen(tester, dio);
@@ -77,7 +95,63 @@ void main() {
     // Assert
     expect(find.text('Aceptado'), findsOneWidget);
     expect(find.text('Profesional asignado: Ana Pérez'), findsOneWidget);
+    expect(
+      find.byKey(const Key('assigned_professional_tracking_map')),
+      findsNothing,
+    );
   });
+
+  testWidgets(
+    'muestra el mapa en vivo del profesional asignado cuando ya compartió ubicación',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: {
+            'id': 'service-uuid-1',
+            'userId': 1,
+            'professionalId': 2,
+            'categoryId': 3,
+            'serviceTypeId': 4,
+            'title': 'Reparación de cañería',
+            'description': 'Se necesita reparar una cañería rota',
+            'status': 'IN_PROGRESS',
+            'latitude': -25.2,
+            'longitude': -57.5,
+            'address': 'Av. España 1234',
+            'isUrgent': false,
+            'createdAt': '2026-08-08T10:00:00.000Z',
+            'professional': {
+              'id': 2,
+              'referenceId': 'prof-uuid-1',
+              'user': {'firstName': 'Ana', 'lastName': 'Pérez'},
+            },
+          },
+        ),
+      );
+      when(
+        () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/locations/professional/2'),
+          data: {'latitude': -25.29, 'longitude': -57.62},
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(
+        find.byKey(const Key('assigned_professional_tracking_map')),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('muestra un error cuando falla la carga', (tester) async {
     // Arrange
