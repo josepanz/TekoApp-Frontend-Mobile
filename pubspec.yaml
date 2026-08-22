@@ -56,6 +56,14 @@ dependencies:
   # openspec/decisions.md ("Geolocalización para pedir servicio"). Sin selector de mapa todavía.
   geolocator: ^13.0.1
 
+  # Socket del backend (/locations, ver LocationsGateway) — Fase 0005.
+  socket_io_client: ^2.0.3+1
+
+  # Mapa — flutter_map + OpenStreetMap (ver openspec/decisions.md, "SDK de mapas"): open-source,
+  # sin API key ni cuenta, a diferencia de google_maps_flutter (exige tarjeta cargada). Fase 0005.
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
