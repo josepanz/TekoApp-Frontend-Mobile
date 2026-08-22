@@ -35,7 +35,10 @@ final currentPositionFetcherProvider = Provider<CurrentPositionFetcher>((ref) {
   return _fetchCurrentPosition;
 });
 
-Future<DeviceLatLng> _fetchCurrentPosition() async {
+/// Compartido con `features/locations` (emisión de ubicación en vivo del profesional) — un solo
+/// lugar que pide el permiso de ubicación en foreground, ver `.claude/rules/flutter-architecture.md`
+/// (DRY).
+Future<void> ensureLocationPermission() async {
   if (!await Geolocator.isLocationServiceEnabled()) {
     throw const LocationServiceDisabledFailure();
   }
@@ -48,6 +51,38 @@ Future<DeviceLatLng> _fetchCurrentPosition() async {
       permission == LocationPermission.deniedForever) {
     throw const LocationPermissionDeniedFailure();
   }
+}
+
+/// Mismo motivo que `currentPositionFetcherProvider`: exponer el chequeo de permiso detrás de un
+/// provider de función para que los tests lo overrideen en vez de tocar el `MethodChannel` real de
+/// `geolocator`.
+final ensureLocationPermissionProvider = Provider<Future<void> Function()>((
+  ref,
+) {
+  return ensureLocationPermission;
+});
+
+typedef PositionStreamOpener = Stream<DeviceLatLng> Function();
+
+/// Stream continuo (no una sola lectura) para emisión de ubicación en vivo — ver
+/// `features/locations`. `distanceFilter` evita emitir en cada frame de GPS (ver
+/// `openspec/specs/realtime-location.md`).
+final devicePositionStreamProvider = Provider<PositionStreamOpener>((ref) {
+  return () => Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 25,
+        ),
+      ).map(
+        (position) => DeviceLatLng(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        ),
+      );
+});
+
+Future<DeviceLatLng> _fetchCurrentPosition() async {
+  await ensureLocationPermission();
 
   final position = await Geolocator.getCurrentPosition();
   return DeviceLatLng(
