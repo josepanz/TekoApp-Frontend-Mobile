@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart' as ll;
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
+import '../../locations/providers/assigned_professional_location_provider.dart';
 import '../../ratings/models/rating_failure.dart';
 import '../../ratings/models/rating_type.dart';
 import '../../ratings/providers/rate_controller_provider.dart';
@@ -81,6 +84,14 @@ class _ServiceDetailBody extends StatelessWidget {
               ),
             ),
           ],
+          if ((service.status == ServiceStatus.accepted ||
+                  service.status == ServiceStatus.inProgress) &&
+              service.professional != null) ...[
+            const SizedBox(height: 24),
+            _AssignedProfessionalTrackingSection(
+              professionalId: service.professional!.id,
+            ),
+          ],
           if (service.status == ServiceStatus.pending) ...[
             const SizedBox(height: 24),
             Text(l10n.serviceRequestsTitle, style: textTheme.titleMedium),
@@ -101,6 +112,70 @@ class _ServiceDetailBody extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Mapa en vivo del profesional asignado — visible mientras el servicio está ACCEPTED/IN_PROGRESS
+/// (ver `assignedProfessionalLocationProvider`). Sin ubicación registrada todavía (404 esperado)
+/// o mientras carga, no se muestra nada — no es un dato crítico del detalle del servicio.
+class _AssignedProfessionalTrackingSection extends ConsumerWidget {
+  const _AssignedProfessionalTrackingSection({required this.professionalId});
+
+  final int professionalId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final location = ref.watch(
+      assignedProfessionalLocationProvider(professionalId),
+    );
+    final position = location.valueOrNull;
+    if (position == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.serviceDetailTrackingTitle,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 220,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: FlutterMap(
+              key: const Key('assigned_professional_tracking_map'),
+              options: MapOptions(
+                initialCenter: ll.LatLng(
+                  position.latitude,
+                  position.longitude,
+                ),
+                initialZoom: 14,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.tekoapp.mobile',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: ll.LatLng(position.latitude, position.longitude),
+                      child: const Icon(
+                        Icons.location_pin,
+                        color: Colors.red,
+                        size: 36,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

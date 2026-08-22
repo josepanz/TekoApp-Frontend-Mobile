@@ -479,3 +479,23 @@ Pendiente explícito, no implementado en esta pasada: tracking en vivo del profe
 durante un servicio ACCEPTED/IN_PROGRESS (usa `/tracking`, un módulo Mongo aparte con otra forma de
 datos — GeoJSON, sin `referenceId` ni perfil — ver `TekoApp-Backend/src/api/tracking/`) y push
 notifications (FCM, bloqueado en un proyecto Firebase real que debe crear José).
+
+## Fase 0005 — Tracking en vivo del profesional asignado (ACCEPTED/IN_PROGRESS)
+
+Reutiliza el mismo socket de `/locations` (namespace único, ver `SocketIoLocationsSocketService`)
+en vez del módulo `/tracking` (Mongo, GeoJSON, sin `referenceId`/perfil) — más simple y consistente
+con el mapa de cercanos, sin tocar backend: `GET /locations/professional/:id` (ya existía) da la
+última posición conocida, y el mismo evento `locationUpdated` la actualiza en vivo, filtrando por
+`professionalId` en el cliente. Si el profesional nunca activó "online", no hay ubicación (404
+esperado) y la sección de tracking simplemente no se muestra — no es un error de cara al usuario.
+
+`assignedProfessionalLocationProvider` es `StreamProvider.autoDispose.family` — a diferencia de
+`OnlineStatusController`/`NearbyProfessionalsController` (viven toda la sesión), este SÍ se
+destruye al salir de la pantalla del servicio. Encontrado con tests: riverpod 2.x no tiene
+`ref.mounted` (recién en 3.x) — hubo que trackear el dispose a mano (`var disposed = false;
+ref.onDispose(() => disposed = true)`) para no leer providers de un container ya destruido si la
+pantalla se cierra mientras el fetch inicial estaba en vuelo.
+
+Con esto se completa el checklist de código de la Fase 0005 — queda pendiente solo push (FCM,
+bloqueado en que José cree un proyecto Firebase real) y el checkpoint de salida con dispositivos
+reales.

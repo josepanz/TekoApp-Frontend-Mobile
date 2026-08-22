@@ -70,6 +70,7 @@
   "nearbyProfessionalsMapTitle": "Nearby professionals",
   "nearbyProfessionalsMapError": "Couldn't load the map — check location permissions and your connection",
   "nearbyProfessionalsMapEmpty": "No professionals online nearby right now",
+  "serviceDetailTrackingTitle": "Professional's live location",
   "professionalOnboardingTitle": "Activate professional profile",
   "professionalOnboardingCategoryLabel": "Category",
   "professionalOnboardingCategoryRequired": "Choose a category",

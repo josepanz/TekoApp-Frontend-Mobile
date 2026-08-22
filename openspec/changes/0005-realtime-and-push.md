@@ -25,7 +25,7 @@ sigue vigente sin probarlo — cosas cambian entre sesiones).
 - [x] Emisión de ubicación como profesional online — alcance foreground-only (ver `decisions.md`),
       switch en `ProfessionalHomeScreen`, `distanceFilter: 25m`.
 - [x] Mapa de profesionales cercanos (modo cliente) con actualización en vivo.
-- [ ] Tracking en vivo del profesional asignado durante un servicio ACCEPTED/IN_PROGRESS.
+- [x] Tracking en vivo del profesional asignado durante un servicio ACCEPTED/IN_PROGRESS.
 - [x] Decidir en `decisions.md` qué SDK de mapas usar — `flutter_map` + OpenStreetMap (no Google
       Maps, exige tarjeta — ver `decisions.md`).
 

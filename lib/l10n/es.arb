@@ -96,6 +96,7 @@
   "nearbyProfessionalsMapTitle": "Profesionales cercanos",
   "nearbyProfessionalsMapError": "No pudimos cargar el mapa — revisá permisos de ubicación y tu conexión",
   "nearbyProfessionalsMapEmpty": "No hay profesionales conectados cerca tuyo por ahora",
+  "serviceDetailTrackingTitle": "Ubicación del profesional en vivo",
   "professionalOnboardingTitle": "Activar perfil profesional",
   "professionalOnboardingCategoryLabel": "Categoría",
   "professionalOnboardingCategoryRequired": "Elegí una categoría",

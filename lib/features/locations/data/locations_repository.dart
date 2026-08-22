@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../core/api_client/api_client.dart';
 import '../models/locations_failure.dart';
 import '../models/nearby_professional.dart';
+import '../models/professional_last_location.dart';
 
 /// `/locations` — solo la parte REST (estado online + búsqueda de cercanos). El tiempo real vive
 /// en `core/realtime/locations_socket_service.dart`.
@@ -35,6 +36,22 @@ class LocationsRepository {
           .cast<Map<String, dynamic>>()
           .map(NearbyProfessional.fromJson)
           .toList();
+    } on DioException catch (error) {
+      throw _classify(error);
+    }
+  }
+
+  /// Lanza `LocationsValidationFailure` (404) cuando el profesional todavía no tiene coordenadas
+  /// registradas — un caso esperado (recién asignado, nunca activó el modo online), no un error a
+  /// mostrarle al usuario.
+  Future<ProfessionalLastLocation> fetchProfessionalLocation(
+    int professionalId,
+  ) async {
+    try {
+      final response = await _apiClient.raw.get<Map<String, dynamic>>(
+        '/locations/professional/$professionalId',
+      );
+      return ProfessionalLastLocation.fromJson(response.data!);
     } on DioException catch (error) {
       throw _classify(error);
     }
