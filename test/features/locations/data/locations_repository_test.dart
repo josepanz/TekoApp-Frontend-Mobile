@@ -131,4 +131,51 @@ void main() {
       );
     });
   });
+
+  group('fetchProfessionalLocation', () {
+    test('parsea la última ubicación conocida del profesional', () async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/locations/professional/2'),
+          data: {'latitude': -25.29, 'longitude': -57.62},
+        ),
+      );
+
+      // Act
+      final result = await repository.fetchProfessionalLocation(2);
+
+      // Assert
+      expect(result.latitude, -25.29);
+      expect(result.longitude, -57.62);
+    });
+
+    test(
+      'traduce un 404 (sin coordenadas todavía) a LocationsValidationFailure',
+      () async {
+        // Arrange
+        when(
+          () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/locations/professional/2'),
+            response: Response(
+              requestOptions: RequestOptions(
+                path: '/locations/professional/2',
+              ),
+              statusCode: 404,
+            ),
+          ),
+        );
+
+        // Act & Assert
+        await expectLater(
+          repository.fetchProfessionalLocation(2),
+          throwsA(isA<LocationsValidationFailure>()),
+        );
+      },
+    );
+  });
 }
