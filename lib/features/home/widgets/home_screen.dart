@@ -48,6 +48,13 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             TekoButton(
+              key: const Key('home_nearby_map_button'),
+              label: l10n.nearbyProfessionalsMapTitle,
+              variant: TekoButtonVariant.outline,
+              onPressed: () => context.push('/mapa/cercanos'),
+            ),
+            const SizedBox(height: 12),
+            TekoButton(
               key: const Key('home_my_services_button'),
               label: l10n.myServicesTitle,
               variant: TekoButtonVariant.outline,
