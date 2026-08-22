@@ -1,3 +1,9 @@
+## [1.0.0-develop.31](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.30...v1.0.0-develop.31) (2026-08-22)
+
+### Features
+
+* Fase 0005 — mapa de profesionales cercanos ([#61](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/61)) ([1b970fc](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1b970fc65f68ed3a99c0d5eab1293f5d6b720a8c))
+
 ## [1.0.0-develop.30](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.29...v1.0.0-develop.30) (2026-08-22)
 
 ### Features
