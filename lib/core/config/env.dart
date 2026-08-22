@@ -27,4 +27,11 @@ class Env {
   );
 
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
+
+  /// Origen del backend sin el prefijo `/tekoapp-backend/api` — `socket_io_client` conecta contra
+  /// el namespace (`/locations`) directamente sobre el origen, no sobre la ruta REST.
+  static String get socketOrigin {
+    final uri = Uri.parse(apiBaseUrl);
+    return '${uri.scheme}://${uri.authority}';
+  }
 }

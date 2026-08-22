@@ -19,15 +19,15 @@ sigue vigente sin probarlo — cosas cambian entre sesiones).
 
 ## Tareas — Tiempo real
 
-- [ ] Investigar y resolver la hipótesis de mismatch de secreto JWT en el `LocationsGateway` (ver
-      `specs/realtime-location.md`) contra el backend real ANTES de asumir que el handshake de
-      socket va a funcionar sin fricción.
-- [ ] Emisión de ubicación como profesional online (frecuencia a definir, balance batería/
-      precisión) con el disclosure de permisos correcto en Android e iOS.
+- [x] Investigar y resolver la hipótesis de mismatch de secreto JWT en el `LocationsGateway` — era
+      un bug real y total, no un riesgo (ver `decisions.md`), corregido en `TekoApp-Backend`
+      (PRs #29/#30/#31).
+- [x] Emisión de ubicación como profesional online — alcance foreground-only (ver `decisions.md`),
+      switch en `ProfessionalHomeScreen`, `distanceFilter: 25m`.
 - [ ] Mapa de profesionales cercanos (modo cliente) con actualización en vivo.
 - [ ] Tracking en vivo del profesional asignado durante un servicio ACCEPTED/IN_PROGRESS.
-- [ ] Decidir en `decisions.md` qué SDK de mapas usar (Google Maps es el candidato dado que el
-      backend ya lo usa, confirmar antes de comprometerse).
+- [x] Decidir en `decisions.md` qué SDK de mapas usar — `flutter_map` + OpenStreetMap (no Google
+      Maps, exige tarjeta — ver `decisions.md`).
 
 ## Tareas — Push (solo si el backend ya está listo, ver bloqueo arriba)
 
