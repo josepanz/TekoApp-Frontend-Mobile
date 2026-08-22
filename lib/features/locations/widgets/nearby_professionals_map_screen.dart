@@ -35,7 +35,8 @@ class NearbyProfessionalsMapScreen extends ConsumerWidget {
         hasError: center.hasError,
         data: center.valueOrNull,
         errorMessage: l10n.nearbyProfessionalsMapError,
-        builder: (context, deviceCenter) => AsyncStateView<List<NearbyProfessional>>(
+        builder: (context, deviceCenter) =>
+            AsyncStateView<List<NearbyProfessional>>(
           isLoading: professionals.isLoading,
           hasError: professionals.hasError,
           data: professionals.valueOrNull,

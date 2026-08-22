@@ -38,8 +38,7 @@ void main() {
     test('traduce un 4xx a LocationsValidationFailure', () async {
       // Arrange
       when(
-        () =>
-            dio.patch<void>('/locations/online', data: {'isOnline': false}),
+        () => dio.patch<void>('/locations/online', data: {'isOnline': false}),
       ).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: '/locations/online'),
@@ -57,7 +56,8 @@ void main() {
       );
     });
 
-    test('traduce un error de red a LocationsServiceUnavailableFailure', () async {
+    test('traduce un error de red a LocationsServiceUnavailableFailure',
+        () async {
       // Arrange
       when(
         () => dio.patch<void>('/locations/online', data: {'isOnline': true}),
@@ -112,7 +112,8 @@ void main() {
       expect(result.single.referenceId, 'prof-ref-1');
     });
 
-    test('traduce un error de red a LocationsServiceUnavailableFailure', () async {
+    test('traduce un error de red a LocationsServiceUnavailableFailure',
+        () async {
       // Arrange
       when(
         () => dio.get<List<dynamic>>(

@@ -21,12 +21,11 @@ class NearbyProfessionalsController
   @override
   Future<List<NearbyProfessional>> build() async {
     final position = await ref.read(currentPositionFetcherProvider)();
-    final professionals = await ref
-        .read(locationsRepositoryProvider)
-        .fetchNearby(
-          latitude: position.latitude,
-          longitude: position.longitude,
-        );
+    final professionals =
+        await ref.read(locationsRepositoryProvider).fetchNearby(
+              latitude: position.latitude,
+              longitude: position.longitude,
+            );
     await _listenForLiveUpdates();
     return professionals;
   }
