@@ -7,6 +7,7 @@ import 'core/auth/session_state.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
+import 'features/locations/widgets/nearby_professionals_map_screen.dart';
 import 'features/payments/widgets/add_payment_method_screen.dart';
 import 'features/payments/widgets/pay_service_screen.dart';
 import 'features/payments/widgets/payment_detail_screen.dart';
@@ -28,6 +29,7 @@ import 'l10n/app_localizations.dart';
 const _protectedPaths = {
   '/perfil',
   '/solicitar',
+  '/mapa/cercanos',
   '/mis-servicios',
   '/mis-servicios/:id',
   '/profesional',
@@ -103,6 +105,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/solicitar',
         builder: (context, state) => const RequestServiceScreen(),
+      ),
+      GoRoute(
+        path: '/mapa/cercanos',
+        builder: (context, state) => const NearbyProfessionalsMapScreen(),
       ),
       GoRoute(
         path: '/mis-servicios',
