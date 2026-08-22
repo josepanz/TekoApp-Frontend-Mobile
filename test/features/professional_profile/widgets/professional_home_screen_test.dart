@@ -89,6 +89,20 @@ void main() {
   );
 
   testWidgets(
+    'muestra el switch de "en línea" reflejando isOnline del perfil',
+    (tester) async {
+      // Arrange & Act
+      await _pumpScreen(tester, profileState: const AsyncData(_profile));
+
+      // Assert
+      final switchWidget = tester.widget<SwitchListTile>(
+        find.byKey(const Key('professional_home_online_switch')),
+      );
+      expect(switchWidget.value, false);
+    },
+  );
+
+  testWidgets(
     'muestra un mensaje de servicio no disponible ante un error',
     (tester) async {
       // Arrange & Act

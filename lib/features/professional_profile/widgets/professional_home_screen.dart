@@ -6,17 +6,32 @@ import '../../../core/mode/app_mode.dart';
 import '../../../core/mode/app_mode_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_button.dart';
+import '../../locations/providers/online_status_controller_provider.dart';
 import '../../services/widgets/available_services_screen.dart';
 import '../providers/my_professional_profile_provider.dart';
 
-class _ProfessionalActiveBody extends StatelessWidget {
+class _ProfessionalActiveBody extends ConsumerWidget {
   const _ProfessionalActiveBody();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final onlineAsync = ref.watch(onlineStatusControllerProvider);
     return Column(
       children: [
+        SwitchListTile(
+          key: const Key('professional_home_online_switch'),
+          title: Text(l10n.professionalOnlineToggleTitle),
+          subtitle: onlineAsync.hasError
+              ? Text(l10n.professionalOnlineToggleError)
+              : Text(l10n.professionalOnlineToggleSubtitle),
+          value: onlineAsync.value ?? false,
+          onChanged: onlineAsync.isLoading
+              ? null
+              : (next) => ref
+                  .read(onlineStatusControllerProvider.notifier)
+                  .setOnline(next),
+        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: TekoButton(

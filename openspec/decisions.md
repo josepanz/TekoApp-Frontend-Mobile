@@ -334,6 +334,48 @@ Mobile.
 - Selector de pin en mapa para ubicación (ver "Geolocalización" arriba) — paquete de mapas sin
   decidir, pendiente de `specs/realtime-location.md`.
 
+## Fase 0005 — SDK de mapas: `flutter_map` + OpenStreetMap (corregido, no Google Maps)
+
+Decisión revertida explícitamente por José: no usar `google_maps_flutter` — Google exige tarjeta
+de crédito cargada para emitir cualquier API key de mapa (ver
+`TekoApp-Backend/.claude/documentation/entorno-dev-demo.md`), aunque el backend ya use Google Maps
+para geocoding server-side. Mobile usa **`flutter_map`** (paquete open-source, MIT, sin key ni
+cuenta) con tiles de **OpenStreetMap** — cero fricción para levantar el mapa en un dispositivo real
+hoy mismo. Contras aceptados: sin geocoding/autocompletado de direcciones propio (no lo necesita
+esta fase, que solo pinta pines de profesionales/ubicación en vivo, no busca direcciones), estilo
+visual más genérico que Google Maps. Revisar si en algún momento el negocio pide autocompletado de
+direcciones en mobile — ahí sí evaluar un proveedor de geocoding aparte (no necesariamente Google).
+
+## Fase 0005 — Emisión de ubicación: alcance foreground-only por ahora
+
+El profesional emite su ubicación en vivo (`Geolocator.getPositionStream`, `distanceFilter: 25m`
+para no mandar cada frame de GPS) solo mientras la app está en foreground — se corta al minimizar
+o cerrar la app (el socket se desconecta con el widget/provider, no hay `WorkManager`/background
+isolate todavía). Evita deliberadamente el disclosure de permiso de ubicación en background
+(`ACCESS_BACKGROUND_LOCATION` en Android, "Always" en iOS) — regulado por las políticas de ambas
+tiendas y no necesario para la primera versión funcional. Reabrir si el negocio pide tracking real
+con la app minimizada.
+
+Falta explícitamente: la parte "cliente" (mapa de profesionales cercanos vía `flutter_map`/
+`ProfessionalLocationUpdate` ya modelado, y tracking del profesional asignado durante un servicio
+ACCEPTED/IN_PROGRESS) — solo se construyó el lado emisor (profesional) en este paso.
+
+## Fase 0005 — hipótesis de JWT del socket de `/locations`: confirmada y corregida
+
+No era un riesgo de mismatch, era un bug real y total: `LocationsModule` registraba su propio
+`JwtModule` con `secret: process.env.JWT_SECRET` — esa env var no existe en este proyecto (el JWT
+real es RS256 vía `JWT_PUBLIC_KEY`), así que el secreto siempre era `undefined` y **todo** handshake
+del socket con un token real fallaba. Corregido en `TekoApp-Backend` (PR #29) para verificar con
+`JWT_PUBLIC_KEY`/RS256 igual que el resto de la app. También se encontró y eliminó
+`WebSocketConfig`/`WsAuthGuard` — un gateway duplicado en el mismo namespace `/locations`, mismo
+bug, nunca registrado en ningún módulo (código muerto, no afectaba runtime).
+
+**Hallazgo nuevo, no resuelto todavía**: `LocationsGateway.handleConnection` usa
+`payload.professionalId || payload.sub` para la sala `professional:${id}`, pero el access token
+real nunca lleva `professionalId` (solo `sub` = `referenceId` del User) — así que hoy la sala se
+arma con el UUID del User, no del Professional. Resolver el contrato de sala/ids al diseñar el
+emisor de ubicación de mobile (próximo paso), no asumido todavía.
+
 ## Backlog — features grandes pedidas 2026-08-08, pendientes de spec dedicada (NO implementadas)
 
 José pidió estas 5 ampliaciones en la misma sesión en la que se cerró la Fase 0004. Ninguna se
