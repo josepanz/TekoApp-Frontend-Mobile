@@ -43,6 +43,11 @@ class SocketIoLocationsSocketService implements LocationsSocketService {
 
   @override
   void connect(String accessToken) {
+    // Instancia única compartida por toda la app (ver `locationsSocketServiceProvider`) — más de
+    // un feature puede querer "estar conectado" a la vez (un profesional emitiendo + el mismo
+    // usuario mirando el mapa de cercanos en modo cliente); no tirar abajo una conexión ya viva
+    // solo porque otro feature también llamó `connect()`.
+    if (_socket?.connected ?? false) return;
     _socket?.dispose();
     _socket = io.io(
       '${Env.socketOrigin}/locations',

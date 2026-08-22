@@ -38,8 +38,7 @@ void main() {
     test('traduce un 4xx a LocationsValidationFailure', () async {
       // Arrange
       when(
-        () =>
-            dio.patch<void>('/locations/online', data: {'isOnline': false}),
+        () => dio.patch<void>('/locations/online', data: {'isOnline': false}),
       ).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: '/locations/online'),
@@ -57,7 +56,8 @@ void main() {
       );
     });
 
-    test('traduce un error de red a LocationsServiceUnavailableFailure', () async {
+    test('traduce un error de red a LocationsServiceUnavailableFailure',
+        () async {
       // Arrange
       when(
         () => dio.patch<void>('/locations/online', data: {'isOnline': true}),
@@ -68,6 +68,65 @@ void main() {
       // Act & Assert
       await expectLater(
         repository.setOnlineStatus(true),
+        throwsA(isA<LocationsServiceUnavailableFailure>()),
+      );
+    });
+  });
+
+  group('fetchNearby', () {
+    test('parsea la lista de profesionales cercanos', () async {
+      // Arrange
+      when(
+        () => dio.get<List<dynamic>>(
+          '/locations/nearby',
+          queryParameters: {'latitude': -25.3, 'longitude': -57.6},
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/locations/nearby'),
+          data: [
+            {
+              'id': 1,
+              'referenceId': 'prof-ref-1',
+              'categoryId': 3,
+              'description': 'Plomero',
+              'hourlyRate': 50000,
+              'latitude': -25.29,
+              'longitude': -57.62,
+              'distanceKm': 1.2,
+              'isOnline': true,
+              'averageRating': 4.5,
+            },
+          ],
+        ),
+      );
+
+      // Act
+      final result = await repository.fetchNearby(
+        latitude: -25.3,
+        longitude: -57.6,
+      );
+
+      // Assert
+      expect(result, hasLength(1));
+      expect(result.single.referenceId, 'prof-ref-1');
+    });
+
+    test('traduce un error de red a LocationsServiceUnavailableFailure',
+        () async {
+      // Arrange
+      when(
+        () => dio.get<List<dynamic>>(
+          '/locations/nearby',
+          queryParameters: {'latitude': -25.3, 'longitude': -57.6},
+        ),
+      ).thenThrow(
+        DioException(requestOptions: RequestOptions(path: '/locations/nearby')),
+      );
+
+      // Act & Assert
+      await expectLater(
+        repository.fetchNearby(latitude: -25.3, longitude: -57.6),
         throwsA(isA<LocationsServiceUnavailableFailure>()),
       );
     });

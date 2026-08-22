@@ -460,3 +460,22 @@ ampliación es formalizar/completar ese mecanismo para que cubra también logo/b
 no solo color/tipografía). Requiere un `.md` versionado documentando cómo cambiar cada valor y el
 historial de versiones de marca — vive junto al `tokens.json` o en `openspec/specs/` según
 corresponda cuando se escriba la spec dedicada.
+
+## Fase 0005 — Mapa de profesionales cercanos (modo cliente)
+
+`GET /locations/nearby` devolvía la fila cruda de Postgres tal cual sale de `$queryRaw`
+(snake_case, NUMERIC como string) — nunca pasa por el `$extends` de Prisma que normaliza el resto
+de la API. Corregido en backend (PR aparte, `NearbyProfessionalResponseDTO` + mapper) antes de
+construir el cliente contra ese contrato.
+
+`NearbyProfessionalsController` hace el fetch inicial centrado en la posición actual del
+dispositivo y luego escucha `locationUpdated` del mismo socket de `/locations` que usa la emisión
+del profesional — un cliente solo escucha, nunca emite. Como el socket es una instancia única para
+toda la app (compartida con `OnlineStatusController`), `SocketIoLocationsSocketService.connect()`
+ahora es un no-op si ya hay una conexión viva — evita que abrir el mapa como cliente corte la
+emisión de la misma cuenta operando como profesional online al mismo tiempo.
+
+Pendiente explícito, no implementado en esta pasada: tracking en vivo del profesional asignado
+durante un servicio ACCEPTED/IN_PROGRESS (usa `/tracking`, un módulo Mongo aparte con otra forma de
+datos — GeoJSON, sin `referenceId` ni perfil — ver `TekoApp-Backend/src/api/tracking/`) y push
+notifications (FCM, bloqueado en un proyecto Firebase real que debe crear José).

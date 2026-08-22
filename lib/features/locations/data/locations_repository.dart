@@ -2,9 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../../../core/api_client/api_client.dart';
 import '../models/locations_failure.dart';
+import '../models/nearby_professional.dart';
 
-/// `/locations` — solo la parte REST (estado online). El tiempo real vive en
-/// `core/realtime/locations_socket_service.dart`.
+/// `/locations` — solo la parte REST (estado online + búsqueda de cercanos). El tiempo real vive
+/// en `core/realtime/locations_socket_service.dart`.
 class LocationsRepository {
   LocationsRepository(this._apiClient);
 
@@ -16,6 +17,24 @@ class LocationsRepository {
         '/locations/online',
         data: {'isOnline': isOnline},
       );
+    } on DioException catch (error) {
+      throw _classify(error);
+    }
+  }
+
+  Future<List<NearbyProfessional>> fetchNearby({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final response = await _apiClient.raw.get<List<dynamic>>(
+        '/locations/nearby',
+        queryParameters: {'latitude': latitude, 'longitude': longitude},
+      );
+      return (response.data ?? const [])
+          .cast<Map<String, dynamic>>()
+          .map(NearbyProfessional.fromJson)
+          .toList();
     } on DioException catch (error) {
       throw _classify(error);
     }
