@@ -1,3 +1,21 @@
+## [1.0.0-develop.30](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.29...v1.0.0-develop.30) (2026-08-22)
+
+### Features
+
+* add socket_io_client/flutter_map deps and a socket-origin helper ([69ac4a8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/69ac4a8d438061be53c463fb0e5b1dcb5dadeb66))
+* locations REST repository for toggling online status ([542e005](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/542e0058c074ee77464e3d5cdd629b3afa395f4b))
+* locations socket service wrapper (core/realtime) ([8a180c5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8a180c52feccd4ea4efe9e6036c15f72ba53be13))
+* online status controller — toggle + live location emission ([e14bcdf](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e14bcdfc6912863292bc670e71e8134e982d60ee))
+* online/offline switch in the professional home screen ([9cac128](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/9cac1287314284229fead651bc1298aadff05ec9))
+
+### Refactoring
+
+* extract shared location-permission/position-stream/token-reader providers ([03277c0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/03277c09b302ee3c7e9034f94310f41effc56da6))
+
+### Documentation
+
+* pick flutter_map/OSM for maps, scope location emission to foreground-only ([11ecb41](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/11ecb41a828e7f073abf9e0f28b1481ce78b12fc))
+
 ## [1.0.0-develop.29](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.28...v1.0.0-develop.29) (2026-08-09)
 
 ### Documentation
