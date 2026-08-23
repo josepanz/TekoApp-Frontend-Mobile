@@ -3,9 +3,17 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") apply false
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// `google-services.json` no se commitea (gitignored, ver .env/secrets locales) — sin el archivo,
+// el plugin de Google Services rompe el build (`processReleaseGoogleServices`), lo que tumbaba el
+// build de release en CI. Se aplica solo si el archivo existe: local (con el archivo real de
+// José) tiene push funcional; CI compila igual, sin Firebase.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 dependencies {
