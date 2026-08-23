@@ -555,6 +555,13 @@ priorice.
 
 ### 6. Documentos y antecedentes del profesional (verificación de habilitación)
 
+**Spec: ver `openspec/specs/professional-documents.md` + `openspec/changes/0007-professional-documents-and-background-checks.md`
+(mobile), `TekoApp-Backend/openspec/specs/professional-documents.md` +
+`TekoApp-Backend/openspec/changes/0001-professional-documents-and-background-checks.md` (backend),
+`TekoApp-Frontend-Web/openspec/specs/professional-documents.md` +
+`TekoApp-Frontend-Web/openspec/changes/0001-professional-documents-verification.md` (backoffice de
+verificación).**
+
 Dos categorías de documento a soportar, ambas **parametrizables** (qué se pide, si es obligatorio
 u opcional, por país/categoría de servicio):
 
@@ -569,12 +576,25 @@ u opcional, por país/categoría de servicio):
 
 ### 7. Bitácora de trabajo — "paso a paso" documentado por el profesional
 
+**Spec: ver `openspec/specs/work-progress-log.md` + `openspec/changes/0008-work-progress-log.md`
+(mobile), `TekoApp-Backend/openspec/specs/work-progress-log.md` +
+`TekoApp-Backend/openspec/changes/0002-work-progress-log.md` (backend). Sin spec dedicada de
+`TekoApp-Frontend-Web` por ahora — decisión de alcance abierta para José, ver la nota en el spec de
+backend (extender la vista de detalle de servicio ya existente en vez de una pantalla nueva).**
+
 El profesional registra el avance de un servicio en curso (fotos, notas) para que el cliente vea
 qué se hizo y cómo, no solo el estado final. Pensado como transparencia/trazabilidad del trabajo,
 similar en espíritu al historial ordenado que ya ven los administradores de calificaciones (ítem 3
 del backlog anterior) pero acá visible directamente para el cliente dueño del servicio.
 
 ### 8. Presupuestos multi-opción generados desde la app
+
+**Spec: ver `openspec/specs/multi-option-quotes.md` + `openspec/changes/0009-multi-option-budgets.md`
+(mobile), `TekoApp-Backend/openspec/specs/multi-option-quotes.md` +
+`TekoApp-Backend/openspec/changes/0003-multi-option-quotes.md` (backend),
+`TekoApp-Frontend-Web/openspec/specs/material-catalog.md` +
+`TekoApp-Frontend-Web/openspec/changes/0002-budget-catalog-management.md` (catálogo de materiales,
+backoffice).**
 
 Antes de aceptar un servicio, el profesional arma uno o varios presupuestos alternativos
 (materiales a elegir, nivel de calidad, mano de obra, distintos rangos de precio) para que el
@@ -584,11 +604,27 @@ materiales/calidades por categoría de servicio.
 
 ### 9. Contratos generados desde el presupuesto aceptado
 
+**Spec: ver `openspec/specs/service-contracts.md` +
+`openspec/changes/0010-contracts-from-accepted-budget.md` (mobile),
+`TekoApp-Backend/openspec/specs/service-contracts.md` +
+`TekoApp-Backend/openspec/changes/0004-service-contracts.md` (backend). Depende del ítem 8. Sin
+spec dedicada de `TekoApp-Frontend-Web` por ahora (mismo criterio que el ítem 7) — el backend ya
+expone `GET /admin/contracts` para que staff los vea desde la vista de servicio existente si hace
+falta.**
+
 Al aceptar un presupuesto (ítem 8), generar un contrato cliente↔profesional con firma digital —
 extiende el contrato con firma digital ya mencionado en el ítem 4 del backlog de 2026-08-08, ahora
 con el presupuesto elegido como contenido del contrato (materiales, precio, alcance del trabajo).
 
 ### 10. Disclosure de contenido generado por IA
+
+**Spec: ver `openspec/specs/ai-content-disclosure.md` +
+`openspec/changes/0011-ai-content-disclosure.md` (mobile),
+`TekoApp-Backend/openspec/specs/ai-content-disclosure.md` +
+`TekoApp-Backend/openspec/changes/0005-ai-content-disclosure.md` (backend),
+`TekoApp-Frontend-Web/openspec/specs/ai-content-disclosure-admin.md` +
+`TekoApp-Frontend-Web/openspec/changes/0003-ai-content-disclosure-admin.md` (auditoría,
+backoffice).**
 
 Si en algún punto se usa IA para generar/asistir texto, imágenes, o presupuestos dentro de la app
 (descripciones sugeridas, fotos de referencia, etc.), debe quedar explícitamente marcado como tal
@@ -597,6 +633,16 @@ genere la plataforma como, potencialmente, a contenido que un profesional/client
 como asistido por IA.
 
 ### 11. Protección de datos, imágenes y su uso
+
+**Spec: ver `openspec/specs/data-and-media-consent.md` +
+`openspec/changes/0012-data-and-image-consent.md` (mobile),
+`TekoApp-Backend/openspec/specs/data-and-media-consent.md` +
+`TekoApp-Backend/openspec/changes/0006-data-and-media-consent.md` (backend, spec más fundacional de
+las 6 — ver su `openspec/README.md` para el orden real de implementación recomendado),
+`TekoApp-Frontend-Web/openspec/specs/data-and-media-consent-admin.md` +
+`TekoApp-Frontend-Web/openspec/changes/0004-consent-and-data-protection-admin.md` (config/auditoría,
+backoffice). Comparte marco con el ítem 4 del backlog 2026-08-08 (marco legal/tributario) y con el
+ítem 6 de este backlog (documentos/antecedentes).**
 
 Consentimiento explícito y alcance de uso para todo dato/imagen subida a la app (fotos de avance
 del ítem 7, documentos/antecedentes del ítem 6, fotos de perfil, evidencia de trabajos) — mismo
@@ -607,3 +653,40 @@ nuevos de carga de documentos/evidencia.
 **Límite explícito, igual que en el backlog anterior**: el contenido legal real (qué exige cada
 país, textos de consentimiento, validez de firma digital) requiere asesoría legal real por país —
 esto solo documenta el flujo/producto a construir, no el contenido legal en sí.
+
+## Fase 0005 — Push notifications (FCM)
+
+Cliente completo contra el backend ya listo (`POST/DELETE /notifications/fcm-tokens`,
+`FcmProviderService` con payload `{notification:{title,body}, data:{referenceId,type}}`):
+
+- **Registro/baja de token**: reacciona a `sessionProvider` (login → pedir permiso con contexto +
+  registrar; logout → dar de baja) vía `PushNotificationGateway`, montado en
+  `MaterialApp.router(builder: ...)`. El `referenceId` que devuelve el registro se persiste en
+  `flutter_secure_storage` — el backend no lo resuelve por el token FCM crudo, hace falta guardarlo
+  para poder darlo de baja en el logout.
+- **Permiso con contexto**: diálogo propio (explica por qué, antes del picker nativo del SO),
+  mostrado una sola vez (flag en `SharedPreferences`) al primer login — nunca al abrir la app.
+- **3 estados manejados**: foreground → banner propio vía `ScaffoldMessenger` (el SO no muestra
+  notificación sola cuando la app está abierta) — **decisión de alcance**: no se usa
+  `flutter_local_notifications` (evita una dependencia nativa más con setup de canales/permisos
+  propio) por ahora, un banner in-app alcanza; revisar si se pide paridad visual completa con el
+  tray del SO. Background/cerrada → el SO ya muestra la notificación sola, solo se resuelve el
+  deep link al tocarla (`onMessageOpenedApp`/`getInitialMessage`).
+- **Deep linking por `type`**: `service_request`/`service_accepted`/`service_rejected`/
+  `service_completed` → `/mis-servicios/:id`; `payment_received` → `/pagos/historial/:id`; el resto
+  (`rating_received`, `promotion`, `system`) sin pantalla propia hoy, no navega. **Gap real
+  encontrado**: no hay una pantalla de detalle de servicio del lado profesional (solo listado en
+  `/profesional/mis-servicios`) ni una de calificación individual — si se agregan, extender el
+  mapeo de `PushNotificationPayload.route`.
+- **Hallazgo del backend**: ningún flujo de negocio real (aceptar servicio, recibir pago, etc.)
+  llama todavía a `NotificationsService.create()` — el módulo de notificaciones es infraestructura
+  genérica lista, pero nada dispara push hoy. Cablear esos triggers es trabajo de backend, fuera
+  de esta fase (mobile).
+- **Gradle/Firebase**: `google-services.json` de Android ya colocado y verificado (package
+  `py.com.tekoapp.mobile` coincide). iOS sin `GoogleService-Info.plist` todavía — `Firebase.
+  initializeApp()` está en un try/catch (no tumba el boot si falta config en alguna plataforma,
+  mismo criterio que `FcmProviderService` en el backend). `flutter build apk --debug` verificado
+  exitoso con la config real.
+
+Con esto, el checklist completo de push de la Fase 0005 queda cerrado — el checkpoint de salida
+(dos dispositivos reales, uno emitiendo, otro recibiendo) sigue pendiente de José.
