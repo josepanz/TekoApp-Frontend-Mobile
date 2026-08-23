@@ -1,3 +1,9 @@
+## [1.0.0-develop.2](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.1...v1.0.0-develop.2) (2026-08-23)
+
+### Documentation
+
+* **memory:** agregar adenda de promocion develop-qa-master ([#67](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/67)) ([07563e8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/07563e83ea86fe153d5d5b49f5d77f25abb03ce3))
+
 ## 1.0.0-develop.1 (2026-08-23)
 
 ### Bug Fixes
