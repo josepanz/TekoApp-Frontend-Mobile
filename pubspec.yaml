@@ -63,6 +63,7 @@ dependencies:
   # sin API key ni cuenta, a diferencia de google_maps_flutter (exige tarjeta cargada). Fase 0005.
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

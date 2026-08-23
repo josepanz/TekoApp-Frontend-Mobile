@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
+import 'package:tekoapp_mobile/core/locale/locale_provider.dart';
 
 /// `sessionProvider` real llama a `flutter_secure_storage` al construirse (ver
 /// `core/auth/session_provider.dart`) — sin un mock de plataforma disponible en `flutter_test`,
@@ -15,6 +17,21 @@ class _FixedSessionNotifier extends SessionNotifier {
 
   @override
   SessionState build() => _fixed;
+}
+
+/// Mismo motivo que `_FixedSessionNotifier` — `LocaleController` real llama a `SharedPreferences`.
+class _FixedLocaleController extends LocaleController {
+  _FixedLocaleController(this._fixed);
+  Locale? _fixed;
+
+  @override
+  Future<Locale?> build() async => _fixed;
+
+  @override
+  Future<void> setLocale(Locale? locale) async {
+    _fixed = locale;
+    state = AsyncData(locale);
+  }
 }
 
 void main() {
@@ -30,6 +47,9 @@ void main() {
             networkSmokeCheckProvider.overrideWith((ref) async => const []),
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionUnauthenticated()),
+            ),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
             ),
           ],
           child: const TekoApp(),

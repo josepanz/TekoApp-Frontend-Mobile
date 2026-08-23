@@ -499,3 +499,111 @@ pantalla se cierra mientras el fetch inicial estaba en vuelo.
 Con esto se completa el checklist de código de la Fase 0005 — queda pendiente solo push (FCM,
 bloqueado en que José cree un proyecto Firebase real) y el checkpoint de salida con dispositivos
 reales.
+
+## Fase 0006 — i18n, admin y pulido final
+
+**Auditoría de strings sin traducir**: limpia — grep de `Text('...')`/`label:`/`hintText:`/
+`tooltip:`/`message:` con literales hardcodeados en `lib/` no encontró nada. Confirma que la
+disciplina "traducir sobre la marcha" (`.claude/rules/i18n.md`) se sostuvo en las Fases 0002-0005.
+
+**Selector de idioma explícito**: agregado en "Mi perfil" (`_LanguageSelector`, junto al botón de
+logout) — `Sistema` (sigue el idioma del dispositivo, default) / `Español` / `English`. Persistido
+con `shared_preferences` (nueva dependencia — la única otra opción de storage local ya en el
+proyecto, `flutter_secure_storage`, es para secretos, no para una preferencia de UI no sensible).
+`LocaleController` (`core/locale/locale_provider.dart`) expone `Locale?`, `null` = sistema;
+`app.dart` lo pasa a `MaterialApp.router(locale: ...)`.
+
+**Decisión de producto — admin/backoffice en mobile**: NO. Queda exclusivo de `TekoApp-Web`
+(portal de gestión ya establecido para el staff de TekoApp). Mobile es el cliente para
+usuarios/profesionales — agregar un modo admin ahí duplicaría superficie sin un caso de uso real
+(el staff administrativo no necesita gestionar la plataforma desde el celular hoy). Revisitar solo
+si surge un pedido concreto de negocio.
+
+**Accesibilidad**: pasada dirigida sobre controles solo-ícono (`IconButton`/`InkWell`/
+`GestureDetector` en todo `lib/`) — un hallazgo real: las 5 estrellas de `rate_dialog.dart` no
+tenían label accesible (`IconButton` sin `tooltip`, un lector de pantalla las anunciaba como
+"botón" x5 sin indicar cuál calificación aplica cada una). Corregido con
+`tooltip: l10n.ratingStarLabel(star)` (nueva key con plural ICU). El resto de los controles
+solo-ícono ya tenían `Semantics(button:true, label:...)` (editar avatar) o no eran solo-ícono
+(cards con texto). Contraste y targets táctiles: no se re-verificó a mano — se apoya en los mismos
+tokens de `TekoApp-Web` ya auditados matemáticamente en su rebrand 2026-08-02 (`AppTheme.light/dark`
+los consume sin reinterpretación, ver `.claude/rules/design-system.md`). Estados (`ServiceStatusBadge`
+y otros `TekoBadge`) ya combinan texto+color, nunca solo color.
+
+**Offline-first vs. online-only**: ya estaba decidido y confirmado con José (2026-08-08, ver
+sección propia más arriba en este archivo) — sigue vigente, sin cambios en esta fase.
+
+Con esto se cierra el checklist de tareas de la Fase 0006. El "checkpoint de salida" (cambiar
+idioma en runtime y confirmar TODA la UI incluyendo errores del backend vía `x-lang`, accesibilidad
+"corregida" no solo "revisada", recorrido de punta a punta de las Fases 2-5) queda para José con
+la app corriendo en un dispositivo real — no verificable solo con `flutter test`/`flutter analyze`.
+
+**Hallazgo adicional (mismo checklist, "checkpoint de salida")**: la app nunca mandaba el header
+`x-lang` — el backend (`nestjs-i18n`, `LANGUAGE_HEADER = 'x-lang'`) nunca podía traducir sus
+mensajes de error/validación al idioma activo de la UI, siempre caía a su default. Agregado
+`LocaleHeaderInterceptor` (mismo patrón que `BearerAuthInterceptor`: lee el storage directo, sin
+`ref` de Riverpod, para mantener `core/api_client` desacoplado del árbol de providers) — manda la
+preferencia explícita guardada o, si no hay, el idioma del sistema si es uno soportado (si no,
+español). Sin esto, cambiar el idioma en runtime dejaba media app traducida (UI sí, errores del
+backend no) — exactamente el gap que el checkpoint de esta fase pedía confirmar.
+
+## Backlog — features grandes pedidas 2026-08-22, pendientes de spec dedicada (NO implementadas)
+
+Igual que el backlog de 2026-08-08: documentado para no perderlo, sin diseño técnico ni
+implementación todavía — cada uno amerita su propio `openspec/changes/000N-*.md` cuando se
+priorice.
+
+### 6. Documentos y antecedentes del profesional (verificación de habilitación)
+
+Dos categorías de documento a soportar, ambas **parametrizables** (qué se pide, si es obligatorio
+u opcional, por país/categoría de servicio):
+
+- **Antecedentes policiales y judiciales**: verificación activable/desactivable por
+  parámetro (no todos los países/categorías la requieren igual) — quién la exige, con qué
+  vigencia, y qué pasa si vence o falta.
+- **Documentos de habilitación**: títulos, certificados, y evidencia de trabajos/experiencia
+  previa (portafolio) — el profesional los carga, visibles para el cliente al elegir a quién
+  contratar. Relacionado con el ítem 4 del backlog anterior (marco legal): estos documentos son
+  datos personales/sensibles, entran en el mismo paraguas de consentimiento y minimización de
+  datos ya documentado ahí.
+
+### 7. Bitácora de trabajo — "paso a paso" documentado por el profesional
+
+El profesional registra el avance de un servicio en curso (fotos, notas) para que el cliente vea
+qué se hizo y cómo, no solo el estado final. Pensado como transparencia/trazabilidad del trabajo,
+similar en espíritu al historial ordenado que ya ven los administradores de calificaciones (ítem 3
+del backlog anterior) pero acá visible directamente para el cliente dueño del servicio.
+
+### 8. Presupuestos multi-opción generados desde la app
+
+Antes de aceptar un servicio, el profesional arma uno o varios presupuestos alternativos
+(materiales a elegir, nivel de calidad, mano de obra, distintos rangos de precio) para que el
+cliente compare y elija — no un monto único fijo como hoy (`Service.finalAmount`, Fase 0004). Todo
+parametrizable: qué campos tiene un presupuesto, cuántas opciones se permiten, catálogo de
+materiales/calidades por categoría de servicio.
+
+### 9. Contratos generados desde el presupuesto aceptado
+
+Al aceptar un presupuesto (ítem 8), generar un contrato cliente↔profesional con firma digital —
+extiende el contrato con firma digital ya mencionado en el ítem 4 del backlog de 2026-08-08, ahora
+con el presupuesto elegido como contenido del contrato (materiales, precio, alcance del trabajo).
+
+### 10. Disclosure de contenido generado por IA
+
+Si en algún punto se usa IA para generar/asistir texto, imágenes, o presupuestos dentro de la app
+(descripciones sugeridas, fotos de referencia, etc.), debe quedar explícitamente marcado como tal
+de cara al usuario — no presentarlo como contenido humano sin aclarar. Aplica tanto a lo que
+genere la plataforma como, potencialmente, a contenido que un profesional/cliente suba y declare
+como asistido por IA.
+
+### 11. Protección de datos, imágenes y su uso
+
+Consentimiento explícito y alcance de uso para todo dato/imagen subida a la app (fotos de avance
+del ítem 7, documentos/antecedentes del ítem 6, fotos de perfil, evidencia de trabajos) — mismo
+paraguas legal ya iniciado en el ítem 4 del backlog de 2026-08-08 (deslinde de responsabilidad
+sobre contenido de usuario, minimización de datos), extendido explícitamente a cubrir estos casos
+nuevos de carga de documentos/evidencia.
+
+**Límite explícito, igual que en el backlog anterior**: el contenido legal real (qué exige cada
+país, textos de consentimiento, validez de firma digital) requiere asesoría legal real por país —
+esto solo documenta el flujo/producto a construir, no el contenido legal en sí.
