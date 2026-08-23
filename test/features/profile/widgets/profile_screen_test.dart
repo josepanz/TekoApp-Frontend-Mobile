@@ -13,6 +13,8 @@ import 'package:tekoapp_mobile/features/auth/data/auth_repository.dart';
 import 'package:tekoapp_mobile/features/auth/providers/auth_repository_provider.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_registration_controller.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
@@ -42,6 +44,26 @@ class _FixedLocaleController extends LocaleController {
   }
 }
 
+/// `PushNotificationGateway` (montado por `TekoApp`) llama a `firebase_messaging` real en
+/// `initState` — sin proyecto Firebase inicializado en `flutter test`, eso rompe cualquier test
+/// que pumpee `TekoApp`. Mismo criterio que los fakes de arriba.
+class _NoopPushRegistrationController extends PushRegistrationController {
+  @override
+  Future<void> registerIfPermitted() async {}
+
+  @override
+  Future<void> unregister() async {}
+}
+
+final _pushMessagingTestOverrides = <Override>[
+  onForegroundMessageProvider.overrideWithValue(() => const Stream.empty()),
+  onMessageOpenedAppProvider.overrideWithValue(() => const Stream.empty()),
+  initialPushMessageReaderProvider.overrideWithValue(() async => null),
+  pushRegistrationControllerProvider.overrideWith(
+    () => _NoopPushRegistrationController(),
+  ),
+];
+
 void main() {
   testWidgets(
     'el botón de logout limpia la sesión y navega a /login',
@@ -63,6 +85,7 @@ void main() {
             localeControllerProvider.overrideWith(
               () => _FixedLocaleController(null),
             ),
+            ..._pushMessagingTestOverrides,
             authRepositoryProvider.overrideWithValue(repository),
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
@@ -112,6 +135,7 @@ void main() {
             localeControllerProvider.overrideWith(
               () => _FixedLocaleController(null),
             ),
+            ..._pushMessagingTestOverrides,
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
             ),
@@ -152,6 +176,7 @@ void main() {
             localeControllerProvider.overrideWith(
               () => _FixedLocaleController(null),
             ),
+            ..._pushMessagingTestOverrides,
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
             ),
@@ -197,6 +222,7 @@ void main() {
             localeControllerProvider.overrideWith(
               () => _FixedLocaleController(null),
             ),
+            ..._pushMessagingTestOverrides,
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
             ),

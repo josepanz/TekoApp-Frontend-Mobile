@@ -16,9 +16,32 @@ import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_registration_controller.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
 
 class _MockDio extends Mock implements Dio {}
+
+/// `PushNotificationGateway` (montado por `TekoApp`) llama a `firebase_messaging` real en
+/// `initState` — sin proyecto Firebase inicializado en `flutter test` y sin un mock de plataforma
+/// disponible para ese plugin (a diferencia de `flutter_secure_storage`/`shared_preferences`, que
+/// sí se mockean acá), se overridean estos providers en vez del plugin.
+class _NoopPushRegistrationController extends PushRegistrationController {
+  @override
+  Future<void> registerIfPermitted() async {}
+
+  @override
+  Future<void> unregister() async {}
+}
+
+final _pushMessagingTestOverrides = <Override>[
+  onForegroundMessageProvider.overrideWithValue(() => const Stream.empty()),
+  onMessageOpenedAppProvider.overrideWithValue(() => const Stream.empty()),
+  initialPushMessageReaderProvider.overrideWithValue(() async => null),
+  pushRegistrationControllerProvider.overrideWith(
+    () => _NoopPushRegistrationController(),
+  ),
+];
 
 /// Único flujo e2e de esta fase (login + un flujo representativo, ver `.claude/rules/test.md`):
 /// login real → home → Mi perfil (ruta protegida) → logout → el guard de `go_router` redirige
@@ -45,7 +68,9 @@ void main() {
   setUp(() {
     // `LocaleController` (selector de idioma) usa `SharedPreferences` — mismo criterio que el
     // mock en memoria de `flutter_secure_storage` de acá abajo, ver `core/locale/locale_provider.dart`.
-    SharedPreferences.setMockInitialValues({});
+    // `push_permission_prompted: true` evita que `PushNotificationGateway` abra su diálogo de
+    // permiso al detectar el login real de este test — no es lo que este flujo e2e verifica.
+    SharedPreferences.setMockInitialValues({'push_permission_prompted': true});
     secureStorage.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(secureStorageChannel, (call) async {
@@ -165,6 +190,7 @@ void main() {
         overrides: [
           apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
           networkSmokeCheckProvider.overrideWith((ref) async => const []),
+          ..._pushMessagingTestOverrides,
         ],
         child: const TekoApp(),
       ),
