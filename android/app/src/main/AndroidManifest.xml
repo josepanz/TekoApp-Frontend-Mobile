@@ -3,6 +3,10 @@
          ver openspec/decisions.md ("Geolocalización para pedir servicio"). -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Requerido en Android 13+ (API 33) para poder pedir el permiso de notificaciones en
+         runtime (ver PushNotificationGateway) — sin esto, FirebaseMessaging.requestPermission()
+         no muestra nada y el permiso queda denegado por default. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="tekoapp_mobile"
         android:name="${applicationName}"
