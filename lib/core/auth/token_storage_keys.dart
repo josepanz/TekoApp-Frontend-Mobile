@@ -5,4 +5,9 @@ class TokenStorageKeys {
   TokenStorageKeys._();
 
   static const accessToken = 'access_token';
+
+  /// `referenceId` del token FCM ya registrado en el backend (ver
+  /// `features/notifications/providers/push_registration_controller.dart`) — necesario para poder
+  /// darlo de baja en el logout, el backend no lo resuelve por el token FCM crudo.
+  static const fcmTokenReferenceId = 'fcm_token_reference_id';
 }

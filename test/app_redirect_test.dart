@@ -11,6 +11,8 @@ import 'package:tekoapp_mobile/core/locale/locale_provider.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/categories/providers/categories_provider.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_registration_controller.dart';
 import 'package:tekoapp_mobile/features/professional_profile/models/professional_profile.dart';
 import 'package:tekoapp_mobile/features/professional_profile/models/professional_status.dart';
 import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
@@ -64,6 +66,17 @@ class _FixedLocaleController extends LocaleController {
   }
 }
 
+/// `PushNotificationGateway` (montado por `TekoApp`) llama a `firebase_messaging` real en
+/// `initState` — sin proyecto Firebase inicializado en `flutter test`, eso rompe cualquier test
+/// que pumpee `TekoApp`. Mismo criterio que los fakes de arriba.
+class _NoopPushRegistrationController extends PushRegistrationController {
+  @override
+  Future<void> registerIfPermitted() async {}
+
+  @override
+  Future<void> unregister() async {}
+}
+
 /// El smoke test de red (`networkSmokeCheckProvider`) tiene su propia suite mockeando dio (ver
 /// test/core/api_client/network_smoke_check_provider_test.dart) — acá se sobreescribe para que
 /// estos tests de redirección no dependan de una red real.
@@ -71,6 +84,12 @@ List<Override> _overridesWithSession(SessionState session) => [
       networkSmokeCheckProvider.overrideWith((ref) async => const []),
       sessionProvider.overrideWith(() => _FixedSessionNotifier(session)),
       localeControllerProvider.overrideWith(() => _FixedLocaleController(null)),
+      onForegroundMessageProvider.overrideWithValue(() => const Stream.empty()),
+      onMessageOpenedAppProvider.overrideWithValue(() => const Stream.empty()),
+      initialPushMessageReaderProvider.overrideWithValue(() async => null),
+      pushRegistrationControllerProvider.overrideWith(
+        () => _NoopPushRegistrationController(),
+      ),
     ];
 
 void main() {

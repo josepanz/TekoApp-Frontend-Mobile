@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/locale/locale_provider.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
+import 'package:tekoapp_mobile/features/notifications/providers/push_registration_controller.dart';
 
 /// `sessionProvider` real llama a `flutter_secure_storage` al construirse (ver
 /// `core/auth/session_provider.dart`) — sin un mock de plataforma disponible en `flutter_test`,
@@ -34,6 +36,26 @@ class _FixedLocaleController extends LocaleController {
   }
 }
 
+/// `PushNotificationGateway` (montado por `TekoApp`) llama a `firebase_messaging` real en
+/// `initState` — sin proyecto Firebase inicializado en `flutter test`, eso rompe cualquier test
+/// que pumpee `TekoApp`. Mismo criterio que los fakes de arriba.
+class _NoopPushRegistrationController extends PushRegistrationController {
+  @override
+  Future<void> registerIfPermitted() async {}
+
+  @override
+  Future<void> unregister() async {}
+}
+
+final _pushMessagingTestOverrides = <Override>[
+  onForegroundMessageProvider.overrideWithValue(() => const Stream.empty()),
+  onMessageOpenedAppProvider.overrideWithValue(() => const Stream.empty()),
+  initialPushMessageReaderProvider.overrideWithValue(() async => null),
+  pushRegistrationControllerProvider.overrideWith(
+    () => _NoopPushRegistrationController(),
+  ),
+];
+
 void main() {
   testWidgets(
     'la app arranca y muestra la pantalla de inicio sin errores',
@@ -51,6 +73,7 @@ void main() {
             localeControllerProvider.overrideWith(
               () => _FixedLocaleController(null),
             ),
+            ..._pushMessagingTestOverrides,
           ],
           child: const TekoApp(),
         ),

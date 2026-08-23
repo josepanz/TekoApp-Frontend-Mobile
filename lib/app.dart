@@ -6,6 +6,7 @@ import 'core/auth/session_provider.dart';
 import 'core/auth/session_state.dart';
 import 'core/locale/locale_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'features/notifications/widgets/push_notification_gateway.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
 import 'features/locations/widgets/nearby_professionals_map_screen.dart';
@@ -172,6 +173,8 @@ class TekoApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       locale: locale,
       routerConfig: router,
+      scaffoldMessengerKey: pushNotificationScaffoldMessengerKey,
+      builder: (context, child) => PushNotificationGateway(child: child!),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

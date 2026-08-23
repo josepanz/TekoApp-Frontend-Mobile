@@ -31,11 +31,11 @@ sigue vigente sin probarlo — cosas cambian entre sesiones).
 
 ## Tareas — Push (solo si el backend ya está listo, ver bloqueo arriba)
 
-- [ ] Registro de token FCM al loguear, eliminación al cerrar sesión.
-- [ ] Manejo de notificación en los 3 estados de la app (foreground/background/cerrada).
-- [ ] Deep linking desde notificación a la pantalla relevante usando el `referenceId` del `data`
+- [x] Registro de token FCM al loguear, eliminación al cerrar sesión.
+- [x] Manejo de notificación en los 3 estados de la app (foreground/background/cerrada).
+- [x] Deep linking desde notificación a la pantalla relevante usando el `referenceId` del `data`
       de la notificación.
-- [ ] Permiso de notificaciones pedido con contexto (no apenas se abre la app).
+- [x] Permiso de notificaciones pedido con contexto (no apenas se abre la app).
 
 ## Checkpoint de salida
 
