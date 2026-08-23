@@ -1,3 +1,9 @@
+## [1.0.0-qa.2](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-qa.1...v1.0.0-qa.2) (2026-08-23)
+
+### Bug Fixes
+
+* make the Firebase Gradle plugin conditional on google-services.json existing ([#65](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/65)) ([6ba7179](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6ba7179947f786ad5b1a7c4e24e968c76a2b7eeb))
+
 ## 1.0.0-qa.1 (2026-08-23)
 
 ### Features
