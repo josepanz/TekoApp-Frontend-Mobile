@@ -97,6 +97,10 @@
   "nearbyProfessionalsMapError": "No pudimos cargar el mapa — revisá permisos de ubicación y tu conexión",
   "nearbyProfessionalsMapEmpty": "No hay profesionales conectados cerca tuyo por ahora",
   "serviceDetailTrackingTitle": "Ubicación del profesional en vivo",
+  "profileLanguageLabel": "Idioma",
+  "profileLanguageSystem": "Idioma del dispositivo",
+  "profileLanguageSpanish": "Español",
+  "profileLanguageEnglish": "English",
   "professionalOnboardingTitle": "Activar perfil profesional",
   "professionalOnboardingCategoryLabel": "Categoría",
   "professionalOnboardingCategoryRequired": "Elegí una categoría",
@@ -249,5 +253,11 @@
   "ratingCancelButton": "Cancelar",
   "ratingRequired": "Elegí una calificación",
   "ratingSuccessMessage": "Calificación enviada",
-  "ratingError": "No se pudo enviar la calificación — intentá de nuevo"
+  "ratingError": "No se pudo enviar la calificación — intentá de nuevo",
+  "ratingStarLabel": "{count, plural, one{{count} estrella} other{{count} estrellas}}",
+  "@ratingStarLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

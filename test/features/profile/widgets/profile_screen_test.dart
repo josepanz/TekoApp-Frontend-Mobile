@@ -8,6 +8,7 @@ import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/auth/user_summary.dart';
+import 'package:tekoapp_mobile/core/locale/locale_provider.dart';
 import 'package:tekoapp_mobile/features/auth/data/auth_repository.dart';
 import 'package:tekoapp_mobile/features/auth/providers/auth_repository_provider.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
@@ -24,6 +25,21 @@ class _FixedSessionNotifier extends SessionNotifier {
 
   @override
   SessionState build() => _fixed;
+}
+
+/// Mismo motivo — `LocaleController` real llama a `SharedPreferences`.
+class _FixedLocaleController extends LocaleController {
+  _FixedLocaleController(this._fixed);
+  Locale? _fixed;
+
+  @override
+  Future<Locale?> build() async => _fixed;
+
+  @override
+  Future<void> setLocale(Locale? locale) async {
+    _fixed = locale;
+    state = AsyncData(locale);
+  }
 }
 
 void main() {
@@ -44,6 +60,9 @@ void main() {
         ProviderScope(
           overrides: [
             networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
+            ),
             authRepositoryProvider.overrideWithValue(repository),
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
@@ -61,7 +80,10 @@ void main() {
       // Act — se busca por Key, no por texto, para no depender del locale resuelto en el test
       // (el binding de flutter_test resuelve `en` por default, ver test/features/auth/widgets/
       // login_screen_test.dart para el mismo problema con un locale forzado en su lugar) ni de
-      // qué otros botones tenga la pantalla.
+      // qué otros botones tenga la pantalla. El selector de idioma agregado en la Fase 0006
+      // empuja el botón fuera del viewport fijo de test — hay que scrollearlo a la vista.
+      await tester
+          .ensureVisible(find.byKey(const Key('profile_logout_button')));
       await tester.tap(find.byKey(const Key('profile_logout_button')));
       await tester.pumpAndSettle();
 
@@ -87,6 +109,9 @@ void main() {
         ProviderScope(
           overrides: [
             networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
+            ),
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
             ),
@@ -124,6 +149,9 @@ void main() {
         ProviderScope(
           overrides: [
             networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
+            ),
             sessionProvider.overrideWith(
               () => _FixedSessionNotifier(const SessionAuthenticated(user)),
             ),
@@ -148,6 +176,48 @@ void main() {
       final errorShown = find.text('Ingresá tu nombre').evaluate().isNotEmpty ||
           find.text('Enter your first name').evaluate().isNotEmpty;
       expect(errorShown, isTrue);
+    },
+  );
+
+  testWidgets(
+    'elegir English en el selector de idioma fuerza el idioma de toda la app',
+    (tester) async {
+      // Arrange
+      const user = UserSummary(
+        referenceId: 'ref-1',
+        email: 'ana@test.com',
+        firstName: 'Ana',
+        lastName: 'Pérez',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
+            ),
+            sessionProvider.overrideWith(
+              () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Act
+      await tester.tap(find.byKey(const Key('profile_language_selector')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English').last);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('My profile'), findsOneWidget);
+      expect(find.text('Sign out'), findsOneWidget);
     },
   );
 }

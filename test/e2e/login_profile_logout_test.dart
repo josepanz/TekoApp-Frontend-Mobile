@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pointycastle/export.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
@@ -42,6 +43,9 @@ void main() {
   final secureStorage = <String, String>{};
 
   setUp(() {
+    // `LocaleController` (selector de idioma) usa `SharedPreferences` — mismo criterio que el
+    // mock en memoria de `flutter_secure_storage` de acá abajo, ver `core/locale/locale_provider.dart`.
+    SharedPreferences.setMockInitialValues({});
     secureStorage.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(secureStorageChannel, (call) async {
@@ -190,7 +194,9 @@ void main() {
     // Assert
     expect(find.byType(ProfileScreen), findsOneWidget);
 
-    // Act — logout.
+    // Act — logout (el selector de idioma agregado en la Fase 0006 empuja el botón fuera del
+    // viewport fijo de test, hay que scrollearlo a la vista antes de tocarlo).
+    await tester.ensureVisible(find.byKey(const Key('profile_logout_button')));
     await tester.tap(find.byKey(const Key('profile_logout_button')));
     await tester.pumpAndSettle();
 

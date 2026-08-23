@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/auth/session_provider.dart';
 import 'core/auth/session_state.dart';
+import 'core/locale/locale_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
@@ -163,11 +164,13 @@ class TekoApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeControllerProvider).valueOrNull;
 
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      locale: locale,
       routerConfig: router,
       localizationsDelegates: const [
         AppLocalizations.delegate,

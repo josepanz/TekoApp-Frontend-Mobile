@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/auth/user_summary.dart';
+import 'package:tekoapp_mobile/core/locale/locale_provider.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/categories/providers/categories_provider.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
@@ -47,12 +49,28 @@ class _FixedSessionNotifier extends SessionNotifier {
   SessionState build() => _fixed;
 }
 
+/// Mismo motivo que `_FixedSessionNotifier` — `LocaleController` real llama a `SharedPreferences`.
+class _FixedLocaleController extends LocaleController {
+  _FixedLocaleController(this._fixed);
+  Locale? _fixed;
+
+  @override
+  Future<Locale?> build() async => _fixed;
+
+  @override
+  Future<void> setLocale(Locale? locale) async {
+    _fixed = locale;
+    state = AsyncData(locale);
+  }
+}
+
 /// El smoke test de red (`networkSmokeCheckProvider`) tiene su propia suite mockeando dio (ver
 /// test/core/api_client/network_smoke_check_provider_test.dart) — acá se sobreescribe para que
 /// estos tests de redirección no dependan de una red real.
 List<Override> _overridesWithSession(SessionState session) => [
       networkSmokeCheckProvider.overrideWith((ref) async => const []),
       sessionProvider.overrideWith(() => _FixedSessionNotifier(session)),
+      localeControllerProvider.overrideWith(() => _FixedLocaleController(null)),
     ];
 
 void main() {

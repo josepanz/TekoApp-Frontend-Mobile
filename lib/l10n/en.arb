@@ -71,6 +71,10 @@
   "nearbyProfessionalsMapError": "Couldn't load the map — check location permissions and your connection",
   "nearbyProfessionalsMapEmpty": "No professionals online nearby right now",
   "serviceDetailTrackingTitle": "Professional's live location",
+  "profileLanguageLabel": "Language",
+  "profileLanguageSystem": "Device language",
+  "profileLanguageSpanish": "Español",
+  "profileLanguageEnglish": "English",
   "professionalOnboardingTitle": "Activate professional profile",
   "professionalOnboardingCategoryLabel": "Category",
   "professionalOnboardingCategoryRequired": "Choose a category",
@@ -188,5 +192,6 @@
   "ratingCancelButton": "Cancel",
   "ratingRequired": "Choose a rating",
   "ratingSuccessMessage": "Rating submitted",
-  "ratingError": "Could not submit the rating — try again"
+  "ratingError": "Could not submit the rating — try again",
+  "ratingStarLabel": "{count, plural, one{{count} star} other{{count} stars}}"
 }

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/auth/session_provider.dart';
 import '../../../core/auth/session_state.dart';
 import '../../../core/auth/user_summary.dart';
+import '../../../core/locale/locale_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_avatar.dart';
 import '../../../shared/widgets/teko_button.dart';
@@ -21,6 +22,44 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+/// `null` = seguir el idioma del sistema operativo (ver `core/locale/locale_provider.dart`).
+class _LanguageSelector extends ConsumerWidget {
+  const _LanguageSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = ref.watch(localeControllerProvider).valueOrNull;
+
+    return Row(
+      children: [
+        Expanded(child: Text(l10n.profileLanguageLabel)),
+        DropdownButton<String?>(
+          key: const Key('profile_language_selector'),
+          value: locale?.languageCode,
+          items: [
+            DropdownMenuItem(
+              value: null,
+              child: Text(l10n.profileLanguageSystem),
+            ),
+            DropdownMenuItem(
+              value: 'es',
+              child: Text(l10n.profileLanguageSpanish),
+            ),
+            DropdownMenuItem(
+              value: 'en',
+              child: Text(l10n.profileLanguageEnglish),
+            ),
+          ],
+          onChanged: (code) => ref
+              .read(localeControllerProvider.notifier)
+              .setLocale(code == null ? null : Locale(code)),
+        ),
+      ],
+    );
+  }
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
@@ -222,6 +261,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 loading: updateState.isLoading,
                 onPressed: isSaving ? null : () => _submit(user),
               ),
+              const SizedBox(height: 24),
+              const _LanguageSelector(),
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_logout_button'),
