@@ -27,6 +27,7 @@ Future<(double rating, String? comment)?> showRateDialog(
                   for (var star = 1; star <= 5; star++)
                     IconButton(
                       key: Key('rate_star_$star'),
+                      tooltip: l10n.ratingStarLabel(star),
                       icon: Icon(
                         star <= selectedStars ? Icons.star : Icons.star_border,
                       ),
