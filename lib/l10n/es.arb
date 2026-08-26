@@ -263,5 +263,30 @@
     "placeholders": {
       "count": {"type": "int"}
     }
-  }
+  },
+  "legalConsentScreenTitle": "Documento legal pendiente",
+  "legalConsentPendingIntro": "Necesitás aceptar este documento antes de continuar.",
+  "legalDocumentTypeTermsOfService": "Términos de servicio",
+  "legalDocumentTypePrivacyPolicy": "Política de privacidad",
+  "legalDocumentTypeDataProcessingConsent": "Consentimiento de tratamiento de datos",
+  "legalDocumentTypeImageUsageConsent": "Consentimiento de uso de imágenes",
+  "legalConsentOpenDocumentButton": "Leer el documento completo",
+  "legalConsentAcceptCheckboxLabel": "Leí y acepto este documento",
+  "legalConsentAcceptButton": "Aceptar y continuar",
+  "legalConsentCancelButton": "Ahora no",
+  "legalConsentAcceptError": "No pudimos registrar tu aceptación — intentá de nuevo",
+  "legalConsentNoPendingDocuments": "No tenés documentos pendientes",
+  "privacyAndDataScreenTitle": "Privacidad y datos",
+  "privacyDataConsentsHistoryTitle": "Documentos aceptados",
+  "privacyDataConsentsHistoryEmpty": "Todavía no aceptaste ningún documento",
+  "privacyDataContentGrantsTitle": "Contenido con consentimiento de uso",
+  "privacyDataContentGrantsEmpty": "No tenés contenido con consentimiento de uso otorgado",
+  "privacyDataRevokeButton": "Revocar",
+  "privacyDataRevokeConfirmTitle": "¿Revocar este consentimiento?",
+  "privacyDataRevokeConfirmBody": "El contenido dejará de mostrarse según el alcance de uso otorgado.",
+  "privacyDataRevokeError": "No se pudo revocar el consentimiento — intentá de nuevo",
+  "profileLinkPrivacyAndData": "Privacidad y datos",
+  "aiDisclosureCheckboxLabel": "Usé IA para esto",
+  "aiDisclosureNoteLabel": "Nota (opcional)",
+  "aiDisclosureBadgeLabel": "Asistido por IA"
 }

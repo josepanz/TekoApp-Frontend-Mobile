@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../ai_disclosures/providers/ai_disclosures_repository_provider.dart';
+import '../../legal_consents/models/ai_disclosure_entity_type.dart';
 import 'services_repository_provider.dart';
 
 /// Mutación de "pedir servicio" — un provider por operación de servidor (ver
@@ -18,10 +20,12 @@ class RequestServiceController extends AsyncNotifier<void> {
     required double latitude,
     required double longitude,
     required String address,
+    bool aiAssisted = false,
+    String? aiNote,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await ref.read(servicesRepositoryProvider).createService(
+      final created = await ref.read(servicesRepositoryProvider).createService(
             title: title,
             description: description,
             categoryId: categoryId,
@@ -30,6 +34,20 @@ class RequestServiceController extends AsyncNotifier<void> {
             longitude: longitude,
             address: address,
           );
+
+      if (aiAssisted) {
+        // Best-effort, nunca bloquea ni falla el pedido de servicio ya creado — ver
+        // `openspec/specs/ai-content-disclosure.md` ("siempre opcional y post-hoc").
+        try {
+          await ref.read(aiDisclosuresRepositoryProvider).declare(
+                entityType: AiDisclosureEntityType.serviceDescription,
+                entityReferenceId: created.id,
+                note: aiNote,
+              );
+        } catch (_) {
+          // silencioso a propósito
+        }
+      }
     });
   }
 }

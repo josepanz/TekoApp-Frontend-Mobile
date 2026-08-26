@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart' as ll;
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/ai_disclosure_badge.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
+import '../../legal_consents/models/ai_disclosure_entity_type.dart';
 import '../../locations/providers/assigned_professional_location_provider.dart';
 import '../../ratings/models/rating_failure.dart';
 import '../../ratings/models/rating_type.dart';
@@ -74,6 +76,11 @@ class _ServiceDetailBody extends StatelessWidget {
           ],
           const SizedBox(height: 16),
           Text(service.description),
+          const SizedBox(height: 8),
+          AiDisclosureBadge(
+            entityType: AiDisclosureEntityType.serviceDescription,
+            entityReferenceId: service.id,
+          ),
           const SizedBox(height: 16),
           Text(service.address),
           if (service.professional != null) ...[

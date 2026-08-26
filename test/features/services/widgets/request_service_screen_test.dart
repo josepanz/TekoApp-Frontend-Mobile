@@ -87,6 +87,9 @@ void main() {
       );
 
       // Act
+      await tester.ensureVisible(
+        find.byKey(const Key('request_service_submit_button')),
+      );
       await tester.tap(find.byKey(const Key('request_service_submit_button')));
       await tester.pumpAndSettle();
 

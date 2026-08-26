@@ -35,17 +35,18 @@ badge compartido para mostrar cualquier disclosure existente.
 
 ## Tareas
 
-- [ ] `data/`+`providers/`+`models/` de `ai_disclosures`.
-- [ ] Widget compartido `AiDisclosureBadge`.
-- [ ] Checkbox de auto-declaración en los formularios de contenido elegibles ya existentes al
+- [x] `data/`+`providers/`+`models/` de `ai_disclosures`.
+- [x] Widget compartido `AiDisclosureBadge`.
+- [x] Checkbox de auto-declaración en los formularios de contenido elegibles ya existentes al
       momento de implementar esta fase (revisar cuáles existen realmente entonces, no asumir la
-      lista de hoy).
-- [ ] Traducir a es/en.
-- [ ] Tests: provider (declarar propio ok, declarar de otro → 403), widget test del badge en sus
+      lista de hoy) — confirmados 2: `request_service_screen.dart`/`professional_onboarding_screen.dart`.
+- [x] Traducir a es/en.
+- [x] Tests: provider (declarar propio ok, declarar de otro → 403), widget test del badge en sus
       distintos estados (con/sin disclosure).
 
 ## Checkpoint de salida
 
-- [ ] Un usuario declara su propio contenido como asistido por IA y el badge aparece donde
-      corresponde, para cualquier viewer (no solo para el declarante).
-- [ ] Intentar declarar contenido ajeno falla con el mensaje correcto, no uno genérico.
+- [x] Un usuario declara su propio contenido como asistido por IA y el badge aparece donde
+      corresponde, para cualquier viewer (no solo para el declarante) — wired en `service_detail_screen.dart`.
+- [x] Intentar declarar contenido ajeno falla con el mensaje correcto, no uno genérico —
+      `AiDisclosureForbiddenFailure`/`AiDisclosureValidationFailure` distintos, backendMessage passthrough.
