@@ -9,6 +9,9 @@ import 'core/theme/app_theme.dart';
 import 'features/notifications/widgets/push_notification_gateway.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
+import 'features/legal_consents/widgets/consent_gateway.dart';
+import 'features/legal_consents/widgets/legal_consent_screen.dart';
+import 'features/legal_consents/widgets/privacy_and_data_screen.dart';
 import 'features/locations/widgets/nearby_professionals_map_screen.dart';
 import 'features/payments/widgets/add_payment_method_screen.dart';
 import 'features/payments/widgets/pay_service_screen.dart';
@@ -29,7 +32,10 @@ import 'l10n/app_localizations.dart';
 /// `state.fullPath` (la plantilla, ej. `/mis-servicios/:id`), no `state.matchedLocation` (que trae
 /// el valor real del parámetro interpolado, distinto en cada visita).
 const _protectedPaths = {
+  '/',
   '/perfil',
+  '/perfil/privacidad-y-datos',
+  '/legal/consentimiento',
   '/solicitar',
   '/mapa/cercanos',
   '/mis-servicios',
@@ -105,6 +111,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
+        path: '/perfil/privacidad-y-datos',
+        builder: (context, state) => const PrivacyAndDataScreen(),
+      ),
+      GoRoute(
+        path: '/legal/consentimiento',
+        builder: (context, state) => const LegalConsentScreen(),
+      ),
+      GoRoute(
         path: '/solicitar',
         builder: (context, state) => const RequestServiceScreen(),
       ),
@@ -174,7 +188,8 @@ class TekoApp extends ConsumerWidget {
       locale: locale,
       routerConfig: router,
       scaffoldMessengerKey: pushNotificationScaffoldMessengerKey,
-      builder: (context, child) => PushNotificationGateway(child: child!),
+      builder: (context, child) =>
+          ConsentGateway(child: PushNotificationGateway(child: child!)),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
