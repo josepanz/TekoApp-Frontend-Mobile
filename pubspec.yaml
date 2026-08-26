@@ -67,6 +67,11 @@ dependencies:
   firebase_core: ^4.13.0
   firebase_messaging: ^16.5.0
 
+  # Abre el texto legal real (LegalDocumentVersions.contentUrl) en el navegador del dispositivo —
+  # ver openspec/changes/0012-data-and-image-consent.md ("WebView o abierto externamente"; se
+  # eligió "abierto externamente" para no sumar la dependencia más pesada de un WebView embebido).
+  url_launcher: ^6.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -81,9 +86,25 @@ dev_dependencies:
   # indefinido (bloquearía escribir el primer test).
   mocktail: ^1.0.4
 
+  # Generador del ícono nativo de la app (Android/iOS) a partir de assets/icon/app_icon.png —
+  # solo dev-time (`dart run flutter_launcher_icons`), no se empaqueta en el binario.
+  flutter_launcher_icons: ^0.14.1
+
 flutter:
   uses-material-design: true
   generate: true # habilita l10n vía flutter_localizations (ver l10n.yaml)
 
   # Poppins se carga en runtime vía google_fonts (core/theme/app_theme.dart), no como asset local
   # empaquetado — ver openspec/decisions.md.
+
+  assets:
+    - assets/icon/app_icon.png
+
+# Fuente: recorte del isotipo cuadrado de brand/logo.png (TekoApp-Frontend-Web) — el navy +
+# figura ya vienen con el fondo redondeado incluido, así que no hace falta adaptive_icon_*
+# background por separado. Regenerar con `dart run flutter_launcher_icons` tras cualquier cambio.
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
