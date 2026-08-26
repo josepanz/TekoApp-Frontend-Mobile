@@ -574,6 +574,16 @@ u opcional, por país/categoría de servicio):
   datos personales/sensibles, entran en el mismo paraguas de consentimiento y minimización de
   datos ya documentado ahí.
 
+### Rediseño visual del home de cliente (2026-08-25, decidido e implementado — Opción C)
+
+**Spec: ver `openspec/changes/0013-client-home-redesign.md`.** Detectado al probar el primer APK
+contra el backend cloud: `HomeScreen` era el scaffold crudo de la Fase 0001 (botones sueltos sin
+jerarquía, texto de smoke test visible). José confirmó la Opción C (header con saludo + CTA
+destacada de "pedir servicio" + grid secundario 2×2) — implementada, con test de widget nuevo
+(`test/features/home/widgets/home_screen_test.dart`) y suite completa en verde (268/268). Pendiente
+únicamente: verificación visual en dispositivo real (claro/oscuro), no cubierta por tests
+automatizados.
+
 ### 7. Bitácora de trabajo — "paso a paso" documentado por el profesional
 
 **Spec: ver `openspec/specs/work-progress-log.md` + `openspec/changes/0008-work-progress-log.md`
@@ -654,6 +664,39 @@ nuevos de carga de documentos/evidencia.
 país, textos de consentimiento, validez de firma digital) requiere asesoría legal real por país —
 esto solo documenta el flujo/producto a construir, no el contenido legal en sí.
 
+## Fase 0012 — Consentimiento legal: implementado 2026-08-25
+
+Roadmap punto 2 (después de la fundación backend `0006`, también cerrada 2026-08-25). Decisiones
+tomadas durante la implementación, no explícitas en la spec original:
+
+- **`ConsentGateway` + `ConsentRequiredBridge`**: mismo patrón ya usado por
+  `PushNotificationGateway` (widget montado en `MaterialApp.router(builder: ...)`, usa
+  `GoRouter.of(context)` desde su propio `context`) — necesario porque `ConsentRequiredInterceptor`
+  (dio, `core/api_client`) no tiene `BuildContext` y `core/api_client` debe quedar desacoplado del
+  árbol de widgets (ver comentario de `LocaleHeaderInterceptor`). El bridge es un
+  `Completer`/`StreamController` simple: el interceptor pide y espera, el gateway navega y resuelve.
+- **`errorCode` en el backend, no solo status 403** (amendment cruzado, ver
+  `TekoApp-Backend/openspec/decisions.md`): sin un identificador máquina-legible, un interceptor
+  GLOBAL de 403 (como pide la spec, "en CUALQUIER response") secuestraría cualquier otro 403 de la
+  app (ej. permisos de un endpoint admin) — status code solo no alcanza acá, a diferencia de otros
+  casos ya resueltos en la app donde el código es inequívoco por endpoint (ej. 409 en
+  `POST /payments`).
+- **`data/legal_consents_repository.dart`, no `legal_consents_api.dart`** — la spec usaba ese
+  nombre literal, pero el resto del repo llama a esta capa "Repository" (`AuthRepository`,
+  `PaymentsRepository`) — se siguió la convención real, no la redacción de la spec.
+- **`url_launcher` en vez de un WebView embebido** para abrir el `contentUrl` real — la spec
+  ofrecía ambas opciones explícitamente; se eligió la de menor huella de dependencias (no hay
+  ningún paquete de WebView en el proyecto hoy).
+- **Selector de `usageScope` diferido, no implementado en esta fase**: no existe todavía ningún
+  formulario de subida de portafolio/documentos al que integrarlo (llega con `0007`/`0008`) — el
+  modelo y el método de repositorio (`ContentConsentGrant.usageScope`,
+  `LegalConsentsDbService.createContentGrant` en backend) ya están listos para cuando esos
+  formularios existan.
+- **`LegalConsentScreen` muestra TODOS los documentos pendientes de una**, no uno a la vez — el
+  guard del backend (`RequiresActiveConsentGuard`) solo informa "falta consentimiento", nunca cuál
+  `LegalDocumentType` puntual disparó el 403 (el `403 CONSENT_REQUIRED` es genérico), así que no
+  hay forma de saber cuál mostrar primero — se resuelven todos juntos.
+
 ## Fase 0005 — Push notifications (FCM)
 
 Cliente completo contra el backend ya listo (`POST/DELETE /notifications/fcm-tokens`,
@@ -690,3 +733,70 @@ Cliente completo contra el backend ya listo (`POST/DELETE /notifications/fcm-tok
 
 Con esto, el checklist completo de push de la Fase 0005 queda cerrado — el checkpoint de salida
 (dos dispositivos reales, uno emitiendo, otro recibiendo) sigue pendiente de José.
+
+## Rediseño visual — gradiente de marca (implementado 2026-08-25)
+
+Roadmap punto 3 (rediseño visual, después de `0006`/`0012` de consentimiento). Fuera del backlog
+de features 2026-08-22 — pedido de diseño separado, espejo del mismo trabajo en
+`TekoApp-Frontend-Web` (ver su `openspec/decisions.md`, mismo día).
+
+**`TekoGradientBackground`** (`lib/shared/widgets/`) — mismo gradiente que Web: diagonal
+navy→teal→verde, `TekoPrimitives.neutral900` → `.accent700` → `.primary600` (shades accesibles,
+no los 500 crudos — mismo criterio que `TekoThemeColors.light.primary` usa `primary600`). Aplicado
+en:
+
+- `LoginScreen` — fondo de página completa; el formulario (antes sin envoltorio propio) se
+  envolvió en un `Container` con `Theme.of(context).cardColor`, ya que `TextFormField` asume fondo
+  claro.
+- `ProfessionalOnboardingScreen` — hero acotado arriba del formulario (no fondo completo — es un
+  form largo y denso, un fondo oscuro detrás de tantos campos habría sido ilegible/recargado).
+- `ProfessionalHomeScreen` (`_ProfessionalActiveBody`, el caso "con perfil activo") — hero acotado
+  arriba del switch de disponibilidad, mismo criterio que el hero de `(client)/page.tsx` en Web
+  (no fondo completo, para no competir con el switch/lista de servicios debajo). Los estados "sin
+  perfil"/error/loading de `ProfessionalHomeScreen` quedan sin tocar — no tienen un momento "hero"
+  natural.
+
+**`HomeScreen` (cliente) — descartado deliberadamente**, a diferencia de los otros candidatos: ya
+tiene su propio lenguaje visual fresco de la Fase 0013 (recién rediseñada hoy mismo, CTA `accent`
+sólida + grid) — un fondo gradiente detrás hubiese competido con esa CTA en vez de complementarla.
+
+**Estado**: implementado, `flutter analyze`/`flutter test` en verde (293/293, incluye 3 tests
+nuevos del widget compartido).
+
+## Fase 0011 — Disclosure de contenido generado por IA (implementado 2026-08-25)
+
+`lib/features/ai_disclosures/` (`data`/`providers`/`models`) + `shared/widgets/ai_disclosure_badge.dart`.
+Reusa `AiDisclosureEntityType` (`legal_consents/models/`, ya introducido en la Fase 0012) sin
+duplicar — importado cross-feature deliberadamente, es un enum genuinamente compartido, no lógica
+de dominio de `legal_consents`.
+
+**Solo 2 formularios reales reciben el checkbox — verificado grepeando el código, no asumido.**
+El spec pedía "revisar cuáles formularios existen realmente, no asumir la lista de hoy": hoy solo
+`request_service_screen.dart` (→ `SERVICE_DESCRIPTION`) y `professional_onboarding_screen.dart`
+(→ `PROFESSIONAL_DESCRIPTION`) tienen un campo de descripción real — coincide exactamente con
+`APP_CONFIG.aiDisclosure.userDeclarableTypes` del backend (Fase 0005, mismo día).
+
+**Patrón "declarar después de crear"**: ambos controllers (`RequestServiceController.submit()`,
+`ProfessionalOnboardingController.submit()`) ahora capturan la entidad creada (antes se
+descartaba) y, si `aiAssisted` es true, disparan `AiDisclosuresRepository.declare()` en un
+`try/catch` que traga cualquier error — el disclosure es "siempre opcional y post-hoc" (spec), así
+que nunca debe hacer fallar la creación del servicio/perfil ya exitosa. Nota de mapeo: `Service.id`
+YA ES el UUID (`referenceId`) por la convención especial de esa tabla (ver
+`.claude/rules/database-conventions.md` del backend); `ProfessionalProfile` sí usa `referenceId`
+separado — cada controller usa el campo correcto según su modelo.
+
+**Badge solo en `service_detail_screen.dart`.** Es la única pantalla real que renderiza el
+contenido declarable a un viewer (la descripción del servicio). No existe hoy una pantalla de
+"perfil profesional visible a terceros" en mobile (`professional_home_screen.dart` es el propio
+dashboard del profesional, no muestra su bio) — no se inventó una pantalla nueva para justificar
+el segundo badge, fuera de alcance de esta fase.
+
+**`AiDisclosureFailure` distingue 403 de 400 por status code**, a diferencia de
+`LegalConsentsFailure` (que colapsa ambos en un `Validation` genérico vía rango 400-500) — el
+backend de esta fase ya devuelve un 403 real para "no sos dueño" (no un 409 con `errorCode` como en
+consentimiento), así que alcanza con el status code sin mirar el envelope de error.
+
+**Estado**: implementado, `flutter analyze`/`flutter test` en verde (301/301, incluye 5 tests
+nuevos: 4 del repositorio + 2 del badge — más 1 ajuste a un test existente de
+`request_service_screen_test.dart` que dejó de ver el botón de submit sin `ensureVisible` tras
+agregar el checkbox, layout más alto).
