@@ -94,3 +94,26 @@ reales de cada spec en los 3 repos.
   para que un push realmente se dispare en producción.
 - Implementar las 6 features del backlog 2026-08-22, cada una ya con spec propia en `openspec/`.
 - iOS: agregar `GoogleService-Info.plist` cuando José tenga el Mac disponible.
+
+## Adenda — promoción develop → qa → master (misma sesión)
+
+Al promover, aparecieron 2 bugs reales de CI, ambos corregidos:
+
+1. **Colisión de tags de semantic-release**: el rewrite de historia de esta sesión dejó tags
+   `v1.0.0-develop.N`/`v1.0.0-qa.N`/`v1.0.0` viejos en origin que semantic-release ya no reconocía
+   como "última release" pero seguían "existiendo" — chocaba al intentar crear el mismo tag de
+   nuevo. Fix: borrar del remoto los tags huérfanos (autorizado explícitamente por José) para que
+   semantic-release los recree limpio.
+2. **`google-services.json` (gitignored) rompía el build de Android release en CI** —
+   `com.google.gms.google-services` no puede funcionar sin ese archivo. Fix real (no solo del CI):
+   aplicar el plugin de forma condicional (`if (file("google-services.json").exists())`) en
+   `android/app/build.gradle.kts` — local con Firebase real, CI compila igual sin él.
+
+**`develop`/`qa`/`master` quedaron con historias no relacionadas** (el rewrite fue la primera vez
+que corrió en este repo, cambió TODOS los hashes) — resuelto con un reset duro de `qa` y luego
+`master` al contenido de `develop`/`qa` (autorizado explícitamente por José), no un merge. Backend
+sí conservó ancestro común (ya tenía un rewrite previo de julio) y se resolvió con un merge normal
+(`chore/sync-qa-with-develop`); ver la sesión de Backend correspondiente.
+
+**Estado final**: los 3 repos con `develop`/`qa`/`master` en verde (CI + Release) al cierre de la
+sesión.

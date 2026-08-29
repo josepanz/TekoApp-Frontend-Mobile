@@ -89,12 +89,15 @@ enum PaymentProviderType {
   }
 }
 
-/// `PaymentMethodEntity` — el `id` ya es el `referenceId` (UUID) expuesto por
-/// `mapPaymentMethodToResponse` (backend), sin tokenización real de proveedor en esta fase (ver
-/// `openspec/decisions.md`): `details` es lo que el usuario ingresó a mano (ej. últimos 4 dígitos).
+/// `PaymentMethodEntity` — desde 0008-id-referenceid-standardization el backend expone `id` (Int
+/// interno, secuencial) y `referenceId` (UUID) por separado (ver `openspec/decisions.md`). `id`
+/// sirve SOLO para ordenamiento, nunca para navegar/consultar/rutear — usar siempre `referenceId`
+/// para eso. Sin tokenización real de proveedor en esta fase: `details` es lo que el usuario
+/// ingresó a mano (ej. últimos 4 dígitos).
 class PaymentMethod {
   const PaymentMethod({
     required this.id,
+    required this.referenceId,
     required this.name,
     required this.type,
     required this.provider,
@@ -104,7 +107,11 @@ class PaymentMethod {
     this.externalId,
   });
 
-  final String id;
+  /// Int interno secuencial — solo para ordenamiento, nunca para navegar/consultar/rutear.
+  final int id;
+
+  /// UUID público — la clave real para navegación/deep-linking y lookups por API.
+  final String referenceId;
   final String name;
   final PaymentMethodType type;
   final PaymentProviderType provider;
@@ -115,7 +122,8 @@ class PaymentMethod {
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) {
     return PaymentMethod(
-      id: json['id'] as String,
+      id: json['id'] as int,
+      referenceId: json['referenceId'] as String,
       name: json['name'] as String,
       type: PaymentMethodType.fromJson(json['type'] as String),
       provider: PaymentProviderType.fromJson(json['provider'] as String),

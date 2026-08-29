@@ -5,6 +5,7 @@ import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/features/payments/data/payments_repository.dart';
 import 'package:tekoapp_mobile/features/payments/models/payment_failure.dart';
 import 'package:tekoapp_mobile/features/payments/models/payment_method.dart';
+import 'package:tekoapp_mobile/features/payments/models/tip_mode.dart';
 
 class _MockDio extends Mock implements Dio {}
 
@@ -43,7 +44,8 @@ void main() {
   }
 
   Map<String, dynamic> paymentMethodJson({String id = 'pm-uuid-1'}) => {
-        'id': id,
+        'id': 1,
+        'referenceId': id,
         'name': 'Visa terminada en 4242',
         'type': 'CREDIT_CARD',
         'provider': 'STRIPE',
@@ -54,7 +56,8 @@ void main() {
       };
 
   Map<String, dynamic> paymentJson({String id = 'pay-uuid-1'}) => {
-        'id': id,
+        'id': 1,
+        'referenceId': id,
         'userId': 1,
         'professionalId': 2,
         'serviceId': 'svc-uuid-1',
@@ -82,7 +85,7 @@ void main() {
 
       // Assert
       expect(result, hasLength(1));
-      expect(result.single.id, 'pm-uuid-1');
+      expect(result.single.referenceId, 'pm-uuid-1');
       expect(result.single.type, PaymentMethodType.creditCard);
       expect(result.single.provider, PaymentProviderType.stripe);
     });
@@ -135,7 +138,7 @@ void main() {
       );
 
       // Assert
-      expect(result.id, 'pm-uuid-1');
+      expect(result.referenceId, 'pm-uuid-1');
       final sentData = verify(
         () => dio.post<Map<String, dynamic>>(
           '/payments/methods',
@@ -253,7 +256,7 @@ void main() {
       );
 
       // Assert
-      expect(result.id, 'pay-uuid-1');
+      expect(result.referenceId, 'pay-uuid-1');
       final sentData = verify(
         () => dio.post<Map<String, dynamic>>(
           '/payments',
@@ -384,7 +387,7 @@ void main() {
       );
 
       // Assert
-      expect(result.id, 'pay-uuid-1');
+      expect(result.referenceId, 'pay-uuid-1');
     });
 
     test('propaga el mensaje EXACTO cuando el monto excede lo disponible',
@@ -442,6 +445,106 @@ void main() {
         ),
         throwsA(isA<PaymentConflictFailure>()),
       );
+    });
+  });
+
+  group('fetchTipConfig', () {
+    test('mapea la config activa de propinas', () async {
+      // Arrange
+      when(() => dio.get<Map<String, dynamic>>('/tips/config')).thenAnswer(
+        (_) async => okResponse('/tips/config', {
+          'isEnabled': true,
+          'isMandatory': false,
+          'suggestedPercentages': [10, 15, 20],
+          'allowFreeAmount': true,
+        }),
+      );
+
+      // Act
+      final result = await repository.fetchTipConfig();
+
+      // Assert
+      expect(result.isEnabled, true);
+      expect(result.suggestedPercentages, [10, 15, 20]);
+      expect(result.allowFreeAmount, true);
+    });
+  });
+
+  group('createTip', () {
+    test('manda mode+percentage cuando es PERCENTAGE', () async {
+      // Arrange
+      when(
+        () => dio.post<Map<String, dynamic>>(
+          '/payments/pay-uuid-1/tip',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer(
+        (_) async => okResponse('/payments/pay-uuid-1/tip', {
+          'referenceId': 'tip-uuid-1',
+          'mode': 'PERCENTAGE',
+          'percentage': 10,
+          'amount': 10000,
+          'currencyCode': 'PYG',
+          'createdAt': '2026-08-08T10:00:00.000Z',
+        }),
+      );
+
+      // Act
+      final result = await repository.createTip(
+        'pay-uuid-1',
+        mode: TipMode.percentage,
+        percentage: 10,
+      );
+
+      // Assert
+      expect(result.referenceId, 'tip-uuid-1');
+      final sentData = verify(
+        () => dio.post<Map<String, dynamic>>(
+          '/payments/pay-uuid-1/tip',
+          data: captureAny(named: 'data'),
+        ),
+      ).captured.single as Map<String, dynamic>;
+      expect(sentData['mode'], 'PERCENTAGE');
+      expect(sentData['percentage'], 10);
+      expect(sentData.containsKey('amount'), false);
+    });
+
+    test('propaga el mensaje EXACTO cuando el pago ya tiene propina', () async {
+      // Arrange
+      when(
+        () => dio.post<Map<String, dynamic>>(
+          '/payments/pay-uuid-1/tip',
+          data: any(named: 'data'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/payments/pay-uuid-1/tip'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/payments/pay-uuid-1/tip'),
+            statusCode: 400,
+            data: {
+              'success': false,
+              'error': {
+                'code': 400,
+                'message': 'Ya dejaste una propina para este pago',
+              },
+            },
+          ),
+        ),
+      );
+
+      // Act
+      try {
+        await repository.createTip(
+          'pay-uuid-1',
+          mode: TipMode.free,
+          amount: 5000,
+        );
+        fail('debía lanzar PaymentValidationFailure');
+      } on PaymentValidationFailure catch (failure) {
+        // Assert
+        expect(failure.backendMessage, 'Ya dejaste una propina para este pago');
+      }
     });
   });
 }

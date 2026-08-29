@@ -9,7 +9,8 @@ import 'package:tekoapp_mobile/features/services/providers/service_transition_co
 class _MockDio extends Mock implements Dio {}
 
 Map<String, dynamic> _serviceJson(String status) => {
-      'id': 'service-uuid-1',
+      'id': 1,
+      'referenceId': 'service-uuid-1',
       'userId': 1,
       'professionalId': 2,
       'categoryId': 3,

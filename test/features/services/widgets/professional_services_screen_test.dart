@@ -16,7 +16,8 @@ Map<String, dynamic> _serviceJson({
   required String status,
 }) =>
     {
-      'id': id,
+      'id': 1,
+      'referenceId': id,
       'userId': 1,
       'professionalId': 2,
       'categoryId': 3,
@@ -275,7 +276,8 @@ void main() {
       (_) async => Response(
         requestOptions: RequestOptions(path: '/ratings/professional-to-client'),
         data: {
-          'id': 'rating-uuid-1',
+          'id': 1,
+          'referenceId': 'rating-uuid-1',
           'userId': 1,
           'professionalId': 2,
           'type': 'PROFESSIONAL_TO_CLIENT',

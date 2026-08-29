@@ -6,13 +6,13 @@ parametrización, endpoints). Web: `TekoApp-Frontend-Web/openspec/specs/professi
 
 ## Modelo de dominio (ya definido en el backend, replicar el contrato tal cual)
 
-- **DocumentTypes**: catálogo parametrizable por país/categoría de profesional — `category`
+- **ProfessionalDocumentTypes**: catálogo parametrizable por país/categoría de profesional — `category`
   (`BACKGROUND_CHECK`/`QUALIFICATION`/`PORTFOLIO`), `isRequired`, `validityDays` (null = no vence),
   `isVisibleToClient`.
 - **ProfessionalDocuments**: el documento cargado por un profesional — `status`
   (`PENDING`/`APPROVED`/`REJECTED`/`EXPIRED`), `fileKey` (S3, mismo patrón que `avatarKey`),
   `expiresAt`, `rejectionReason`.
-- `Professionals.verificationStatus` (ya existe) se deriva de si todos los `DocumentTypes`
+- `Professionals.verificationStatus` (ya existe) se deriva de si todos los `ProfessionalDocumentTypes`
   obligatorios están `APPROVED` y vigentes.
 
 ## Flujos de UI esperados

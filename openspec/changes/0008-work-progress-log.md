@@ -49,24 +49,45 @@ tiempo configurada por el backend.
 
 ## Tareas
 
-- [ ] `data/`+`providers/`+`models/` de `service_progress`.
-- [ ] Sección de timeline embebida en el detalle de servicio (ambos roles).
-- [ ] Formulario de nueva entrada con selector de fotos múltiple.
-- [ ] Manejo de 409 `EDIT_WINDOW_EXPIRED` y de la validación `PROGRESS_LOG_REQUIRED` al intentar
-      completar un servicio de una categoría que lo exige (mostrar el mensaje del backend, no un
-      genérico — mismo criterio ya aplicado en la Fase 0004 a mensajes de error textuales).
-- [ ] Traducir a es/en.
-- [ ] Tests: provider (happy path, error, estado vacío "todavía no hay avances registrados"),
-      widget test de la timeline y del formulario.
+- [x] `data/`+`providers/`+`models/` de `service_progress`.
+- [x] Sección de timeline embebida en el detalle de servicio (ambos roles) — `ProgressTimeline`,
+      wired en `service_detail_screen.dart` cuando `service.professional != null`.
+- [x] Formulario de nueva entrada con selector de fotos múltiple (`image_picker.pickMultiImage`).
+- [x] Manejo de 409 (`ServiceProgressConflictFailure`, cubre tanto `EDIT_WINDOW_EXPIRED` como
+      "servicio no está ACCEPTED/IN_PROGRESS") — mensaje del backend mostrado tal cual, no
+      genérico.
+- [ ] Validación `PROGRESS_LOG_REQUIRED` al completar un servicio — **no implementado en esta
+      sesión**: `professional_services_screen.dart`/`service_transition_controller_provider.dart`
+      (el flujo real de "completar") no fueron tocados; el error ya llegaría del backend como 400
+      con mensaje claro (`ServiceFailure` genérico lo mostraría), pero no se agregó un mensaje
+      específico ni un test para este caso puntual. Pendiente de una tarea chica aparte.
+- [x] Traducir a es/en.
+- [x] Tests: repositorio (7), controller (4), widget de la timeline (5) y del formulario (3) — 19
+      tests nuevos, ver detalle en `openspec/decisions.md`.
+
+## Corrección tras implementar (2026-08-27)
+
+Igual que en el backend: las fotos NO se mandan en el mismo POST que crea la entrada. Se suben
+antes, una por una, vía `POST /uploads/image` (mismo patrón ya usado por
+`ProfileRepository.uploadAvatar` para el avatar) — `ServiceProgressRepository.createEntry` solo
+recibe las keys ya subidas. También se agregó `resolvePhotoUrl(key)` (vía
+`GET /uploads/presigned-url`) para poder renderizar las miniaturas de las fotos ya guardadas — esto
+no estaba en la spec original, ninguna otra pantalla de mobile resolvía todavía una key de S3 a una
+URL mostrable.
 
 ## Checkpoint de salida
 
-- [ ] Profesional agrega una entrada con fotos durante un servicio `IN_PROGRESS`, el cliente la ve
-      en su propia pantalla sin recargar la app entera (refetch al entrar a la pantalla).
-- [ ] Eliminar una entrada dentro de la ventana de edición funciona; pasada la ventana, el mensaje
-      de error es claro, no genérico.
+- [x] Profesional agrega una entrada con fotos durante un servicio `IN_PROGRESS`, el cliente la ve
+      en su propia pantalla sin recargar la app entera (`ref.invalidate` tras la mutación).
+- [x] Eliminar una entrada dentro de la ventana de edición funciona; pasada la ventana, el mensaje
+      de error es claro, no genérico — además, el botón de eliminar directamente no se muestra si
+      `editWindowExpired` ya es `true` (calculado por el backend, ver spec).
 - [ ] Si la categoría del servicio exige bitácora, intentar completarlo sin ninguna entrada
-      muestra el mensaje `PROGRESS_LOG_REQUIRED` de forma clara antes de dejar completar.
+      muestra el mensaje `PROGRESS_LOG_REQUIRED` de forma clara antes de dejar completar — **no
+      verificado, ver tarea pendiente arriba**.
+- [ ] Checkpoint real contra un dispositivo/emulador Android con backend local corriendo — esta
+      sesión solo verificó `flutter analyze`/`flutter test`, no probó la app corriendo de verdad
+      (mismo límite ya documentado en `.claude/rules/test.md` para el resto del repo).
 
 ## Relación con otras features
 
