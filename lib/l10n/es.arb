@@ -105,6 +105,19 @@
   "pushPermissionDialogBody": "Te avisamos cuando un profesional acepte tu pedido, cuando recibas un pago o una calificación, y otras novedades importantes de tus servicios.",
   "pushPermissionDialogAccept": "Activar",
   "pushPermissionDialogDecline": "Ahora no",
+  "updateAvailableTitle": "Actualización disponible",
+  "updateAvailableVersion": "Nueva versión: {version}",
+  "@updateAvailableVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateCancelButton": "Cancelar",
+  "updateNowButton": "Actualizar",
+  "updateDownloadError": "No se pudo descargar la actualización — intentá de nuevo",
+  "updateInstallError": "No se pudo abrir el instalador — verificá el permiso de instalar apps desconocidas e intentá de nuevo",
   "professionalOnboardingTitle": "Activar perfil profesional",
   "professionalOnboardingCategoryLabel": "Categoría",
   "professionalOnboardingCategoryRequired": "Elegí una categoría",
@@ -146,6 +159,67 @@
   "serviceRequestAccept": "Aceptar",
   "serviceRequestAcceptConflict": "Esto cambió — actualizá la pantalla",
   "serviceRequestAcceptError": "No se pudo aceptar la propuesta — intentá de nuevo",
+  "serviceRequestViewBudgets": "Ver presupuestos",
+  "budgetBuilderTitle": "Armar presupuesto",
+  "budgetBuilderAddOption": "Agregar opción",
+  "budgetBuilderSubmitButton": "Enviar presupuesto",
+  "budgetBuilderError": "No se pudo enviar el presupuesto — intentá de nuevo",
+  "budgetBuilderConflict": "Este servicio ya no acepta propuestas",
+  "budgetOptionLabel": "Nombre de la opción",
+  "budgetOptionAddLineItem": "Agregar ítem",
+  "budgetOptionTotal": "Total: Gs. {total}",
+  "@budgetOptionTotal": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "budgetOptionEstimatedHours": "Horas estimadas: {hours}",
+  "@budgetOptionEstimatedHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "budgetOptionSelectedBadge": "Elegida",
+  "budgetOptionShowDetails": "Ver detalle",
+  "budgetOptionHideDetails": "Ocultar detalle",
+  "budgetOptionSelectButton": "Elegir esta opción",
+  "lineItemCatalogItem": "Material del catálogo",
+  "lineItemFreeItem": "Ítem libre",
+  "lineItemDescription": "Descripción",
+  "lineItemQuantity": "Cantidad",
+  "lineItemUnitPrice": "Precio unitario",
+  "budgetComparisonTitle": "Comparar presupuestos",
+  "budgetComparisonLoadError": "No se pudieron cargar los presupuestos — intentá de nuevo",
+  "budgetComparisonEmpty": "El profesional todavía no cargó opciones de presupuesto",
+  "budgetComparisonConflict": "Esto cambió — actualizá la pantalla",
+  "budgetComparisonError": "No se pudo elegir esta opción — intentá de nuevo",
+  "contractGenerateError": "No se pudo generar el contrato — intentá de nuevo",
+  "myContractsTitle": "Mis contratos",
+  "myContractsScreenTitle": "Mis contratos",
+  "myContractsLoadError": "No se pudieron cargar tus contratos — intentá de nuevo",
+  "myContractsEmpty": "Todavía no tenés contratos",
+  "contractPreviewTitle": "Contrato",
+  "contractLoadError": "No se pudo cargar el contrato — intentá de nuevo",
+  "contractLineItemsTitle": "Detalle",
+  "contractSignatureSectionTitle": "Firma",
+  "contractDisclaimerText": "Este documento registra tu aceptación electrónica de este contrato (nombre completo + casilla de conformidad + huella del contenido). No es una firma electrónica certificada.",
+  "@contractDisclaimerText": {
+    "description": "TODO(legal): texto placeholder genérico, reemplazar por la redacción legal definitiva antes de producción — ver openspec/decisions.md"
+  },
+  "contractAcceptCheckboxLabel": "Leí y acepto el contenido de este contrato",
+  "contractFullNameLabel": "Escribí tu nombre completo para confirmar",
+  "contractSignButton": "Firmar",
+  "contractStatusPendingYourSignature": "Pendiente de tu firma",
+  "contractStatusPendingOtherPartySignature": "Pendiente de la firma de la otra parte",
+  "contractStatusSigned": "Firmado por ambos",
+  "contractConflictError": "Ya firmaste este contrato, o todavía no te toca firmar",
+  "contractSignError": "No se pudo firmar el contrato — intentá de nuevo",
+  "contractDownloadPdfButton": "Ver PDF",
+  "contractDownloadPdfError": "No se pudo abrir el PDF — intentá de nuevo",
   "professionalServicesTitle": "Mis servicios asignados",
   "professionalServicesLoadError": "No se pudieron cargar tus servicios asignados — intentá de nuevo",
   "professionalServicesEmpty": "Todavía no tenés servicios asignados",
@@ -249,6 +323,22 @@
   "paymentRefundCancel": "Cancelar",
   "paymentRefundError": "No se pudo procesar el reembolso — intentá de nuevo",
   "paymentRefundSuccess": "Reembolso procesado",
+  "paymentTipLabel": "Propina: Gs. {amount}",
+  "@paymentTipLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "paymentTipButton": "Dejar propina",
+  "paymentTipDialogTitle": "Dejar propina",
+  "paymentTipCustomAmountLabel": "Otro monto",
+  "paymentTipAmountRequired": "Ingresá un monto válido",
+  "paymentTipSubmit": "Confirmar propina",
+  "paymentTipCancel": "Cancelar",
+  "paymentTipError": "No se pudo enviar la propina — intentá de nuevo",
+  "paymentTipSuccess": "¡Gracias! Propina enviada",
   "rateProfessionalButton": "Calificar profesional",
   "rateClientButton": "Calificar cliente",
   "ratingDialogTitle": "Calificar",
@@ -264,6 +354,24 @@
       "count": {"type": "int"}
     }
   },
+  "myRatingStatsTitle": "Mis calificaciones",
+  "myRatingStatsGivenLabel": "Calificaciones que diste",
+  "myRatingStatsReceivedLabel": "Calificaciones que recibiste",
+  "myRatingStatsAverageGivenLabel": "Promedio que diste",
+  "myRatingStatsAverageReceivedLabel": "Promedio que recibiste",
+  "myRatingStatsError": "No se pudieron cargar tus calificaciones — intentá de nuevo",
+  "professionalRatingStatsTitle": "Mis calificaciones",
+  "professionalRatingStatsAverageLabel": "Promedio general",
+  "professionalRatingStatsTotalLabel": "{count, plural, one{{count} calificación} other{{count} calificaciones}}",
+  "@professionalRatingStatsTotalLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "professionalRatingStatsDistributionLabel": "Distribución",
+  "professionalRatingStatsCriteriaLabel": "Promedio por criterio",
+  "professionalRatingStatsEmpty": "Todavía no recibiste ninguna calificación",
+  "professionalRatingStatsError": "No se pudieron cargar tus calificaciones — intentá de nuevo",
   "legalConsentScreenTitle": "Documento legal pendiente",
   "legalConsentPendingIntro": "Necesitás aceptar este documento antes de continuar.",
   "legalDocumentTypeTermsOfService": "Términos de servicio",
@@ -288,5 +396,51 @@
   "profileLinkPrivacyAndData": "Privacidad y datos",
   "aiDisclosureCheckboxLabel": "Usé IA para esto",
   "aiDisclosureNoteLabel": "Nota (opcional)",
-  "aiDisclosureBadgeLabel": "Asistido por IA"
+  "aiDisclosureBadgeLabel": "Asistido por IA",
+  "serviceProgressSectionTitle": "Bitácora de avance",
+  "serviceProgressEmpty": "Todavía no hay avances registrados",
+  "serviceProgressError": "No pudimos cargar la bitácora",
+  "serviceProgressAddButton": "Agregar avance",
+  "serviceProgressNoteLabel": "Nota (opcional)",
+  "serviceProgressPhotosLabel": "Fotos",
+  "serviceProgressAddPhotoButton": "Agregar foto",
+  "serviceProgressSubmitButton": "Guardar avance",
+  "serviceProgressCancelButton": "Cancelar",
+  "serviceProgressDeleteButton": "Eliminar",
+  "serviceProgressDeleteConfirmTitle": "¿Eliminar esta entrada?",
+  "serviceProgressDeleteConfirmBody": "Esta acción no se puede deshacer.",
+  "serviceProgressSubmitError": "No pudimos guardar el avance — intentá de nuevo",
+  "serviceProgressDeleteError": "No pudimos eliminar la entrada — intentá de nuevo",
+  "serviceProgressEditWindowExpiredError": "Ya venció la ventana para corregir esta entrada",
+  "myDocumentsScreenTitle": "Mis documentos",
+  "myDocumentsError": "No pudimos cargar tus documentos",
+  "myDocumentsEmpty": "Todavía no hay tipos de documento configurados para tu categoría",
+  "documentCategoryBackgroundCheck": "Antecedentes",
+  "documentCategoryQualification": "Habilitación",
+  "documentCategoryPortfolio": "Portafolio",
+  "documentRequiredLabel": "Obligatorio",
+  "documentStatusMissing": "Sin cargar",
+  "documentStatusPending": "En revisión",
+  "documentStatusApproved": "Aprobado",
+  "documentStatusRejected": "Rechazado",
+  "documentStatusExpired": "Vencido",
+  "documentUploadButton": "Subir",
+  "documentReuploadButton": "Volver a subir",
+  "uploadDocumentTakePhoto": "Tomar foto",
+  "uploadDocumentChooseFromGallery": "Elegir de galería",
+  "uploadDocumentIssuedAtButton": "Fecha de emisión (opcional)",
+  "uploadDocumentIssuedAtSelected": "Emitido: {date}",
+  "@uploadDocumentIssuedAtSelected": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "uploadDocumentCancelButton": "Cancelar",
+  "uploadDocumentSubmitButton": "Guardar documento",
+  "uploadDocumentError": "No pudimos guardar el documento — intentá de nuevo",
+  "professionalDocumentsSectionTitle": "Documentos y antecedentes",
+  "professionalDocumentsSectionEmpty": "Todavía no tiene documentos verificados",
+  "professionalDocumentsSectionError": "No pudimos cargar los documentos",
+  "professionalVerifiedBadge": "Antecedentes verificados",
+  "professionalDocumentViewButton": "Ver"
 }
