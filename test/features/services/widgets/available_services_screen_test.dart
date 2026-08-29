@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
+import 'package:tekoapp_mobile/features/budgets/widgets/budget_builder_screen.dart';
 import 'package:tekoapp_mobile/features/professional_profile/models/professional_profile.dart';
 import 'package:tekoapp_mobile/features/professional_profile/models/professional_status.dart';
 import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
@@ -26,22 +28,43 @@ const _profile = ProfessionalProfile(
 );
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
+  // `_propose` navega con `context.push` al armado de presupuesto (Fase 0009) — necesita un
+  // `GoRouter` real en el árbol, no alcanza con `MaterialApp` + `Navigator` implícito.
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) =>
+            const Scaffold(body: AvailableServicesScreen()),
+      ),
+      GoRoute(
+        path: '/servicios/:serviceId/solicitudes/:requestId/presupuesto',
+        builder: (context, state) => BudgetBuilderScreen(
+          serviceId: state.pathParameters['serviceId']!,
+          requestId: state.pathParameters['requestId']!,
+          categoryId: state.extra! as int,
+        ),
+      ),
+    ],
+  );
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
         myProfessionalProfileProvider.overrideWith((ref) async => _profile),
       ],
-      child: const MaterialApp(
-        locale: Locale('es'),
-        localizationsDelegates: [
+      child: MaterialApp.router(
+        locale: const Locale('es'),
+        localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: AvailableServicesScreen()),
+        routerConfig: router,
       ),
     ),
   );
@@ -104,7 +127,8 @@ void main() {
         data: {
           'data': [
             {
-              'id': 'service-uuid-1',
+              'id': 1,
+              'referenceId': 'service-uuid-1',
               'userId': 1,
               'professionalId': null,
               'categoryId': 3,
@@ -139,11 +163,26 @@ void main() {
           path: '/services/service-uuid-1/requests',
         ),
         data: {
-          'id': 'request-uuid-1',
+          'id': 1,
+          'referenceId': 'request-uuid-1',
           'serviceId': 'service-uuid-1',
           'professionalId': 2,
           'status': 'PENDING',
           'createdAt': '2026-08-08T10:00:00.000Z',
+        },
+      ),
+    );
+    when(
+      () => dio.get<Map<String, dynamic>>(
+        '/material-catalog',
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/material-catalog'),
+        data: {
+          'data': <Map<String, dynamic>>[],
+          'pagination': {'total': 0, 'page': 1, 'pageSize': 100, 'totalPages': 0},
         },
       ),
     );
@@ -154,7 +193,8 @@ void main() {
     await tester.tap(find.byKey(const Key('propose_button_service-uuid-1')));
     await tester.pumpAndSettle();
 
-    // Assert
-    expect(find.text('Te propusiste para este servicio'), findsOneWidget);
+    // Assert: la propuesta se envió y navegó al armado de presupuesto (Fase 0009 — ya no
+    // muestra un snackbar de éxito, encadena directo a BudgetBuilderScreen).
+    expect(find.text('Armar presupuesto'), findsOneWidget);
   });
 }

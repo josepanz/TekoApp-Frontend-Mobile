@@ -41,7 +41,7 @@ class RequestServiceController extends AsyncNotifier<void> {
         try {
           await ref.read(aiDisclosuresRepositoryProvider).declare(
                 entityType: AiDisclosureEntityType.serviceDescription,
-                entityReferenceId: created.id,
+                entityReferenceId: created.referenceId,
                 note: aiNote,
               );
         } catch (_) {
