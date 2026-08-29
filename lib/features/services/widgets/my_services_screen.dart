@@ -36,8 +36,9 @@ class MyServicesScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final service = services[index];
             return GestureDetector(
-              key: Key('service_item_${service.id}'),
-              onTap: () => context.push('/mis-servicios/${service.id}'),
+              key: Key('service_item_${service.referenceId}'),
+              onTap: () =>
+                  context.push('/mis-servicios/${service.referenceId}'),
               child: TekoCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

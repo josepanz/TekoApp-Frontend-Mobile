@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/auth/session_provider.dart';
@@ -263,6 +264,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 24),
               const _LanguageSelector(),
+              const SizedBox(height: 12),
+              TekoButton(
+                key: const Key('profile_privacy_and_data_button'),
+                label: l10n.profileLinkPrivacyAndData,
+                variant: TekoButtonVariant.ghost,
+                onPressed: () => context.push('/perfil/privacidad-y-datos'),
+              ),
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_logout_button'),

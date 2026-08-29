@@ -197,8 +197,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Assert — sin sesión, /perfil redirige a /login.
-    final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+    // Assert — sin sesión, `/` (protegida) ya redirigió a /login al arrancar.
+    final router = GoRouter.of(tester.element(find.byType(LoginScreen)));
     router.go('/perfil');
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);

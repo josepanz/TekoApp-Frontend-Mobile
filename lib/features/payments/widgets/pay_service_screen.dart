@@ -96,7 +96,7 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
 
     await ref.read(payServiceControllerProvider.notifier).submit(
           professionalReferenceId: widget.service.professional!.referenceId,
-          serviceId: widget.service.id,
+          serviceId: widget.service.referenceId,
           serviceAmount: _serviceAmount,
           method: method,
           promotionCode:

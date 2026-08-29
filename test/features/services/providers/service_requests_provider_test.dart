@@ -34,7 +34,8 @@ void main() {
         data: {
           'data': [
             {
-              'id': 'request-uuid-1',
+              'id': 1,
+              'referenceId': 'request-uuid-1',
               'serviceId': 'service-uuid-1',
               'professionalId': 2,
               'status': 'PENDING',

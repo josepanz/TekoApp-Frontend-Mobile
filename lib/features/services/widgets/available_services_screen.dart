@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
@@ -25,20 +26,28 @@ class _AvailableServicesScreenState
     extends ConsumerState<AvailableServicesScreen> {
   String? _proposingServiceId;
 
-  Future<void> _propose(String serviceId) async {
-    setState(() => _proposingServiceId = serviceId);
-    await ref.read(proposeOnServiceControllerProvider.notifier).submit(
-          serviceId,
-        );
+  Future<void> _propose(Service service) async {
+    setState(() => _proposingServiceId = service.referenceId);
+    final created = await ref
+        .read(proposeOnServiceControllerProvider.notifier)
+        .submit(service.referenceId);
     if (!mounted) return;
 
-    final l10n = AppLocalizations.of(context)!;
     final state = ref.read(proposeOnServiceControllerProvider);
-    final message = state.hasError
-        ? _errorMessage(l10n, state.error)
-        : l10n.availableServicesProposeSuccess;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    if (!state.hasError && created != null) {
+      // Ya no se pide proposedPrice acá — el precio se arma con opciones de presupuesto (ver
+      // openspec/changes/0009-multi-option-budgets.md), navegar directo al armado.
+      await context.push(
+        '/servicios/${service.referenceId}/solicitudes/${created.referenceId}/presupuesto',
+        extra: service.categoryId,
+      );
+    } else if (state.hasError) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_errorMessage(l10n, state.error))),
+      );
+    }
+    if (!mounted) return;
     setState(() => _proposingServiceId = null);
   }
 
@@ -68,7 +77,7 @@ class _AvailableServicesScreenState
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final service = services[index];
-          final isProposing = _proposingServiceId == service.id;
+          final isProposing = _proposingServiceId == service.referenceId;
           return TekoCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,10 +90,10 @@ class _AvailableServicesScreenState
                 Text(service.address),
                 const SizedBox(height: 12),
                 TekoButton(
-                  key: Key('propose_button_${service.id}'),
+                  key: Key('propose_button_${service.referenceId}'),
                   label: l10n.availableServicesProposeButton,
                   loading: isProposing,
-                  onPressed: isProposing ? null : () => _propose(service.id),
+                  onPressed: isProposing ? null : () => _propose(service),
                 ),
               ],
             ),

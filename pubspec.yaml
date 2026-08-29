@@ -67,6 +67,30 @@ dependencies:
   firebase_core: ^4.13.0
   firebase_messaging: ^16.5.0
 
+  # Abre el texto legal real (LegalDocumentVersions.contentUrl) en el navegador del dispositivo —
+  # ver openspec/changes/0012-data-and-image-consent.md ("WebView o abierto externamente"; se
+  # eligió "abierto externamente" para no sumar la dependencia más pesada de un WebView embebido).
+  url_launcher: ^6.3.1
+
+  # Chequeo y actualización de versión de la app (Fase 0015) — ver
+  # openspec/specs/app-version-update.md.
+  package_info_plus: ^9.0.1 # versión instalada real (PackageInfo.fromPlatform().version)
+  pub_semver: ^2.2.0 # comparación semver real, nunca strings (1.0.0-develop.9 < ...develop.10)
+  path_provider: ^2.1.6 # directorio de caché propio para el APK descargado
+  # REQUEST_INSTALL_PACKAGES en runtime (Android 8+). Fijado en ^12.0.0 (no la última, ^13.x) a
+  # propósito: 13.0.0 subió su Android nativo a compileSdk 37, más nuevo que el compileSdk 36 que
+  # trae el Flutter estable de este proyecto hoy — probado en la práctica (falló el build real con
+  # "Failed to find target with hash string 'android-37'"), no asumido de la changelog. 12.0.0
+  # compila contra compileSdk 35, compatible hacia adelante con 36.
+  permission_handler: ^12.0.0
+  # Dispara el instalador nativo de Android sobre el APK descargado (mismo mecanismo que
+  # "abrir con" del sistema) — elegido sobre `ota_update` porque ese paquete acopla descarga +
+  # instalación en uno solo, duplicando la responsabilidad que ya cubre `dio` (decisión ya tomada
+  # en la spec: descarga con `onReceiveProgress`). `open_filex` solo dispara la apertura/instalación,
+  # componiendo limpio con el downloader separado. Verificado 2026-08-28: mantenido, compatible con
+  # Gradle 8+.
+  open_filex: ^4.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -81,9 +105,25 @@ dev_dependencies:
   # indefinido (bloquearía escribir el primer test).
   mocktail: ^1.0.4
 
+  # Generador del ícono nativo de la app (Android/iOS) a partir de assets/icon/app_icon.png —
+  # solo dev-time (`dart run flutter_launcher_icons`), no se empaqueta en el binario.
+  flutter_launcher_icons: ^0.14.1
+
 flutter:
   uses-material-design: true
   generate: true # habilita l10n vía flutter_localizations (ver l10n.yaml)
 
   # Poppins se carga en runtime vía google_fonts (core/theme/app_theme.dart), no como asset local
   # empaquetado — ver openspec/decisions.md.
+
+  assets:
+    - assets/icon/app_icon.png
+
+# Fuente: recorte del isotipo cuadrado de brand/logo.png (TekoApp-Frontend-Web) — el navy +
+# figura ya vienen con el fondo redondeado incluido, así que no hace falta adaptive_icon_*
+# background por separado. Regenerar con `dart run flutter_launcher_icons` tras cualquier cambio.
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
