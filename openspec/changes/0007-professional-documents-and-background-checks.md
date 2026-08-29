@@ -34,12 +34,14 @@ aprobación/rechazo la hace staff desde `TekoApp-Frontend-Web`.
 
 ### Profesional — `lib/features/professional_documents/`
 
-- `data/professional_documents_api.dart` — `GET /document-types` (filtrado por el país/categoría
-  del profesional logueado), `GET /professionals/me/documents`, `POST /professionals/me/documents`
-  (multipart, mismo patrón de `dio` que la subida de avatar).
-- `providers/` — un provider por operación (`documentTypesProvider`, `myDocumentsProvider`,
-  `uploadDocumentProvider` como `AsyncNotifier` de mutación con invalidación del listado tras
-  subir).
+- `data/professional_documents_repository.dart` — `GET /professionals/me/documents`,
+  `GET /professionals/:referenceId/documents/public`, `GET /professionals/:referenceId`
+  (solo `verificationStatus`), `POST /professionals/me/documents` (multipart directo, mismo patrón
+  de `dio` que la subida de avatar).
+- `providers/` — `myDocumentsProvider`, `publicProfessionalDocumentsProvider`,
+  `professionalVerifiedProvider`, `professionalDocumentFileUrlProvider` (lectura) +
+  `uploadDocumentControllerProvider` (`AsyncNotifier` de mutación, invalida `myDocumentsProvider`
+  tras subir).
 - `widgets/my_documents_screen.dart` — lista de tipos de documento requeridos/opcionales para el
   profesional (agrupados por `DocumentCategory`: antecedentes / habilitación / portafolio), cada
   fila con badge de estado (`TekoBadge`, texto + color, nunca solo color — ver
@@ -49,32 +51,44 @@ aprobación/rechazo la hace staff desde `TekoApp-Frontend-Web`.
   `CONSENT_REQUIRED` — la UI debe interceptar ese código y navegar al flujo de aceptación de
   consentimiento antes de reintentar, no mostrar un error genérico).
 
-### Cliente — dentro de `lib/features/professionals/widgets/professional_profile_screen.dart` (ya existe)
+### Cliente — corrección: `professional_profile_screen.dart` NO existe (ver `decisions.md`)
 
-- Nueva sección "Documentos y antecedentes": badge "Antecedentes verificados" (booleano derivado,
-  nunca el documento en sí), lista de certificaciones aprobadas con nombre/tipo, galería de fotos
-  de portafolio aprobadas (`GET /professionals/:referenceId/documents/public`).
-- Si el profesional no tiene nada aprobado todavía, mostrar el estado vacío correspondiente, nunca
-  ocultar la sección entera sin explicación (mismo estándar de estados vacío del resto de la app).
+- **Corrección tras implementar**: no hay ninguna pantalla de "perfil público de profesional" en
+  mobile todavía (verificado grepeando el repo, no asumido) — la sección se embebió en
+  `service_detail_screen.dart` (mismo punto real donde el cliente ya ve al profesional asignado,
+  igual criterio que `ProgressTimeline`/Fase 0008), no en la pantalla que decía la spec.
+- Sección "Documentos y antecedentes": badge "Antecedentes verificados" (booleano derivado,
+  nunca el documento en sí — resuelto vía `GET /professionals/:referenceId`, ya que el endpoint de
+  documentos públicos filtra `BACKGROUND_CHECK` server-side), lista de certificaciones/portafolio
+  aprobados (`GET /professionals/:referenceId/documents/public`).
+- Si el profesional no tiene nada aprobado todavía, muestra el estado vacío correspondiente, nunca
+  oculta la sección entera sin explicación (mismo estándar de estados vacío del resto de la app).
 
 ## Tareas
 
-- [ ] `data/`+`providers/`+`models/` de `professional_documents` (Profesional).
-- [ ] Pantalla "Mis documentos" con badges de estado y flujo de subida/re-subida.
-- [ ] Manejo explícito de `403 CONSENT_REQUIRED` antes de cualquier subida.
-- [ ] Sección "Documentos y antecedentes" en el perfil público de profesional (Cliente).
-- [ ] Traducir a es/en todo texto nuevo de esta fase.
-- [ ] Tests: provider de subida (happy path, error, 403 consentimiento), widget test de la pantalla
-      "Mis documentos" (estados pendiente/aprobado/rechazado/vencido/vacío).
+- [x] `data/`+`providers/`+`models/` de `professional_documents` (Profesional).
+- [x] Pantalla "Mis documentos" con badges de estado y flujo de subida/re-subida — solo foto
+      (cámara/galería), sin PDF nativo (no hay `file_picker` en el proyecto, ver `decisions.md`).
+- [x] `403 CONSENT_REQUIRED` — cubierto por el interceptor global (`ConsentRequiredInterceptor`,
+      `core/api_client`), sin manejo especial nuevo en este repositorio (mismo criterio que
+      `service_progress`).
+- [x] Sección "Documentos y antecedentes" — embebida en `service_detail_screen.dart` (Cliente), no
+      en la pantalla que decía la spec (ver corrección arriba).
+- [x] Traducido a es/en todo texto nuevo de esta fase.
+- [x] Tests: repositorio (4), controller de subida (2), widget de "Mis documentos" (4) — 10 tests
+      nuevos.
+- [x] `flutter analyze` sin issues, `flutter test` completo (330/330) en verde.
 
 ## Checkpoint de salida
 
 - [ ] Un profesional sube un documento, staff lo aprueba desde `TekoApp-Frontend-Web`, y el estado
-      cambia a "Aprobado" en mobile sin necesitar reinstalar/reloguear (refetch al volver a la
-      pantalla).
-- [ ] Un cliente ve el badge de verificación en el perfil de un profesional real ya aprobado.
-- [ ] Subir sin haber aceptado el consentimiento correspondiente muestra el flujo de aceptación, no
-      un error genérico.
+      cambia a "Aprobado" en mobile sin necesitar reinstalar/reloguear — verificado con tests
+      unitarios (`ref.invalidate` tras la mutación); falta el checkpoint real end-to-end contra
+      Web (Web Fase 0001 todavía no implementada).
+- [ ] Un cliente ve el badge de verificación en el perfil de un profesional real ya aprobado — no
+      verificado contra datos reales, solo con tests.
+- [x] Subir sin haber aceptado el consentimiento correspondiente muestra el flujo de aceptación
+      (interceptor global ya probado en la Fase 0012), no un error genérico.
 
 ## Riesgos / límites explícitos
 

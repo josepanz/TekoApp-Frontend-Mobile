@@ -27,11 +27,12 @@ on:
         default: dev
 
 env:
-  # TODO Fase 2+: reemplazar por las URLs reales de cada ambiente desplegado (hoy solo existe
-  # el backend corriendo localmente, no hay dev/qa/prod desplegados todavía).
-  API_BASE_URL_DEV: http://10.0.2.2:3000/tekoapp-backend/api
-  API_BASE_URL_QA: https://qa-api.tekoapp.com.py/tekoapp-backend/api
-  API_BASE_URL_PROD: https://api.tekoapp.com.py/tekoapp-backend/api
+  # Backend real en Render (free tier, confirmado por José 2026-08-28) — los 3 ambientes apuntan
+  # hoy a la MISMA instancia a propósito (todavía no hay backend/DB separado por ambiente, ver
+  # openspec/decisions.md). Actualizar cuando qa/prod tengan su propio deploy.
+  API_BASE_URL_DEV: https://tekoapp-backend.onrender.com/tekoapp-backend/api
+  API_BASE_URL_QA: https://tekoapp-backend.onrender.com/tekoapp-backend/api
+  API_BASE_URL_PROD: https://tekoapp-backend.onrender.com/tekoapp-backend/api
 
 jobs:
   android:
@@ -67,7 +68,8 @@ jobs:
       - name: Build APK debug
         run: |
           flutter build apk --debug \
-            --dart-define=API_BASE_URL=${{ steps.env.outputs.api_base_url }}
+            --dart-define=API_BASE_URL=${{ steps.env.outputs.api_base_url }} \
+            --dart-define=APP_ENVIRONMENT=${{ inputs.environment }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -103,4 +105,5 @@ jobs:
       - name: Build iOS (simulador)
         run: |
           flutter build ios --simulator --no-codesign \
-            --dart-define=API_BASE_URL=${{ steps.env.outputs.api_base_url }}
+            --dart-define=API_BASE_URL=${{ steps.env.outputs.api_base_url }} \
+            --dart-define=APP_ENVIRONMENT=${{ inputs.environment }}

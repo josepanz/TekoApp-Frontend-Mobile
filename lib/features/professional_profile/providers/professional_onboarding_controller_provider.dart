@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../ai_disclosures/providers/ai_disclosures_repository_provider.dart';
+import '../../legal_consents/models/ai_disclosure_entity_type.dart';
 import 'my_professional_profile_provider.dart';
 import 'professional_profile_repository_provider.dart';
 
@@ -17,20 +19,37 @@ class ProfessionalOnboardingController extends AsyncNotifier<void> {
     double? fixedRate,
     List<String>? skills,
     int? yearsOfExperience,
+    bool aiAssisted = false,
+    String? aiNote,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await ref.read(professionalProfileRepositoryProvider).register(
-            categoryId: categoryId,
-            description: description,
-            hourlyRate: hourlyRate,
-            fixedRate: fixedRate,
-            skills: skills,
-            yearsOfExperience: yearsOfExperience,
-          );
+      final created =
+          await ref.read(professionalProfileRepositoryProvider).register(
+                categoryId: categoryId,
+                description: description,
+                hourlyRate: hourlyRate,
+                fixedRate: fixedRate,
+                skills: skills,
+                yearsOfExperience: yearsOfExperience,
+              );
       // El gate de `/profesional` lee este provider — invalidarlo para que muestre el perfil
       // recién creado en vez del estado "sin perfil" cacheado.
       ref.invalidate(myProfessionalProfileProvider);
+
+      if (aiAssisted) {
+        // Best-effort, nunca bloquea ni falla el alta ya creada — ver
+        // `openspec/specs/ai-content-disclosure.md` ("siempre opcional y post-hoc").
+        try {
+          await ref.read(aiDisclosuresRepositoryProvider).declare(
+                entityType: AiDisclosureEntityType.professionalDescription,
+                entityReferenceId: created.referenceId,
+                note: aiNote,
+              );
+        } catch (_) {
+          // silencioso a propósito
+        }
+      }
     });
   }
 }

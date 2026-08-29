@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/core/auth/access_token_reader_provider.dart';
+import 'package:tekoapp_mobile/features/budgets/widgets/budget_comparison_screen.dart';
 import 'package:tekoapp_mobile/features/services/widgets/service_detail_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
@@ -15,23 +17,44 @@ class _MockDio extends Mock implements Dio {}
 /// Sin token: el tracking en vivo del profesional asignado (`assignedProfessionalLocationProvider`)
 /// corta antes de tocar el socket real — evita que estos tests toquen el `MethodChannel` real de
 /// `flutter_secure_storage`.
+///
+/// `GoRouter` real (no `MaterialApp` simple): "Ver presupuestos" navega con `context.push` a
+/// `BudgetComparisonScreen` (Fase 0009).
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) {
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) =>
+            const ServiceDetailScreen(serviceId: 'service-uuid-1'),
+      ),
+      GoRoute(
+        path: '/mis-servicios/:id/solicitudes/:requestId/presupuestos',
+        builder: (context, state) => BudgetComparisonScreen(
+          serviceId: state.pathParameters['id']!,
+          requestId: state.pathParameters['requestId']!,
+        ),
+      ),
+    ],
+  );
+
   return tester.pumpWidget(
     ProviderScope(
       overrides: [
         apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
         accessTokenReaderProvider.overrideWithValue(() async => null),
       ],
-      child: const MaterialApp(
-        locale: Locale('es'),
-        localizationsDelegates: [
+      child: MaterialApp.router(
+        locale: const Locale('es'),
+        localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
-        home: ServiceDetailScreen(serviceId: 'service-uuid-1'),
+        routerConfig: router,
       ),
     ),
   );
@@ -55,7 +78,8 @@ void main() {
       (_) async => Response(
         requestOptions: RequestOptions(path: '/services/service-uuid-1'),
         data: {
-          'id': 'service-uuid-1',
+          'id': 1,
+          'referenceId': 'service-uuid-1',
           'userId': 1,
           'professionalId': 2,
           'categoryId': 3,
@@ -111,7 +135,8 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: '/services/service-uuid-1'),
           data: {
-            'id': 'service-uuid-1',
+            'id': 1,
+            'referenceId': 'service-uuid-1',
             'userId': 1,
             'professionalId': 2,
             'categoryId': 3,
@@ -176,7 +201,8 @@ void main() {
 
   Map<String, dynamic> pendingServiceJson() {
     return {
-      'id': 'service-uuid-1',
+      'id': 1,
+      'referenceId': 'service-uuid-1',
       'userId': 1,
       'professionalId': null,
       'categoryId': 3,
@@ -227,7 +253,7 @@ void main() {
   );
 
   testWidgets(
-    'acepta una propuesta competidora sobre mi servicio PENDING',
+    'navega a comparar presupuestos de una propuesta competidora sobre mi servicio PENDING',
     (tester) async {
       // Arrange
       when(
@@ -250,11 +276,11 @@ void main() {
           data: {
             'data': [
               {
-                'id': 'request-uuid-1',
+                'id': 1,
+                'referenceId': 'request-uuid-1',
                 'serviceId': 'service-uuid-1',
                 'professionalId': 2,
                 'status': 'PENDING',
-                'proposedPrice': 120000,
                 'createdAt': '2026-08-08T10:00:00.000Z',
               },
             ],
@@ -262,22 +288,13 @@ void main() {
         ),
       );
       when(
-        () => dio.put<Map<String, dynamic>>(
-          '/services/service-uuid-1/requests/request-uuid-1',
-          data: any(named: 'data'),
+        () => dio.get<Map<String, dynamic>>(
+          '/services/service-uuid-1/requests/request-uuid-1/budget-options',
         ),
       ).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(
-            path: '/services/service-uuid-1/requests/request-uuid-1',
-          ),
-          data: {
-            'id': 'request-uuid-1',
-            'serviceId': 'service-uuid-1',
-            'professionalId': 2,
-            'status': 'ACCEPTED',
-            'createdAt': '2026-08-08T10:00:00.000Z',
-          },
+          requestOptions: RequestOptions(path: ''),
+          data: {'data': <Map<String, dynamic>>[]},
         ),
       );
 
@@ -285,27 +302,22 @@ void main() {
       await _pumpScreen(tester, dio);
       await tester.pumpAndSettle();
 
-      // Assert (propuesta visible antes de aceptar)
+      // Assert (propuesta visible antes de ver presupuestos)
       expect(find.text('Profesional #2'), findsOneWidget);
-      expect(find.text('Precio propuesto: Gs. 120000'), findsOneWidget);
 
-      // Act (aceptar)
-      await tester.tap(find.byKey(const Key('accept_request_request-uuid-1')));
+      // Act (ver presupuestos)
+      await tester.tap(find.byKey(const Key('view_budgets_request-uuid-1')));
       await tester.pumpAndSettle();
 
       // Assert
-      verify(
-        () => dio.put<Map<String, dynamic>>(
-          '/services/service-uuid-1/requests/request-uuid-1',
-          data: any(named: 'data'),
-        ),
-      ).called(1);
+      expect(find.text('Comparar presupuestos'), findsOneWidget);
     },
   );
 
   Map<String, dynamic> completedServiceJson() {
     return {
-      'id': 'service-uuid-1',
+      'id': 1,
+      'referenceId': 'service-uuid-1',
       'userId': 1,
       'professionalId': 2,
       'categoryId': 3,
@@ -379,7 +391,8 @@ void main() {
           ),
           data: [
             {
-              'id': 'rating-uuid-1',
+              'id': 1,
+              'referenceId': 'rating-uuid-1',
               'userId': 1,
               'professionalId': 2,
               'type': 'CLIENT_TO_PROFESSIONAL',
@@ -433,7 +446,8 @@ void main() {
       (_) async => Response(
         requestOptions: RequestOptions(path: '/ratings'),
         data: {
-          'id': 'rating-uuid-1',
+          'id': 1,
+          'referenceId': 'rating-uuid-1',
           'userId': 1,
           'professionalId': 2,
           'type': 'CLIENT_TO_PROFESSIONAL',

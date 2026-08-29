@@ -6,6 +6,7 @@ import '../../../core/mode/app_mode.dart';
 import '../../../core/mode/app_mode_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_button.dart';
+import '../../../shared/widgets/teko_gradient_background.dart';
 import '../../locations/providers/online_status_controller_provider.dart';
 import '../../services/widgets/available_services_screen.dart';
 import '../providers/my_professional_profile_provider.dart';
@@ -19,6 +20,28 @@ class _ProfessionalActiveBody extends ConsumerWidget {
     final onlineAsync = ref.watch(onlineStatusControllerProvider);
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TekoGradientBackground(
+            borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.work_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.professionalHomeTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         SwitchListTile(
           key: const Key('professional_home_online_switch'),
           title: Text(l10n.professionalOnlineToggleTitle),
@@ -34,11 +57,37 @@ class _ProfessionalActiveBody extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(16),
-          child: TekoButton(
-            key: const Key('professional_home_my_services_button'),
-            label: l10n.professionalServicesTitle,
-            variant: TekoButtonVariant.outline,
-            onPressed: () => context.push('/profesional/mis-servicios'),
+          child: Column(
+            children: [
+              TekoButton(
+                key: const Key('professional_home_my_services_button'),
+                label: l10n.professionalServicesTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/profesional/mis-servicios'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
+                key: const Key('professional_home_my_documents_button'),
+                label: l10n.myDocumentsScreenTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/profesional/mis-documentos'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
+                key: const Key('professional_home_my_contracts_button'),
+                label: l10n.myContractsTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/contratos'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
+                key: const Key('professional_home_my_rating_stats_button'),
+                label: l10n.professionalRatingStatsTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () =>
+                    context.push('/profesional/mis-calificaciones'),
+              ),
+            ],
           ),
         ),
         const Expanded(child: AvailableServicesScreen()),
@@ -61,35 +110,30 @@ class ProfessionalHomeScreen extends ConsumerWidget {
     final profileAsync = ref.watch(myProfessionalProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.professionalHomeTitle)),
-      body: Column(
-        children: [
-          Expanded(
-            child: switch (profileAsync) {
-              AsyncData(value: null) => Center(
-                  child: Text(l10n.professionalHomeNoProfile),
-                ),
-              AsyncData() => const _ProfessionalActiveBody(),
-              AsyncError() => Center(
-                  child: Text(l10n.professionalHomeServiceUnavailable),
-                ),
-              _ => const Center(child: CircularProgressIndicator()),
+      appBar: AppBar(
+        title: Text(l10n.professionalHomeTitle),
+        actions: [
+          IconButton(
+            key: const Key('professional_home_back_to_client_button'),
+            icon: const Icon(Icons.swap_horiz),
+            tooltip: l10n.professionalHomeBackToClient,
+            onPressed: () {
+              ref.read(appModeProvider.notifier).state = AppMode.client;
+              context.go('/');
             },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TekoButton(
-              key: const Key('professional_home_back_to_client_button'),
-              label: l10n.professionalHomeBackToClient,
-              variant: TekoButtonVariant.outline,
-              onPressed: () {
-                ref.read(appModeProvider.notifier).state = AppMode.client;
-                context.go('/');
-              },
-            ),
           ),
         ],
       ),
+      body: switch (profileAsync) {
+        AsyncData(value: null) => Center(
+            child: Text(l10n.professionalHomeNoProfile),
+          ),
+        AsyncData() => const _ProfessionalActiveBody(),
+        AsyncError() => Center(
+            child: Text(l10n.professionalHomeServiceUnavailable),
+          ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
     );
   }
 }

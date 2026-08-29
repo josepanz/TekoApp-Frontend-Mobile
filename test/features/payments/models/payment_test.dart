@@ -3,7 +3,8 @@ import 'package:tekoapp_mobile/features/payments/models/payment.dart';
 
 Map<String, dynamic> _basePaymentJson({Map<String, dynamic>? refundDetails}) {
   return {
-    'id': 'pay-uuid-1',
+    'id': 1,
+    'referenceId': 'pay-uuid-1',
     'userId': 1,
     'professionalId': 2,
     'serviceId': 'svc-uuid-1',

@@ -10,7 +10,8 @@ import 'package:tekoapp_mobile/features/payments/providers/payment_method_contro
 class _MockDio extends Mock implements Dio {}
 
 Map<String, dynamic> _paymentMethodJson() => {
-      'id': 'pm-uuid-1',
+      'id': 1,
+      'referenceId': 'pm-uuid-1',
       'name': 'Visa terminada en 4242',
       'type': 'CREDIT_CARD',
       'provider': 'STRIPE',

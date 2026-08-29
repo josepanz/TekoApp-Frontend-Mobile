@@ -87,6 +87,9 @@ void main() {
       );
 
       // Act
+      await tester.ensureVisible(
+        find.byKey(const Key('request_service_submit_button')),
+      );
       await tester.tap(find.byKey(const Key('request_service_submit_button')));
       await tester.pumpAndSettle();
 
@@ -135,7 +138,8 @@ void main() {
       (_) async => Response(
         requestOptions: RequestOptions(path: '/services'),
         data: {
-          'id': 'service-uuid-1',
+          'id': 1,
+          'referenceId': 'service-uuid-1',
           'userId': 1,
           'professionalId': null,
           'categoryId': 3,

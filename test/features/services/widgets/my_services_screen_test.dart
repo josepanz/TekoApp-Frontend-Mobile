@@ -116,7 +116,8 @@ void main() {
           requestOptions: RequestOptions(path: '/services/my-services'),
           data: [
             {
-              'id': 'service-uuid-1',
+              'id': 1,
+              'referenceId': 'service-uuid-1',
               'userId': 1,
               'professionalId': null,
               'categoryId': 3,
@@ -139,7 +140,8 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: '/services/service-uuid-1'),
           data: {
-            'id': 'service-uuid-1',
+            'id': 1,
+            'referenceId': 'service-uuid-1',
             'userId': 1,
             'professionalId': null,
             'categoryId': 3,
