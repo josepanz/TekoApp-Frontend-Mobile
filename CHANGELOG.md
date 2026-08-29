@@ -1,3 +1,27 @@
+## [1.0.0-develop.3](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.2...v1.0.0-develop.3) (2026-08-29)
+
+### Documentation
+
+* **claude:** guardar sesion 6 ([6df7715](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6df7715243fda217532e7733b9b152523718a2fb))
+* **claude:** guardar sesion 7 ([d40b542](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d40b5428a5e58ed32541d4efdd764d0657ff808b))
+* **openspec:** documentar decisiones y agregar spec de registro de usuarios ([ba0910f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ba0910f081a0bb734e6a0f5299cd91f18d778552))
+* **openspec:** documentar decisiones y specs del roadmap completo ([8c5ec7c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c5ec7c5cc1b737c3490da155eed79d124316c15))
+* **pending:** agregar consolidado de pendientes y decisiones abiertas ([46fc176](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/46fc1767fb7e854fe325068779d53b49a0562b2d))
+
+### Features
+
+* **ai-disclosures:** agregar checkbox de autodeclaracion y badge de disclosure de ia ([437e289](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/437e289f14f1ff83fccee0556298427bc6bbf5ed))
+* **app-update:** agregar chequeo y actualizacion de version de la app ([a0b0434](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/a0b043475680068816dd1adee868de88c60db61c))
+* **budgets:** agregar presupuestos multi-opcion ([cb18b00](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/cb18b0038827954ece673fc78d95cd188b075c40))
+* **contracts:** agregar contratos desde presupuesto aceptado ([13ee7d0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/13ee7d06e63e38516ae098304117bf0e2cc82b25))
+* **home:** rediseñar la pantalla de inicio del cliente ([579fc7e](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/579fc7e8b8b4f27964cccc010b0edfabb2546fd1))
+* **legal-consents:** agregar cliente de consentimiento y proteccion de datos ([2da0853](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2da0853e3a2fbc216ce10a6b1af86c42d69a35b1))
+* **payments:** exponer referenceId, agregar propinas y corregir navegacion ([30332a7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/30332a7be00da13c99c21f48283880fcee0847af))
+* **professional-documents:** agregar antecedentes y documentos profesionales ([2ef28b2](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2ef28b2834f47e408eacf2f2889c221d807e2c1d))
+* **ratings:** agregar kpis de calificaciones propias y del profesional ([e75e734](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e75e734f033d44415667dd042191f6500cdeb73c))
+* **service-progress:** agregar bitacora de trabajo en el detalle de servicio ([d7eecef](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d7eecefc2719e5cec96338ae69ed80c047fcf173))
+* **shared:** agregar gradiente de marca reusable en pantallas de fondo plano ([2415d81](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2415d81e1a13db6e61477f080bd015a4ef34457d))
+
 ## [1.0.0-develop.2](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.1...v1.0.0-develop.2) (2026-08-23)
 
 ### Documentation
