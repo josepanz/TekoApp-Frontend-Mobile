@@ -72,6 +72,25 @@ dependencies:
   # eligió "abierto externamente" para no sumar la dependencia más pesada de un WebView embebido).
   url_launcher: ^6.3.1
 
+  # Chequeo y actualización de versión de la app (Fase 0015) — ver
+  # openspec/specs/app-version-update.md.
+  package_info_plus: ^9.0.1 # versión instalada real (PackageInfo.fromPlatform().version)
+  pub_semver: ^2.2.0 # comparación semver real, nunca strings (1.0.0-develop.9 < ...develop.10)
+  path_provider: ^2.1.6 # directorio de caché propio para el APK descargado
+  # REQUEST_INSTALL_PACKAGES en runtime (Android 8+). Fijado en ^12.0.0 (no la última, ^13.x) a
+  # propósito: 13.0.0 subió su Android nativo a compileSdk 37, más nuevo que el compileSdk 36 que
+  # trae el Flutter estable de este proyecto hoy — probado en la práctica (falló el build real con
+  # "Failed to find target with hash string 'android-37'"), no asumido de la changelog. 12.0.0
+  # compila contra compileSdk 35, compatible hacia adelante con 36.
+  permission_handler: ^12.0.0
+  # Dispara el instalador nativo de Android sobre el APK descargado (mismo mecanismo que
+  # "abrir con" del sistema) — elegido sobre `ota_update` porque ese paquete acopla descarga +
+  # instalación en uno solo, duplicando la responsabilidad que ya cubre `dio` (decisión ya tomada
+  # en la spec: descarga con `onReceiveProgress`). `open_filex` solo dispara la apertura/instalación,
+  # componiendo limpio con el downloader separado. Verificado 2026-08-28: mantenido, compatible con
+  # Gradle 8+.
+  open_filex: ^4.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
