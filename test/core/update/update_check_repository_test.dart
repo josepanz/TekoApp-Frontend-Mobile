@@ -41,7 +41,8 @@ void main() {
     repository = UpdateCheckRepository(client: client);
   });
 
-  test('devuelve el release cuando hay una versión más nueva para el ambiente', () async {
+  test('devuelve el release cuando hay una versión más nueva para el ambiente',
+      () async {
     // Arrange
     _setInstalledVersion('1.0.0-develop.9');
     when(() => client.fetchReleases()).thenAnswer(
@@ -72,7 +73,8 @@ void main() {
     },
   );
 
-  test('devuelve null cuando la versión instalada ya es la más nueva', () async {
+  test('devuelve null cuando la versión instalada ya es la más nueva',
+      () async {
     // Arrange
     _setInstalledVersion('1.0.0-develop.31');
     when(() => client.fetchReleases()).thenAnswer(
@@ -86,7 +88,8 @@ void main() {
     expect(release, isNull);
   });
 
-  test('fail-open: sin conexión o API caída, devuelve null sin lanzar', () async {
+  test('fail-open: sin conexión o API caída, devuelve null sin lanzar',
+      () async {
     // Arrange
     _setInstalledVersion('1.0.0-develop.1');
     when(() => client.fetchReleases()).thenThrow(Exception('network down'));

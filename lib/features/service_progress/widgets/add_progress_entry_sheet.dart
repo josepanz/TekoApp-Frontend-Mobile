@@ -34,8 +34,7 @@ class AddProgressEntrySheet extends ConsumerStatefulWidget {
       _AddProgressEntrySheetState();
 }
 
-class _AddProgressEntrySheetState
-    extends ConsumerState<AddProgressEntrySheet> {
+class _AddProgressEntrySheetState extends ConsumerState<AddProgressEntrySheet> {
   final _noteController = TextEditingController();
   final List<XFile> _photos = [];
 
@@ -137,7 +136,8 @@ class _AddProgressEntrySheetState
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final photo in _photos) _PickedPhotoThumbnail(photo: photo),
+                for (final photo in _photos)
+                  _PickedPhotoThumbnail(photo: photo),
                 TekoButton(
                   key: const Key('progress_entry_add_photo_button'),
                   label: l10n.serviceProgressAddPhotoButton,

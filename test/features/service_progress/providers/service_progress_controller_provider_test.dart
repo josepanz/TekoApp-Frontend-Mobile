@@ -62,16 +62,16 @@ void main() {
 
       // Act
       await container.read(serviceProgressControllerProvider.notifier).addEntry(
-            serviceId: 'svc-1',
-            note: 'Avance',
-            photos: [
-              (
-                bytes: Uint8List.fromList([1, 2, 3]),
-                filename: 'foto.jpg',
-                mimeType: 'image/jpeg',
-              ),
-            ],
-          );
+        serviceId: 'svc-1',
+        note: 'Avance',
+        photos: [
+          (
+            bytes: Uint8List.fromList([1, 2, 3]),
+            filename: 'foto.jpg',
+            mimeType: 'image/jpeg',
+          ),
+        ],
+      );
 
       // Assert
       verifyInOrder([
@@ -132,15 +132,15 @@ void main() {
 
       // Act
       await container.read(serviceProgressControllerProvider.notifier).addEntry(
-            serviceId: 'svc-1',
-            photos: [
-              (
-                bytes: Uint8List.fromList([1]),
-                filename: 'foto.jpg',
-                mimeType: 'image/jpeg',
-              ),
-            ],
-          );
+        serviceId: 'svc-1',
+        photos: [
+          (
+            bytes: Uint8List.fromList([1]),
+            filename: 'foto.jpg',
+            mimeType: 'image/jpeg',
+          ),
+        ],
+      );
 
       // Assert
       final state = container.read(serviceProgressControllerProvider);
@@ -156,7 +156,8 @@ void main() {
   });
 
   group('deleteEntry', () {
-    test('deja el estado en error cuando venció la ventana de corrección', () async {
+    test('deja el estado en error cuando venció la ventana de corrección',
+        () async {
       // Arrange
       when(
         () => repository.deleteEntry(

@@ -68,8 +68,7 @@ class _ContractPreviewBodyState extends ConsumerState<_ContractPreviewBody> {
     super.dispose();
   }
 
-  bool get _canSign =>
-      _accepted && _fullNameController.text.trim().isNotEmpty;
+  bool get _canSign => _accepted && _fullNameController.text.trim().isNotEmpty;
 
   Future<void> _sign() async {
     final l10n = AppLocalizations.of(context)!;
@@ -241,7 +240,10 @@ class _ContractStatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final (icon, text) = switch (contract.status) {
-      ContractStatus.signed => (Icons.verified_outlined, l10n.contractStatusSigned),
+      ContractStatus.signed => (
+          Icons.verified_outlined,
+          l10n.contractStatusSigned
+        ),
       _ => contract.isPendingViewerSignature
           ? (Icons.edit_note_outlined, l10n.contractStatusPendingYourSignature)
           : (

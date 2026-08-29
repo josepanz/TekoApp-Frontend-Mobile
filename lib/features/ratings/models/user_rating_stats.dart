@@ -19,8 +19,7 @@ class UserRatingStats {
       givenRatings: json['givenRatings'] as int,
       receivedRatings: json['receivedRatings'] as int,
       averageGivenRating: (json['averageGivenRating'] as num).toDouble(),
-      averageReceivedRating: (json['averageReceivedRating'] as num)
-          .toDouble(),
+      averageReceivedRating: (json['averageReceivedRating'] as num).toDouble(),
     );
   }
 }

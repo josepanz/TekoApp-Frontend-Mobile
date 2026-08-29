@@ -40,7 +40,8 @@ class _UploadDocumentSheetState extends ConsumerState<UploadDocumentSheet> {
   DateTime? _issuedAt;
 
   Future<void> _pickPhoto(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(source: source, maxWidth: 2000);
+    final picked =
+        await ImagePicker().pickImage(source: source, maxWidth: 2000);
     if (picked == null || !mounted) return;
     setState(() => _photo = picked);
   }

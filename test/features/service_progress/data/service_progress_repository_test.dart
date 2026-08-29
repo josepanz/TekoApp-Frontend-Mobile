@@ -88,10 +88,14 @@ void main() {
           data: captureAny(named: 'data'),
         ),
       ).captured.single as Map<String, dynamic>;
-      expect(captured, {'note': 'Avance', 'images': ['foto-1.jpg']});
+      expect(captured, {
+        'note': 'Avance',
+        'images': ['foto-1.jpg'],
+      });
     });
 
-    test('lanza ServiceProgressConflictFailure cuando el backend responde 409', () async {
+    test('lanza ServiceProgressConflictFailure cuando el backend responde 409',
+        () async {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(
@@ -115,7 +119,8 @@ void main() {
       );
     });
 
-    test('lanza ServiceProgressForbiddenFailure cuando el backend responde 403', () async {
+    test('lanza ServiceProgressForbiddenFailure cuando el backend responde 403',
+        () async {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(
@@ -170,7 +175,9 @@ void main() {
   });
 
   group('deleteEntry', () {
-    test('lanza ServiceProgressConflictFailure cuando venció la ventana de corrección', () async {
+    test(
+        'lanza ServiceProgressConflictFailure cuando venció la ventana de corrección',
+        () async {
       // Arrange
       when(
         () => dio.delete<void>('/services/svc-1/progress/entry-1'),

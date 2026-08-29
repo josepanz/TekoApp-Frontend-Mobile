@@ -17,7 +17,9 @@ void main() {
     repository = ContractsRepository(ApiClient(dio: dio));
   });
 
-  Map<String, dynamic> contractJson({String status = 'PENDING_CLIENT_SIGNATURE'}) {
+  Map<String, dynamic> contractJson({
+    String status = 'PENDING_CLIENT_SIGNATURE',
+  }) {
     return {
       'referenceId': 'contract-1',
       'status': status,
@@ -84,7 +86,8 @@ void main() {
     expect(contract.contentSnapshot.service.title, 'Pintura de living');
   });
 
-  test('firma el contrato mandando el nombre completo y accepted:true', () async {
+  test('firma el contrato mandando el nombre completo y accepted:true',
+      () async {
     // Arrange
     when(
       () => dio.post<Map<String, dynamic>>(

@@ -99,8 +99,7 @@ class ProfessionalDocumentsRepository {
         data: FormData.fromMap({
           'professionalDocumentTypeReferenceId':
               professionalDocumentTypeReferenceId,
-          if (issuedAt != null)
-            'issuedAt': issuedAt.toUtc().toIso8601String(),
+          if (issuedAt != null) 'issuedAt': issuedAt.toUtc().toIso8601String(),
           'file': MultipartFile.fromBytes(
             bytes,
             filename: filename,

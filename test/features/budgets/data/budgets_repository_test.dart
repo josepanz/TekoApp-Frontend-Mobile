@@ -88,7 +88,12 @@ void main() {
           requestOptions: RequestOptions(path: '/material-catalog'),
           data: {
             'data': [materialCatalogItemJson()],
-            'pagination': {'total': 1, 'page': 1, 'pageSize': 100, 'totalPages': 1},
+            'pagination': {
+              'total': 1,
+              'page': 1,
+              'pageSize': 100,
+              'totalPages': 1,
+            },
           },
         ),
       );
@@ -101,7 +106,9 @@ void main() {
       expect(result.single.name, 'Cerámica esmaltada 30x30');
     });
 
-    test('devuelve un estado vacío cuando la categoría no tiene catálogo todavía', () async {
+    test(
+        'devuelve un estado vacío cuando la categoría no tiene catálogo todavía',
+        () async {
       // Arrange
       when(
         () => dio.get<Map<String, dynamic>>(
@@ -113,7 +120,12 @@ void main() {
           requestOptions: RequestOptions(path: '/material-catalog'),
           data: {
             'data': <dynamic>[],
-            'pagination': {'total': 0, 'page': 1, 'pageSize': 100, 'totalPages': 0},
+            'pagination': {
+              'total': 0,
+              'page': 1,
+              'pageSize': 100,
+              'totalPages': 0,
+            },
           },
         ),
       );
@@ -127,7 +139,8 @@ void main() {
   });
 
   group('replaceBudgetOptions', () {
-    test('manda las opciones como {options: [...]} y mapea la respuesta', () async {
+    test('manda las opciones como {options: [...]} y mapea la respuesta',
+        () async {
       // Arrange
       when(
         () => dio.put<Map<String, dynamic>>(
@@ -178,7 +191,9 @@ void main() {
       );
     });
 
-    test('lanza BudgetValidationFailure con el mensaje del backend cuando se excede el máximo', () async {
+    test(
+        'lanza BudgetValidationFailure con el mensaje del backend cuando se excede el máximo',
+        () async {
       // Arrange
       when(
         () => dio.put<Map<String, dynamic>>(
@@ -231,7 +246,9 @@ void main() {
       expect(result.isSelected, isTrue);
     });
 
-    test('lanza BudgetConflictFailure en 409 (el servicio ya no acepta propuestas)', () async {
+    test(
+        'lanza BudgetConflictFailure en 409 (el servicio ya no acepta propuestas)',
+        () async {
       // Arrange
       when(
         () => dio.patch<Map<String, dynamic>>(

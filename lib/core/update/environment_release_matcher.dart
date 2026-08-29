@@ -15,7 +15,10 @@ class EnvironmentReleaseMatcher {
   /// `rawReleases` ya viene ordenada por fecha de creación descendente (orden nativo de la API de
   /// GitHub) — se toma el primer match. `null` si ninguno matchea el patrón del ambiente, es
   /// `draft`, o no tiene el asset `.apk` esperado (fail-open, ver spec).
-  static AppRelease? matchLatest(List<dynamic> rawReleases, String environment) {
+  static AppRelease? matchLatest(
+    List<dynamic> rawReleases,
+    String environment,
+  ) {
     final pattern = _tagPatterns[environment];
     if (pattern == null) return null;
 

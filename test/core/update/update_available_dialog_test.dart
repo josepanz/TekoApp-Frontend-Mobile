@@ -77,7 +77,9 @@ void main() {
 
     // Assert
     expect(find.text('Actualización disponible'), findsNothing);
-    verifyNever(() => downloader.download(any(), onProgress: any(named: 'onProgress')));
+    verifyNever(
+      () => downloader.download(any(), onProgress: any(named: 'onProgress')),
+    );
   });
 
   testWidgets(

@@ -42,7 +42,8 @@ class _BudgetBuilderScreenState extends ConsumerState<BudgetBuilderScreen> {
 
   void _addOption() {
     setState(
-      () => _options.add(BudgetOptionDraft(label: 'Opción ${_options.length + 1}')),
+      () => _options
+          .add(BudgetOptionDraft(label: 'Opción ${_options.length + 1}')),
     );
   }
 
@@ -250,7 +251,8 @@ class _LineItemEditor extends StatelessWidget {
                 DropdownButtonFormField<String>(
                   initialValue: draft.catalogItemReferenceId ?? _freeItemValue,
                   isExpanded: true,
-                  decoration: InputDecoration(labelText: l10n.lineItemCatalogItem),
+                  decoration:
+                      InputDecoration(labelText: l10n.lineItemCatalogItem),
                   items: [
                     DropdownMenuItem(
                       value: _freeItemValue,

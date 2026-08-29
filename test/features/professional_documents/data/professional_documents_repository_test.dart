@@ -45,7 +45,8 @@ void main() {
       };
 
   group('myDocuments', () {
-    test('parsea la lista de estados con documento null cuando no cargó nada', () async {
+    test('parsea la lista de estados con documento null cuando no cargó nada',
+        () async {
       // Arrange
       when(
         () => dio.get<Map<String, dynamic>>('/professionals/me/documents'),
@@ -107,7 +108,9 @@ void main() {
       expect(captured.files.single.key, 'file');
     });
 
-    test('lanza ProfessionalDocumentTypeNotApplicableFailure cuando el backend responde 404', () async {
+    test(
+        'lanza ProfessionalDocumentTypeNotApplicableFailure cuando el backend responde 404',
+        () async {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(

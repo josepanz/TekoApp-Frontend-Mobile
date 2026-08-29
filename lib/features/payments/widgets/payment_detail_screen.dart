@@ -98,9 +98,11 @@ class _PaymentDetailBody extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     final amount = double.parse(amountController.text.trim());
-    await ref
-        .read(refundPaymentControllerProvider.notifier)
-        .submit(payment.referenceId, amount: amount, reason: 'customer_request');
+    await ref.read(refundPaymentControllerProvider.notifier).submit(
+          payment.referenceId,
+          amount: amount,
+          reason: 'customer_request',
+        );
     if (!context.mounted) return;
 
     final state = ref.read(refundPaymentControllerProvider);

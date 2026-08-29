@@ -35,7 +35,8 @@ class MyDocumentsScreen extends ConsumerWidget {
           isEmpty: statuses != null && statuses.isEmpty,
           errorMessage: l10n.myDocumentsError,
           emptyMessage: l10n.myDocumentsEmpty,
-          builder: (context, statuses) => _GroupedByCategory(statuses: statuses),
+          builder: (context, statuses) =>
+              _GroupedByCategory(statuses: statuses),
         ),
       ),
     );
@@ -60,7 +61,9 @@ class _GroupedByCategory extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final byCategory = <DocumentCategory, List<MyDocumentStatus>>{};
     for (final status in statuses) {
-      byCategory.putIfAbsent(status.documentType.category, () => []).add(status);
+      byCategory
+          .putIfAbsent(status.documentType.category, () => [])
+          .add(status);
     }
 
     return ListView(

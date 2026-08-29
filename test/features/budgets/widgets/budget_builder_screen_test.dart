@@ -54,7 +54,12 @@ void main() {
         requestOptions: RequestOptions(path: '/material-catalog'),
         data: {
           'data': <Map<String, dynamic>>[],
-          'pagination': {'total': 0, 'page': 1, 'pageSize': 100, 'totalPages': 0},
+          'pagination': {
+            'total': 0,
+            'page': 1,
+            'pageSize': 100,
+            'totalPages': 0,
+          },
         },
       ),
     );
@@ -71,7 +76,10 @@ void main() {
 
       // Assert
       expect(find.text('Estándar'), findsOneWidget);
-      expect(find.byKey(const Key('budget_builder_submit_button')), findsOneWidget);
+      expect(
+        find.byKey(const Key('budget_builder_submit_button')),
+        findsOneWidget,
+      );
     },
   );
 

@@ -114,7 +114,10 @@ void main() {
       await _pumpScreen(tester, dio);
 
       // Assert
-      expect(find.text('Pendiente de la firma de la otra parte'), findsOneWidget);
+      expect(
+        find.text('Pendiente de la firma de la otra parte'),
+        findsOneWidget,
+      );
       expect(find.byKey(const Key('contract_sign_button')), findsNothing);
     },
   );
@@ -177,10 +180,14 @@ void main() {
 
       // Act
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Escribí tu nombre completo para confirmar'),
+        find.widgetWithText(
+          TextFormField,
+          'Escribí tu nombre completo para confirmar',
+        ),
         'Juan Pérez',
       );
-      await tester.ensureVisible(find.byKey(const Key('contract_accept_checkbox')));
+      await tester
+          .ensureVisible(find.byKey(const Key('contract_accept_checkbox')));
       await tester.tap(find.byKey(const Key('contract_accept_checkbox')));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const Key('contract_sign_button')));

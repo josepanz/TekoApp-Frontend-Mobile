@@ -62,7 +62,9 @@ void main() {
 
     // Assert
     expect(
-      find.text('Todavía no hay tipos de documento configurados para tu categoría'),
+      find.text(
+        'Todavía no hay tipos de documento configurados para tu categoría',
+      ),
       findsOneWidget,
     );
   });
@@ -81,7 +83,8 @@ void main() {
     expect(find.text('Subir'), findsOneWidget);
   });
 
-  testWidgets('muestra "Aprobado" sin botón de subida cuando ya está aprobado', (
+  testWidgets('muestra "Aprobado" sin botón de subida cuando ya está aprobado',
+      (
     tester,
   ) async {
     // Arrange

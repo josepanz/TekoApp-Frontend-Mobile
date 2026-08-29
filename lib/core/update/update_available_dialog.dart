@@ -49,12 +49,12 @@ class _UpdateAvailableDialogContentState
     String apkPath;
     try {
       apkPath = await ref.read(apkDownloaderProvider).download(
-            widget.release.apkDownloadUrl,
-            onProgress: (received, total) {
-              if (!mounted || total <= 0) return;
-              setState(() => _progress = received / total);
-            },
-          );
+        widget.release.apkDownloadUrl,
+        onProgress: (received, total) {
+          if (!mounted || total <= 0) return;
+          setState(() => _progress = received / total);
+        },
+      );
     } catch (_) {
       if (mounted) {
         setState(() {

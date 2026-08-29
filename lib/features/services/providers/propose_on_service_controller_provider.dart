@@ -17,8 +17,9 @@ class ProposeOnServiceController extends AsyncNotifier<void> {
     state = const AsyncLoading();
     ServiceRequest? created;
     state = await AsyncValue.guard(() async {
-      created =
-          await ref.read(servicesRepositoryProvider).proposeOnService(serviceId);
+      created = await ref
+          .read(servicesRepositoryProvider)
+          .proposeOnService(serviceId);
       // El servicio puede dejar de estar disponible (409) o simplemente ya no listarse como
       // "sin mi propuesta" — refrescar el listado tras proponerse.
       ref.invalidate(availableServicesProvider);

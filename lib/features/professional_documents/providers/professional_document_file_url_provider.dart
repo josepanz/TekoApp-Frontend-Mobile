@@ -6,7 +6,5 @@ import 'professional_documents_repository_provider.dart';
 /// cacheada más allá del widget que la muestra.
 final professionalDocumentFileUrlProvider =
     FutureProvider.autoDispose.family<String, String>((ref, key) {
-  return ref
-      .watch(professionalDocumentsRepositoryProvider)
-      .resolveFileUrl(key);
+  return ref.watch(professionalDocumentsRepositoryProvider).resolveFileUrl(key);
 });

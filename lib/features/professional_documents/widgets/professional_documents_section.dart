@@ -96,7 +96,10 @@ class _PublicDocumentTile extends ConsumerWidget {
               professionalDocumentFileUrlProvider(document.fileKey).future,
             );
             if (!context.mounted) return;
-            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+            await launchUrl(
+              Uri.parse(url),
+              mode: LaunchMode.externalApplication,
+            );
           },
           child: Text(l10n.professionalDocumentViewButton),
         ),

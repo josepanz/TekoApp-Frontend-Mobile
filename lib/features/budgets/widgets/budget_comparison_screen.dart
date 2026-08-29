@@ -152,13 +152,17 @@ class _BudgetOptionCardState extends State<_BudgetOptionCard> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           if (option.estimatedHours != null)
-            Text(l10n.budgetOptionEstimatedHours(option.estimatedHours!.round())),
+            Text(
+              l10n.budgetOptionEstimatedHours(option.estimatedHours!.round()),
+            ),
           const SizedBox(height: 8),
           TextButton(
             key: Key('budget_option_toggle_details_${option.referenceId}'),
             onPressed: () => setState(() => _expanded = !_expanded),
             child: Text(
-              _expanded ? l10n.budgetOptionHideDetails : l10n.budgetOptionShowDetails,
+              _expanded
+                  ? l10n.budgetOptionHideDetails
+                  : l10n.budgetOptionShowDetails,
             ),
           ),
           if (_expanded)

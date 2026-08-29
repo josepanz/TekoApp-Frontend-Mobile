@@ -109,7 +109,11 @@ void main() {
         note: any(named: 'note'),
         images: any(named: 'images'),
       ),
-    ).thenThrow(const ServiceProgressConflictFailure('El servicio ya no está en curso'));
+    ).thenThrow(
+      const ServiceProgressConflictFailure(
+        'El servicio ya no está en curso',
+      ),
+    );
     await _pumpSheet(tester, repository);
 
     // Act

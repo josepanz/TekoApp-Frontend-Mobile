@@ -14,7 +14,8 @@ class ProfessionalDocumentTypeNotApplicableFailure
 }
 
 /// 400 — archivo demasiado grande o tipo no permitido.
-class ProfessionalDocumentValidationFailure extends ProfessionalDocumentFailure {
+class ProfessionalDocumentValidationFailure
+    extends ProfessionalDocumentFailure {
   const ProfessionalDocumentValidationFailure(this.backendMessage);
 
   final String? backendMessage;

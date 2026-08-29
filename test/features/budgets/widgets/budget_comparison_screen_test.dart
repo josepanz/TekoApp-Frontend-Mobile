@@ -14,7 +14,8 @@ class _MockDio extends Mock implements Dio {}
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
   final router = GoRouter(
-    initialLocation: '/mis-servicios/service-1/solicitudes/request-1/presupuestos',
+    initialLocation:
+        '/mis-servicios/service-1/solicitudes/request-1/presupuestos',
     routes: [
       GoRoute(
         path: '/mis-servicios/service-1/solicitudes/request-1/presupuestos',
