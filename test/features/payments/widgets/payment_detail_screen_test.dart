@@ -34,9 +34,11 @@ Map<String, dynamic> _paymentJson({
   String status = 'COMPLETED',
   double totalAmount = 100000,
   Map<String, dynamic>? refundDetails,
+  Map<String, dynamic>? tip,
 }) =>
     {
-      'id': 'pay-uuid-1',
+      'id': 1,
+      'referenceId': 'pay-uuid-1',
       'userId': 1,
       'professionalId': 2,
       'serviceId': 'svc-uuid-1',
@@ -51,6 +53,7 @@ Map<String, dynamic> _paymentJson({
       'transactionId': 'txn-1',
       'createdAt': '2026-08-08T10:00:00.000Z',
       if (refundDetails != null) 'refundDetails': refundDetails,
+      'tip': tip,
     };
 
 void main() {
@@ -228,6 +231,124 @@ void main() {
         find.text('El monto del reembolso excede el monto disponible'),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'muestra el botón de dejar propina cuando el pago está completado y sin propina',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/payments/pay-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/payments/pay-uuid-1'),
+          data: _paymentJson(),
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.byKey(const Key('payment_tip_button')), findsOneWidget);
+    },
+  );
+
+  testWidgets('muestra la propina ya dejada en vez del botón', (
+    tester,
+  ) async {
+    // Arrange
+    when(
+      () => dio.get<Map<String, dynamic>>('/payments/pay-uuid-1'),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/payments/pay-uuid-1'),
+        data: _paymentJson(
+          tip: {
+            'referenceId': 'tip-uuid-1',
+            'mode': 'PERCENTAGE',
+            'percentage': 10,
+            'amount': 10000,
+            'currencyCode': 'PYG',
+            'createdAt': '2026-08-08T10:00:00.000Z',
+          },
+        ),
+      ),
+    );
+
+    // Act
+    await _pumpScreen(tester, dio);
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(find.text('Propina: Gs. 10000'), findsOneWidget);
+    expect(find.byKey(const Key('payment_tip_button')), findsNothing);
+  });
+
+  testWidgets(
+    'envía una propina por porcentaje y muestra el mensaje de éxito',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/payments/pay-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/payments/pay-uuid-1'),
+          data: _paymentJson(),
+        ),
+      );
+      when(() => dio.get<Map<String, dynamic>>('/tips/config')).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/tips/config'),
+          data: {
+            'isEnabled': true,
+            'isMandatory': false,
+            'suggestedPercentages': [10, 15, 20],
+            'allowFreeAmount': true,
+          },
+        ),
+      );
+      when(
+        () => dio.post<Map<String, dynamic>>(
+          '/payments/pay-uuid-1/tip',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/payments/pay-uuid-1/tip'),
+          data: {
+            'referenceId': 'tip-uuid-1',
+            'mode': 'PERCENTAGE',
+            'percentage': 10,
+            'amount': 10000,
+            'currencyCode': 'PYG',
+            'createdAt': '2026-08-08T10:00:00.000Z',
+          },
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('payment_tip_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('tip_percentage_chip_10')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('tip_dialog_submit_button')));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('¡Gracias! Propina enviada'), findsOneWidget);
+      final sentData = verify(
+        () => dio.post<Map<String, dynamic>>(
+          '/payments/pay-uuid-1/tip',
+          data: captureAny(named: 'data'),
+        ),
+      ).captured.single as Map<String, dynamic>;
+      expect(sentData['mode'], 'PERCENTAGE');
+      expect(sentData['percentage'], 10);
     },
   );
 }

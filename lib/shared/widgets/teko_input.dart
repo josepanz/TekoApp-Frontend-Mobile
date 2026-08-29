@@ -15,6 +15,7 @@ class TekoInput extends StatelessWidget {
     this.validator,
     this.initialValue,
     this.maxLines = 1,
+    this.onChanged,
   });
 
   final String label;
@@ -25,6 +26,7 @@ class TekoInput extends StatelessWidget {
   final String? Function(String?)? validator;
   final String? initialValue;
   final int maxLines;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,7 @@ class TekoInput extends StatelessWidget {
       enabled: enabled,
       validator: validator,
       maxLines: maxLines,
+      onChanged: onChanged,
       decoration:
           InputDecoration(labelText: label, border: const OutlineInputBorder()),
     );

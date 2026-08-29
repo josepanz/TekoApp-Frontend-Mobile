@@ -31,11 +31,13 @@ Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) {
 }
 
 Map<String, dynamic> _methodJson({
-  String id = 'pm-uuid-1',
+  int id = 1,
+  String referenceId = 'pm-uuid-1',
   bool isDefault = false,
 }) =>
     {
       'id': id,
+      'referenceId': referenceId,
       'name': 'Visa terminada en 4242',
       'type': 'CREDIT_CARD',
       'provider': 'STRIPE',

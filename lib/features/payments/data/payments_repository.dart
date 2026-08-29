@@ -4,6 +4,8 @@ import '../../../core/api_client/api_client.dart';
 import '../models/payment.dart';
 import '../models/payment_failure.dart';
 import '../models/payment_method.dart';
+import '../models/tip.dart';
+import '../models/tip_mode.dart';
 
 /// `/payments`/`/payments/methods` — todo el árbol exige JWT (ya cubierto por
 /// `BearerAuthInterceptor`). Sin tokenización real de proveedor en esta fase (ver
@@ -152,6 +154,41 @@ class PaymentsRepository {
         data: {'amount': amount, 'reason': reason},
       );
       return Payment.fromJson(response.data!);
+    } on DioException catch (error) {
+      throw _classify(error);
+    }
+  }
+
+  Future<TipConfig> fetchTipConfig() async {
+    try {
+      final response = await _apiClient.raw.get<Map<String, dynamic>>(
+        '/tips/config',
+      );
+      return TipConfig.fromJson(response.data!);
+    } on DioException catch (error) {
+      throw _classify(error);
+    }
+  }
+
+  /// El backend rechaza esto con mensajes textuales propios
+  /// (`tips.PAYMENT_NOT_ELIGIBLE`/`tips.ALREADY_TIPPED`/`tips.TIPS_DISABLED`) — mismo criterio
+  /// que `deletePaymentMethod`/`refundPayment`.
+  Future<Tip> createTip(
+    String paymentReferenceId, {
+    required TipMode mode,
+    double? percentage,
+    double? amount,
+  }) async {
+    try {
+      final response = await _apiClient.raw.post<Map<String, dynamic>>(
+        '/payments/$paymentReferenceId/tip',
+        data: {
+          'mode': mode.toJson(),
+          if (percentage != null) 'percentage': percentage,
+          if (amount != null) 'amount': amount,
+        },
+      );
+      return Tip.fromJson(response.data!);
     } on DioException catch (error) {
       throw _classify(error);
     }

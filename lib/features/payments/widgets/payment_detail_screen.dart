@@ -10,6 +10,7 @@ import '../models/payment_status.dart';
 import '../providers/payment_detail_provider.dart';
 import '../providers/refund_payment_controller_provider.dart';
 import 'payment_status_badge.dart';
+import 'tip_dialog.dart';
 
 /// Detalle de un pago por su `id` (UUID) + reembolso (parcial o total) — ver
 /// `openspec/changes/0004-payments-and-ratings.md`.
@@ -43,6 +44,11 @@ class _PaymentDetailBody extends ConsumerWidget {
       (payment.status == PaymentStatus.completed ||
           payment.status == PaymentStatus.partialRefunded) &&
       payment.amountAvailableForRefund > 0;
+
+  bool get _isTippable =>
+      (payment.status == PaymentStatus.completed ||
+          payment.status == PaymentStatus.paid) &&
+      payment.tip == null;
 
   Future<void> _openRefundDialog(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
@@ -94,7 +100,7 @@ class _PaymentDetailBody extends ConsumerWidget {
     final amount = double.parse(amountController.text.trim());
     await ref
         .read(refundPaymentControllerProvider.notifier)
-        .submit(payment.id, amount: amount, reason: 'customer_request');
+        .submit(payment.referenceId, amount: amount, reason: 'customer_request');
     if (!context.mounted) return;
 
     final state = ref.read(refundPaymentControllerProvider);
@@ -141,6 +147,10 @@ class _PaymentDetailBody extends ConsumerWidget {
               ),
             ),
           ],
+          if (payment.tip != null) ...[
+            const SizedBox(height: 8),
+            Text(l10n.paymentTipLabel(payment.tip!.amount.round())),
+          ],
           if (_isRefundable) ...[
             const SizedBox(height: 24),
             TekoButton(
@@ -150,6 +160,15 @@ class _PaymentDetailBody extends ConsumerWidget {
               onPressed: refundState.isLoading
                   ? null
                   : () => _openRefundDialog(context, ref),
+            ),
+          ],
+          if (_isTippable) ...[
+            const SizedBox(height: 12),
+            TekoButton(
+              key: const Key('payment_tip_button'),
+              label: l10n.paymentTipButton,
+              variant: TekoButtonVariant.outline,
+              onPressed: () => showTipDialog(context, ref, payment),
             ),
           ],
         ],

@@ -64,4 +64,26 @@ void main() {
     // Assert
     expect(find.text('Ana'), findsOneWidget);
   });
+
+  testWidgets('notifica onChanged al escribir', (tester) async {
+    // Arrange
+    String? lastValue;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: TekoInput(
+            label: 'Nombre',
+            onChanged: (value) => lastValue = value,
+          ),
+        ),
+      ),
+    );
+
+    // Act
+    await tester.enterText(find.byType(TekoInput), 'Carla');
+
+    // Assert
+    expect(lastValue, 'Carla');
+  });
 }

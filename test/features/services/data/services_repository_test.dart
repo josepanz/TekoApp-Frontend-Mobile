@@ -24,7 +24,8 @@ void main() {
     String status = 'PENDING',
   }) {
     return {
-      'id': id,
+      'id': 1,
+      'referenceId': id,
       'userId': 1,
       'professionalId': null,
       'categoryId': 3,
@@ -57,7 +58,8 @@ void main() {
     String status = 'PENDING',
   }) {
     return {
-      'id': id,
+      'id': 1,
+      'referenceId': id,
       'serviceId': 'service-uuid-1',
       'professionalId': 2,
       'status': status,
@@ -114,7 +116,7 @@ void main() {
       );
 
       // Assert
-      expect(result.id, 'service-uuid-1');
+      expect(result.referenceId, 'service-uuid-1');
       expect(result.status, ServiceStatus.pending);
     });
 
@@ -365,7 +367,7 @@ void main() {
       );
 
       // Assert
-      expect(result.id, 'request-uuid-1');
+      expect(result.referenceId, 'request-uuid-1');
     });
   });
 

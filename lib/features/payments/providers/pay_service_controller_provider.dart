@@ -53,7 +53,7 @@ class PayServiceController extends AsyncNotifier<void> {
             currencyCode: 'PYG',
             paymentMethod: method.type,
             paymentProvider: method.provider,
-            paymentMethodId: method.id,
+            paymentMethodId: method.referenceId,
           );
     });
   }

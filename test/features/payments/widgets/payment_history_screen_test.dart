@@ -49,7 +49,8 @@ Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
 }
 
 Map<String, dynamic> _serviceJson({int userId = 1}) => {
-      'id': 'svc-uuid-1',
+      'id': 1,
+      'referenceId': 'svc-uuid-1',
       'userId': userId,
       'professionalId': 2,
       'categoryId': 3,
@@ -64,8 +65,13 @@ Map<String, dynamic> _serviceJson({int userId = 1}) => {
       'createdAt': '2026-08-08T10:00:00.000Z',
     };
 
-Map<String, dynamic> _paymentJson({String id = 'pay-uuid-1'}) => {
-      'id': id,
+Map<String, dynamic> _paymentJson({
+  String referenceId = 'pay-uuid-1',
+  Map<String, dynamic>? tip,
+}) =>
+    {
+      'id': 1,
+      'referenceId': referenceId,
       'userId': 1,
       'professionalId': 2,
       'serviceId': 'svc-uuid-1',
@@ -79,6 +85,7 @@ Map<String, dynamic> _paymentJson({String id = 'pay-uuid-1'}) => {
       'paymentProvider': 'STRIPE',
       'transactionId': 'txn-1',
       'createdAt': '2026-08-08T10:00:00.000Z',
+      'tip': tip,
     };
 
 void main() {
@@ -200,5 +207,50 @@ void main() {
 
     // Assert
     expect(find.byType(PaymentDetailScreen), findsOneWidget);
+  });
+
+  testWidgets('muestra el ícono de propina cuando el pago tiene una', (
+    tester,
+  ) async {
+    // Arrange
+    when(
+      () => dio.get<List<dynamic>>(
+        '/services/my-services',
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/services/my-services'),
+        data: [_serviceJson()],
+      ),
+    );
+    when(
+      () => dio.get<List<dynamic>>(
+        '/payments',
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/payments'),
+        data: [
+          _paymentJson(
+            tip: {
+              'referenceId': 'tip-uuid-1',
+              'mode': 'PERCENTAGE',
+              'percentage': 10,
+              'amount': 10000,
+              'currencyCode': 'PYG',
+              'createdAt': '2026-08-08T10:00:00.000Z',
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Act
+    await _pumpScreen(tester, dio);
+
+    // Assert
+    expect(find.byIcon(Icons.volunteer_activism_outlined), findsOneWidget);
   });
 }
