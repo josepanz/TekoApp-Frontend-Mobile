@@ -7,6 +7,10 @@
          runtime (ver PushNotificationGateway) — sin esto, FirebaseMessaging.requestPermission()
          no muestra nada y el permiso queda denegado por default. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Instalar sobre la versión anterior desde el APK descargado (Fase 0015 — chequeo de
+         actualización), Android 8+ requiere este permiso pedido en runtime además de declarado
+         acá. Ver openspec/specs/app-version-update.md. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
         android:label="tekoapp_mobile"
         android:name="${applicationName}"

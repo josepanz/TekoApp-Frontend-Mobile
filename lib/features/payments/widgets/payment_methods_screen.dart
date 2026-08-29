@@ -42,7 +42,9 @@ class PaymentMethodsScreen extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    await ref.read(paymentMethodControllerProvider.notifier).delete(method.id);
+    await ref
+        .read(paymentMethodControllerProvider.notifier)
+        .delete(method.referenceId);
     if (!context.mounted) return;
     final state = ref.read(paymentMethodControllerProvider);
     if (state.hasError) {
@@ -87,7 +89,7 @@ class PaymentMethodsScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final method = methods[index];
             return TekoCard(
-              key: Key('payment_method_item_${method.id}'),
+              key: Key('payment_method_item_${method.referenceId}'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -116,15 +118,17 @@ class PaymentMethodsScreen extends ConsumerWidget {
                     children: [
                       if (!method.isDefault)
                         TextButton(
-                          key: Key('payment_method_set_default_${method.id}'),
+                          key: Key(
+                            'payment_method_set_default_${method.referenceId}',
+                          ),
                           onPressed: () => ref
                               .read(paymentMethodControllerProvider.notifier)
-                              .setAsDefault(method.id),
+                              .setAsDefault(method.referenceId),
                           child: Text(l10n.paymentMethodSetDefaultButton),
                         ),
                       const Spacer(),
                       TextButton(
-                        key: Key('payment_method_delete_${method.id}'),
+                        key: Key('payment_method_delete_${method.referenceId}'),
                         onPressed: () =>
                             _confirmDelete(context, ref, l10n, method),
                         child: Text(l10n.paymentMethodDeleteButton),

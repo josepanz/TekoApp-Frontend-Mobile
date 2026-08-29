@@ -3,7 +3,8 @@ import 'package:tekoapp_mobile/features/services/models/service.dart';
 
 Map<String, dynamic> _baseServiceJson({Map<String, dynamic>? users}) {
   return {
-    'id': 'svc-uuid-1',
+    'id': 1,
+    'referenceId': 'svc-uuid-1',
     'userId': 1,
     'professionalId': 2,
     'categoryId': 3,

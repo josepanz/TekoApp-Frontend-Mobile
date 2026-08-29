@@ -53,7 +53,8 @@ Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
 }
 
 Map<String, dynamic> _serviceJson({double? finalAmount = 100000}) => {
-      'id': 'svc-uuid-1',
+      'id': 1,
+      'referenceId': 'svc-uuid-1',
       'userId': 1,
       'professionalId': 2,
       'categoryId': 3,
@@ -75,7 +76,8 @@ Map<String, dynamic> _serviceJson({double? finalAmount = 100000}) => {
     };
 
 Map<String, dynamic> _methodJson() => {
-      'id': 'pm-uuid-1',
+      'id': 1,
+      'referenceId': 'pm-uuid-1',
       'name': 'Visa terminada en 4242',
       'type': 'CREDIT_CARD',
       'provider': 'STRIPE',
@@ -196,7 +198,8 @@ void main() {
         (_) async => Response(
           requestOptions: RequestOptions(path: '/payments'),
           data: {
-            'id': 'pay-uuid-1',
+            'id': 1,
+            'referenceId': 'pay-uuid-1',
             'userId': 1,
             'professionalId': 2,
             'serviceId': 'svc-uuid-1',

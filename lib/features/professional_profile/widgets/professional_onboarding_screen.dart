@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_button.dart';
+import '../../../shared/widgets/teko_gradient_background.dart';
 import '../../../shared/widgets/teko_input.dart';
 import '../../categories/models/category.dart';
 import '../../categories/providers/categories_provider.dart';
@@ -29,8 +30,10 @@ class _ProfessionalOnboardingScreenState
   final _fixedRateController = TextEditingController();
   final _yearsOfExperienceController = TextEditingController();
   final _skillsController = TextEditingController();
+  final _aiNoteController = TextEditingController();
 
   Category? _selectedCategory;
+  bool _aiAssisted = false;
 
   @override
   void dispose() {
@@ -39,6 +42,7 @@ class _ProfessionalOnboardingScreenState
     _fixedRateController.dispose();
     _yearsOfExperienceController.dispose();
     _skillsController.dispose();
+    _aiNoteController.dispose();
     super.dispose();
   }
 
@@ -65,6 +69,8 @@ class _ProfessionalOnboardingScreenState
               ? null
               : int.parse(_yearsOfExperienceController.text.trim()),
           skills: _parseSkills(),
+          aiAssisted: _aiAssisted,
+          aiNote: _aiNoteController.text.trim(),
         );
   }
 
@@ -100,6 +106,27 @@ class _ProfessionalOnboardingScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              TekoGradientBackground(
+                borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.badge_outlined, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l10n.professionalOnboardingTitle,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               AsyncStateView<List<Category>>(
                 isLoading: categoriesAsync.isLoading,
                 hasError: categoriesAsync.hasError,
@@ -135,6 +162,22 @@ class _ProfessionalOnboardingScreenState
                     ? l10n.professionalOnboardingDescriptionRequired
                     : null,
               ),
+              CheckboxListTile(
+                key: const Key('professional_onboarding_ai_assisted_checkbox'),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: Text(l10n.aiDisclosureCheckboxLabel),
+                value: _aiAssisted,
+                onChanged: (value) =>
+                    setState(() => _aiAssisted = value ?? false),
+              ),
+              if (_aiAssisted) ...[
+                const SizedBox(height: 4),
+                TekoInput(
+                  label: l10n.aiDisclosureNoteLabel,
+                  controller: _aiNoteController,
+                ),
+              ],
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.professionalOnboardingHourlyRateLabel,

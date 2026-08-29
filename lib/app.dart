@@ -6,19 +6,30 @@ import 'core/auth/session_provider.dart';
 import 'core/auth/session_state.dart';
 import 'core/locale/locale_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/update/update_check_gateway.dart';
+import 'features/budgets/widgets/budget_builder_screen.dart';
+import 'features/budgets/widgets/budget_comparison_screen.dart';
+import 'features/contracts/widgets/contract_preview_screen.dart';
+import 'features/contracts/widgets/my_contracts_screen.dart';
 import 'features/notifications/widgets/push_notification_gateway.dart';
 import 'features/auth/widgets/login_screen.dart';
 import 'features/home/widgets/home_screen.dart';
+import 'features/legal_consents/widgets/consent_gateway.dart';
+import 'features/legal_consents/widgets/legal_consent_screen.dart';
+import 'features/legal_consents/widgets/privacy_and_data_screen.dart';
 import 'features/locations/widgets/nearby_professionals_map_screen.dart';
 import 'features/payments/widgets/add_payment_method_screen.dart';
 import 'features/payments/widgets/pay_service_screen.dart';
 import 'features/payments/widgets/payment_detail_screen.dart';
 import 'features/payments/widgets/payment_history_screen.dart';
 import 'features/payments/widgets/payment_methods_screen.dart';
+import 'features/professional_documents/widgets/my_documents_screen.dart';
 import 'features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'features/professional_profile/widgets/professional_home_screen.dart';
 import 'features/professional_profile/widgets/professional_onboarding_screen.dart';
 import 'features/profile/widgets/profile_screen.dart';
+import 'features/ratings/widgets/my_rating_stats_screen.dart';
+import 'features/ratings/widgets/professional_rating_stats_screen.dart';
 import 'features/services/widgets/my_services_screen.dart';
 import 'features/services/widgets/professional_services_screen.dart';
 import 'features/services/widgets/request_service_screen.dart';
@@ -29,14 +40,24 @@ import 'l10n/app_localizations.dart';
 /// `state.fullPath` (la plantilla, ej. `/mis-servicios/:id`), no `state.matchedLocation` (que trae
 /// el valor real del parámetro interpolado, distinto en cada visita).
 const _protectedPaths = {
+  '/',
   '/perfil',
+  '/perfil/privacidad-y-datos',
+  '/legal/consentimiento',
   '/solicitar',
   '/mapa/cercanos',
   '/mis-servicios',
   '/mis-servicios/:id',
+  '/mis-servicios/:id/solicitudes/:requestId/presupuestos',
+  '/servicios/:serviceId/solicitudes/:requestId/presupuesto',
+  '/contratos',
+  '/contratos/:referenceId',
+  '/mis-calificaciones',
   '/profesional',
   '/profesional/onboarding',
   '/profesional/mis-servicios',
+  '/profesional/mis-documentos',
+  '/profesional/mis-calificaciones',
   '/pagos/metodos',
   '/pagos/metodos/nuevo',
   '/pagos/historial',
@@ -47,7 +68,13 @@ const _protectedPaths = {
 /// Rutas de modo profesional que requieren un perfil profesional YA activo — `/profesional/
 /// onboarding` queda afuera a propósito (es el destino del redirect cuando no hay perfil, incluir
 /// esta ruta acá causaría un loop).
-const _professionalGatedPaths = {'/profesional', '/profesional/mis-servicios'};
+const _professionalGatedPaths = {
+  '/profesional',
+  '/profesional/mis-servicios',
+  '/profesional/mis-documentos',
+  '/profesional/mis-calificaciones',
+  '/servicios/:serviceId/solicitudes/:requestId/presupuesto',
+};
 
 /// Puente `sessionProvider` (Riverpod) → `Listenable` (lo que espera `GoRouter.refreshListenable`)
 /// — cuando la sesión cambia, `go_router` reevalúa `redirect` para la ruta ACTUAL sin recrear el
@@ -105,6 +132,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
+        path: '/perfil/privacidad-y-datos',
+        builder: (context, state) => const PrivacyAndDataScreen(),
+      ),
+      GoRoute(
+        path: '/legal/consentimiento',
+        builder: (context, state) => const LegalConsentScreen(),
+      ),
+      GoRoute(
         path: '/solicitar',
         builder: (context, state) => const RequestServiceScreen(),
       ),
@@ -122,6 +157,35 @@ final routerProvider = Provider<GoRouter>((ref) {
             ServiceDetailScreen(serviceId: state.pathParameters['id']!),
       ),
       GoRoute(
+        path: '/mis-servicios/:id/solicitudes/:requestId/presupuestos',
+        builder: (context, state) => BudgetComparisonScreen(
+          serviceId: state.pathParameters['id']!,
+          requestId: state.pathParameters['requestId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/servicios/:serviceId/solicitudes/:requestId/presupuesto',
+        builder: (context, state) => BudgetBuilderScreen(
+          serviceId: state.pathParameters['serviceId']!,
+          requestId: state.pathParameters['requestId']!,
+          categoryId: state.extra! as int,
+        ),
+      ),
+      GoRoute(
+        path: '/contratos',
+        builder: (context, state) => const MyContractsScreen(),
+      ),
+      GoRoute(
+        path: '/contratos/:referenceId',
+        builder: (context, state) => ContractPreviewScreen(
+          contractReferenceId: state.pathParameters['referenceId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/mis-calificaciones',
+        builder: (context, state) => const MyRatingStatsScreen(),
+      ),
+      GoRoute(
         path: '/profesional',
         builder: (context, state) => const ProfessionalHomeScreen(),
       ),
@@ -132,6 +196,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profesional/mis-servicios',
         builder: (context, state) => const ProfessionalServicesScreen(),
+      ),
+      GoRoute(
+        path: '/profesional/mis-documentos',
+        builder: (context, state) => const MyDocumentsScreen(),
+      ),
+      GoRoute(
+        path: '/profesional/mis-calificaciones',
+        builder: (context, state) => const ProfessionalRatingStatsScreen(),
       ),
       GoRoute(
         path: '/pagos/metodos',
@@ -174,7 +246,11 @@ class TekoApp extends ConsumerWidget {
       locale: locale,
       routerConfig: router,
       scaffoldMessengerKey: pushNotificationScaffoldMessengerKey,
-      builder: (context, child) => PushNotificationGateway(child: child!),
+      builder: (context, child) => ConsentGateway(
+        child: PushNotificationGateway(
+          child: UpdateCheckGateway(child: child!),
+        ),
+      ),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

@@ -36,8 +36,9 @@ class PaymentHistoryScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final payment = payments[index];
             return GestureDetector(
-              key: Key('payment_item_${payment.id}'),
-              onTap: () => context.push('/pagos/historial/${payment.id}'),
+              key: Key('payment_item_${payment.referenceId}'),
+              onTap: () =>
+                  context.push('/pagos/historial/${payment.referenceId}'),
               child: TekoCard(
                 child: Row(
                   children: [
@@ -46,6 +47,18 @@ class PaymentHistoryScreen extends ConsumerWidget {
                         l10n.paymentAmountLabel(payment.totalAmount.round()),
                       ),
                     ),
+                    if (payment.tip != null) ...[
+                      Tooltip(
+                        message: l10n.paymentTipLabel(
+                          payment.tip!.amount.round(),
+                        ),
+                        child: const Icon(
+                          Icons.volunteer_activism_outlined,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     PaymentStatusBadge(status: payment.status),
                   ],
                 ),
