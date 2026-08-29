@@ -89,6 +89,18 @@ class HomeScreen extends ConsumerWidget {
                   label: l10n.paymentHistoryTitle,
                   onPressed: () => context.push('/pagos/historial'),
                 ),
+                _QuickAccessTile(
+                  quickAccessKey: 'home_my_contracts_button',
+                  icon: Icons.description_outlined,
+                  label: l10n.myContractsTitle,
+                  onPressed: () => context.push('/contratos'),
+                ),
+                _QuickAccessTile(
+                  quickAccessKey: 'home_my_rating_stats_button',
+                  icon: Icons.star_outline,
+                  label: l10n.myRatingStatsTitle,
+                  onPressed: () => context.push('/mis-calificaciones'),
+                ),
               ],
             ),
           ],

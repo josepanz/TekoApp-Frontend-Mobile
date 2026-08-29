@@ -57,11 +57,37 @@ class _ProfessionalActiveBody extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(16),
-          child: TekoButton(
-            key: const Key('professional_home_my_services_button'),
-            label: l10n.professionalServicesTitle,
-            variant: TekoButtonVariant.outline,
-            onPressed: () => context.push('/profesional/mis-servicios'),
+          child: Column(
+            children: [
+              TekoButton(
+                key: const Key('professional_home_my_services_button'),
+                label: l10n.professionalServicesTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/profesional/mis-servicios'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
+                key: const Key('professional_home_my_documents_button'),
+                label: l10n.myDocumentsScreenTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/profesional/mis-documentos'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
+                key: const Key('professional_home_my_contracts_button'),
+                label: l10n.myContractsTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/contratos'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
+                key: const Key('professional_home_my_rating_stats_button'),
+                label: l10n.professionalRatingStatsTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () =>
+                    context.push('/profesional/mis-calificaciones'),
+              ),
+            ],
           ),
         ),
         const Expanded(child: AvailableServicesScreen()),
