@@ -15,12 +15,12 @@ import '../../ratings/models/rating_failure.dart';
 import '../../ratings/models/rating_type.dart';
 import '../../ratings/providers/rate_controller_provider.dart';
 import '../../ratings/providers/service_ratings_provider.dart';
+import '../../professional_documents/widgets/professional_documents_section.dart';
 import '../../ratings/widgets/rate_dialog.dart';
+import '../../service_progress/widgets/progress_timeline.dart';
 import '../models/service.dart';
-import '../models/service_failure.dart';
 import '../models/service_request.dart';
 import '../models/service_status.dart';
-import '../providers/respond_to_request_controller_provider.dart';
 import '../providers/service_detail_provider.dart';
 import '../providers/service_requests_provider.dart';
 import 'service_status_badge.dart';
@@ -79,7 +79,7 @@ class _ServiceDetailBody extends StatelessWidget {
           const SizedBox(height: 8),
           AiDisclosureBadge(
             entityType: AiDisclosureEntityType.serviceDescription,
-            entityReferenceId: service.id,
+            entityReferenceId: service.referenceId,
           ),
           const SizedBox(height: 16),
           Text(service.address),
@@ -99,18 +99,27 @@ class _ServiceDetailBody extends StatelessWidget {
               professionalId: service.professional!.id,
             ),
           ],
+          if (service.professional != null) ...[
+            const SizedBox(height: 24),
+            ProgressTimeline(service: service),
+            const SizedBox(height: 24),
+            ProfessionalDocumentsSection(
+              professionalReferenceId: service.professional!.referenceId,
+            ),
+          ],
           if (service.status == ServiceStatus.pending) ...[
             const SizedBox(height: 24),
             Text(l10n.serviceRequestsTitle, style: textTheme.titleMedium),
             const SizedBox(height: 8),
-            _ServiceRequestsSection(serviceId: service.id),
+            _ServiceRequestsSection(serviceId: service.referenceId),
           ],
           if (service.status == ServiceStatus.completed) ...[
             const SizedBox(height: 24),
             TekoButton(
-              key: Key('pay_service_button_${service.id}'),
+              key: Key('pay_service_button_${service.referenceId}'),
               label: l10n.payServiceButton,
-              onPressed: () => context.push('/pagos/pagar/${service.id}'),
+              onPressed: () =>
+                  context.push('/pagos/pagar/${service.referenceId}'),
             ),
             if (service.professional != null) ...[
               const SizedBox(height: 12),
@@ -187,9 +196,10 @@ class _AssignedProfessionalTrackingSection extends ConsumerWidget {
   }
 }
 
-/// Propuestas competidoras sobre un servicio propio PENDING — aceptar una resuelve las demás
-/// server-side en una transacción (ver `ServicesRepository.respondToRequest`), nunca se itera
-/// rechazándolas desde acá.
+/// Propuestas competidoras sobre un servicio propio PENDING — elegir una opción de presupuesto
+/// (`BudgetComparisonScreen`) resuelve las demás server-side en la misma transacción que antes
+/// resolvía "Aceptar" (ver `openspec/changes/0009-multi-option-budgets.md`, Fase 0009: reemplaza
+/// el botón directo de aceptar por la comparación de opciones).
 ///
 /// Muestra el profesional solo por su `id` numérico: `ServiceRequestDetailResponseDTO` no anida
 /// nombre/datos del profesional (a diferencia de `Service.professional`) — resolverlo requeriría
@@ -200,33 +210,11 @@ class _ServiceRequestsSection extends ConsumerWidget {
 
   final String serviceId;
 
-  Future<void> _accept(
-    BuildContext context,
-    WidgetRef ref,
-    String requestId,
-  ) async {
-    await ref
-        .read(respondToRequestControllerProvider.notifier)
-        .accept(serviceId, requestId);
-    if (!context.mounted) return;
-
-    final state = ref.read(respondToRequestControllerProvider);
-    if (!state.hasError) return;
-    final l10n = AppLocalizations.of(context)!;
-    final message = switch (state.error) {
-      ServiceConflictFailure() => l10n.serviceRequestAcceptConflict,
-      _ => l10n.serviceRequestAcceptError,
-    };
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final requestsAsync = ref.watch(serviceRequestsProvider(serviceId));
     final requests = requestsAsync.valueOrNull;
-    final respondState = ref.watch(respondToRequestControllerProvider);
 
     return AsyncStateView<List<ServiceRequest>>(
       isLoading: requestsAsync.isLoading,
@@ -252,23 +240,16 @@ class _ServiceRequestsSection extends ConsumerWidget {
                               request.professionalId,
                             ),
                           ),
-                          if (request.proposedPrice != null)
-                            Text(
-                              l10n.serviceRequestProposedPrice(
-                                request.proposedPrice!.round(),
-                              ),
-                            ),
                           if (request.message != null) Text(request.message!),
                         ],
                       ),
                     ),
                     TekoButton(
-                      key: Key('accept_request_${request.id}'),
-                      label: l10n.serviceRequestAccept,
-                      loading: respondState.isLoading,
-                      onPressed: respondState.isLoading
-                          ? null
-                          : () => _accept(context, ref, request.id),
+                      key: Key('view_budgets_${request.referenceId}'),
+                      label: l10n.serviceRequestViewBudgets,
+                      onPressed: () => context.push(
+                        '/mis-servicios/$serviceId/solicitudes/${request.referenceId}/presupuestos',
+                      ),
                     ),
                   ],
                 ),
@@ -295,7 +276,7 @@ class _RateProfessionalButton extends ConsumerWidget {
 
     await ref.read(rateControllerProvider.notifier).rateProfessional(
           professionalReferenceId: service.professional!.referenceId,
-          serviceId: service.id,
+          serviceId: service.referenceId,
           rating: stars,
           comment: comment,
         );
@@ -317,7 +298,9 @@ class _RateProfessionalButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final ratingsAsync = ref.watch(serviceRatingsProvider(service.id));
+    final ratingsAsync = ref.watch(
+      serviceRatingsProvider(service.referenceId),
+    );
     final alreadyRated = ratingsAsync.valueOrNull?.any(
       (rating) => rating.type == RatingType.clientToProfessional,
     );
@@ -329,7 +312,7 @@ class _RateProfessionalButton extends ConsumerWidget {
 
     final rateState = ref.watch(rateControllerProvider);
     return TekoButton(
-      key: Key('rate_professional_button_${service.id}'),
+      key: Key('rate_professional_button_${service.referenceId}'),
       label: l10n.rateProfessionalButton,
       variant: TekoButtonVariant.outline,
       loading: rateState.isLoading,
