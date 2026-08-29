@@ -28,6 +28,14 @@ class Env {
 
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
 
+  /// Ambiente de negocio (`dev`/`qa`/`prod`) — determina qué releases de GitHub considera el
+  /// chequeo de actualización (`core/update/`, ver openspec/specs/app-version-update.md). Distinto
+  /// de `isProduction`: ese es el flag de compilación de Dart (release vs. debug), no el ambiente.
+  static const String environment = String.fromEnvironment(
+    'APP_ENVIRONMENT',
+    defaultValue: 'dev',
+  );
+
   /// Origen del backend sin el prefijo `/tekoapp-backend/api` — `socket_io_client` conecta contra
   /// el namespace (`/locations`) directamente sobre el origen, no sobre la ruta REST.
   static String get socketOrigin {

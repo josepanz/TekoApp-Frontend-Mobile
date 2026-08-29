@@ -104,7 +104,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+      // Sin sesión, `/` (ahora protegida) ya redirigió a `/login` al arrancar.
+      final router = GoRouter.of(tester.element(find.byType(LoginScreen)));
 
       // Act
       router.go('/perfil');
@@ -127,7 +128,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+      final router = GoRouter.of(tester.element(find.byType(LoginScreen)));
 
       // Act
       router.go('/login');

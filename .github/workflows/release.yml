@@ -17,6 +17,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  # Backend real en Render (free tier, confirmado por José 2026-08-28) — los 3 ambientes apuntan
+  # hoy a la MISMA instancia a propósito (sin backend/DB separado por ambiente todavía, ver
+  # openspec/decisions.md). CORRECCIÓN 2026-08-28: este workflow nunca había pasado
+  # --dart-define=API_BASE_URL en ningún build de release — todo release publicado hasta ahora
+  # quedó con el default hardcodeado de Env.apiBaseUrl (el alias de emulador `10.0.2.2`),
+  # inservible para instalar en un dispositivo real.
+  API_BASE_URL: https://tekoapp-backend.onrender.com/tekoapp-backend/api
+
 jobs:
   # ================================================================
   # El contexto `secrets` no se puede evaluar directo en un `if:` de job/step (GitHub Actions lo
@@ -135,10 +144,23 @@ jobs:
           storeFile=release-keystore.jks
           EOF
 
+      - name: Resolver ambiente segun branch (APP_ENVIRONMENT)
+        id: environment
+        run: |
+          case "${{ github.ref_name }}" in
+            master) echo "value=prod" >> "$GITHUB_OUTPUT" ;;
+            qa) echo "value=qa" >> "$GITHUB_OUTPUT" ;;
+            *) echo "value=dev" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Build APK + AAB release
         run: |
-          flutter build apk --release
-          flutter build appbundle --release
+          flutter build apk --release \
+            --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
+            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }}
+          flutter build appbundle --release \
+            --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
+            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }}
 
       - name: Renombrar con la version (evita pisar releases anteriores en el upload)
         run: |
@@ -178,6 +200,14 @@ jobs:
 
       - run: flutter pub get
       - run: flutter gen-l10n
+
+      - name: Resolver ambiente segun branch (APP_ENVIRONMENT)
+        id: environment
+        run: |
+          case "${{ github.ref_name }}" in
+            master) echo "value=prod" >> "$GITHUB_OUTPUT" ;;
+            *) echo "value=qa" >> "$GITHUB_OUTPUT" ;;
+          esac
 
       - name: Importar certificado + provisioning profile
         env:
@@ -222,7 +252,10 @@ jobs:
           EOF
 
       - name: Build IPA release
-        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+        run: |
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist \
+            --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
+            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }}
 
       - name: Renombrar con la version
         run: |

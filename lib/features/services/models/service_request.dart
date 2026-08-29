@@ -1,12 +1,15 @@
 import 'request_status.dart';
 
-/// `ServiceRequests` — igual que `Service`, el `id` YA ES el UUID (PK primaria de la tabla, ver
-/// `openspec/decisions.md`). `serviceId` es el UUID del `Service` padre (el backend lo mapea
-/// explícito desde el `referenceId` de la relación, no es el Int interno). `professionalId` sigue
-/// siendo el Int crudo de `Professionals`.
+/// `ServiceRequests` — desde 0008-id-referenceid-standardization el backend expone `id` (Int
+/// interno, secuencial) y `referenceId` (UUID) por separado (ver `openspec/decisions.md`). `id`
+/// sirve SOLO para ordenamiento, nunca para navegar/consultar/rutear — usar siempre `referenceId`
+/// para eso. `serviceId` sigue siendo el UUID del `Service` padre (el backend lo mapea explícito
+/// desde el `referenceId` de la relación, no es el Int interno — no cambió). `professionalId`
+/// sigue siendo el Int crudo de `Professionals`.
 class ServiceRequest {
   const ServiceRequest({
     required this.id,
+    required this.referenceId,
     required this.serviceId,
     required this.professionalId,
     required this.status,
@@ -16,7 +19,11 @@ class ServiceRequest {
     this.message,
   });
 
-  final String id;
+  /// Int interno secuencial — solo para ordenamiento, nunca para navegar/consultar/rutear.
+  final int id;
+
+  /// UUID público — la clave real para navegación/deep-linking y lookups por API.
+  final String referenceId;
   final String serviceId;
   final int professionalId;
   final RequestStatus status;
@@ -27,7 +34,8 @@ class ServiceRequest {
 
   factory ServiceRequest.fromJson(Map<String, dynamic> json) {
     return ServiceRequest(
-      id: json['id'] as String,
+      id: json['id'] as int,
+      referenceId: json['referenceId'] as String,
       serviceId: json['serviceId'] as String,
       professionalId: json['professionalId'] as int,
       status: RequestStatus.fromJson(json['status'] as String),

@@ -84,7 +84,7 @@ class _ProfessionalServicesScreenState
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final service = services[index];
-            final isActing = _actingServiceId == service.id;
+            final isActing = _actingServiceId == service.referenceId;
             return TekoCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +106,7 @@ class _ProfessionalServicesScreenState
                       service.status == ServiceStatus.inProgress) ...[
                     const SizedBox(height: 12),
                     TekoButton(
-                      key: Key('service_transition_${service.id}'),
+                      key: Key('service_transition_${service.referenceId}'),
                       label: service.status == ServiceStatus.accepted
                           ? l10n.professionalServicesStart
                           : l10n.professionalServicesComplete,
@@ -114,8 +114,8 @@ class _ProfessionalServicesScreenState
                       onPressed: isActing
                           ? null
                           : () => service.status == ServiceStatus.accepted
-                              ? _start(service.id)
-                              : _complete(service.id),
+                              ? _start(service.referenceId)
+                              : _complete(service.referenceId),
                     ),
                   ],
                   if (service.status == ServiceStatus.completed &&
@@ -147,7 +147,7 @@ class _RateClientButton extends ConsumerWidget {
 
     await ref.read(rateControllerProvider.notifier).rateClient(
           clientReferenceId: service.client!.referenceId,
-          serviceId: service.id,
+          serviceId: service.referenceId,
           rating: stars,
           comment: comment,
         );
@@ -169,7 +169,7 @@ class _RateClientButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final ratingsAsync = ref.watch(serviceRatingsProvider(service.id));
+    final ratingsAsync = ref.watch(serviceRatingsProvider(service.referenceId));
     final alreadyRated = ratingsAsync.valueOrNull?.any(
       (rating) => rating.type == RatingType.professionalToClient,
     );
@@ -179,7 +179,7 @@ class _RateClientButton extends ConsumerWidget {
 
     final rateState = ref.watch(rateControllerProvider);
     return TekoButton(
-      key: Key('rate_client_button_${service.id}'),
+      key: Key('rate_client_button_${service.referenceId}'),
       label: l10n.rateClientButton,
       variant: TekoButtonVariant.outline,
       loading: rateState.isLoading,

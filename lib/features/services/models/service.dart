@@ -79,10 +79,10 @@ class ServiceProfessionalSummary {
   }
 }
 
-/// `Services` — el `id` YA ES el `referenceId` (UUID): el backend usa UUID como PK primaria para
-/// esta tabla y `exposeReferenceAsId()` borra el Int interno de la respuesta (ver
-/// `openspec/decisions.md`, no aplica el patrón `id` Int + `referenceId` separado que sí usan
-/// `Category`/`Professionals`).
+/// `Services` — desde 0008-id-referenceid-standardization el backend expone `id` (Int interno,
+/// secuencial) y `referenceId` (UUID) por separado (ver `openspec/decisions.md`). `id` sirve
+/// SOLO para ordenamiento, nunca para navegar/consultar/rutear — usar siempre `referenceId` para
+/// eso.
 ///
 /// `userId`/`professionalId` SÍ son el Int interno crudo de `Users`/`Professionals` — el backend
 /// no los limpia en este endpoint. No usarlos para navegación/rutas; solo sirven para comparar
@@ -91,6 +91,7 @@ class ServiceProfessionalSummary {
 class Service {
   const Service({
     required this.id,
+    required this.referenceId,
     required this.userId,
     required this.categoryId,
     required this.serviceTypeId,
@@ -118,7 +119,11 @@ class Service {
     this.client,
   });
 
-  final String id;
+  /// Int interno secuencial — solo para ordenamiento, nunca para navegar/consultar/rutear.
+  final int id;
+
+  /// UUID público — la clave real para navegación/deep-linking y lookups por API.
+  final String referenceId;
   final int userId;
   final int? professionalId;
   final int categoryId;
@@ -147,7 +152,8 @@ class Service {
 
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
-      id: json['id'] as String,
+      id: json['id'] as int,
+      referenceId: json['referenceId'] as String,
       userId: json['userId'] as int,
       professionalId: json['professionalId'] as int?,
       categoryId: json['categoryId'] as int,

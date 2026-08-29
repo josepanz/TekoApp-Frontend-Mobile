@@ -1,10 +1,13 @@
 # Fase 0010 — Contratos generados desde el presupuesto aceptado
 
-Spec de diseño, NO implementada todavía — feature 9 del backlog 2026-08-22
-(`openspec/decisions.md`). Contrato de dominio: `openspec/specs/service-contracts.md` (mobile),
-`TekoApp-Backend/openspec/specs/service-contracts.md` (backend).
+**Implementada 2026-08-28** — ver `openspec/decisions.md`, "Fase 0010", para las decisiones
+tomadas al implementar (copy legal placeholder+TODO, `url_launcher` en vez de un visor de PDF
+embebido, `GET /contracts` y `viewerRole` agregados al backend durante esta fase). Feature 9 del
+backlog 2026-08-22 (`openspec/decisions.md`). Contrato de dominio:
+`openspec/specs/service-contracts.md` (mobile), `TekoApp-Backend/openspec/specs/service-
+contracts.md` (backend).
 
-**Depende de `0009-multi-option-budgets.md`** — no se puede implementar antes que esa fase.
+**Depende de `0009-multi-option-budgets.md`** — implementada.
 
 ## Antes de empezar
 
@@ -49,24 +52,30 @@ arma el backend a partir del presupuesto aceptado, inmutable.
 
 ## Tareas
 
-- [ ] `data/`+`providers/`+`models/` de `contracts`.
-- [ ] Pantalla de vista previa + firma (ambos roles, mismo widget parametrizado por rol).
-- [ ] Descarga/visualización del PDF firmado (reusar el visor de PDF si ya existe uno en el
-      proyecto para otro flujo, o evaluar el paquete a usar y documentarlo en `decisions.md`).
-- [ ] Listado de contratos propios.
-- [ ] Traducir a es/en, con especial cuidado en la copy legal (ver Alcance).
-- [ ] Tests: provider de firma (happy path, 409 si ya se firmó o si no es el turno de ese rol),
-      widget test de la pantalla de firma (estados pendiente/parcial/completo).
+- [x] `data/`+`providers/`+`models/` de `contracts`.
+- [x] Pantalla de vista previa + firma (ambos roles, mismo widget parametrizado por rol vía
+      `Contract.isPendingViewerSignature`).
+- [x] Descarga/visualización del PDF firmado — `url_launcher` (ya dependencia del proyecto, mismo
+      patrón que `professional_documents_section.dart`), sin agregar un visor de PDF embebido
+      nuevo (ver `openspec/decisions.md`).
+- [x] Listado de contratos propios (`MyContractsScreen`, `GET /contracts` — endpoint agregado al
+      backend durante esta fase, ver `openspec/decisions.md`).
+- [x] Traducir a es/en, con especial cuidado en la copy legal (placeholder + `TODO(legal)` en la
+      metadata de `es.arb`).
+- [x] Tests: 16 nuevos (repositorio, providers de generar/firmar con 409, widget de firma con
+      estados pendiente/parcial/completo, listado propio) + `budget_comparison_screen_test.dart`
+      actualizado para la navegación nueva.
 
 ## Checkpoint de salida
 
-- [ ] Flujo completo: seleccionar presupuesto (Fase 0009) → generar contrato → cliente firma →
-      profesional firma → PDF disponible para ambos.
-- [ ] Intentar firmar dos veces o fuera de turno muestra el mensaje de error del backend, no uno
-      genérico.
-- [ ] Revisar con José el copy final de la pantalla de firma antes de publicar (no asumir que el
-      texto propuesto en esta spec es el definitivo — es un punto de decisión legal/producto, no
-      solo de UI).
+- [x] Flujo completo cubierto por tests unitarios/mocks: seleccionar presupuesto (Fase 0009) →
+      generar contrato → cliente firma → profesional firma → PDF disponible para ambos. Sin
+      verificación manual contra el backend real corriendo con datos reales.
+- [x] Intentar firmar dos veces o fuera de turno muestra el mensaje de error del backend (409 →
+      `contractConflictError`), no uno genérico.
+- [ ] Revisar con José el copy final de la pantalla de firma antes de publicar — el texto actual
+      (`contractDisclaimerText`) es un placeholder genérico marcado `TODO(legal)`, confirmado con
+      José que se resuelve más adelante con especialistas, no bloqueante para cerrar esta fase.
 
 ## Relación con otras features
 

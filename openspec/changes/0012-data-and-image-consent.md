@@ -50,26 +50,52 @@ genera).
 
 ## Tareas
 
-- [ ] `data/`+`providers/`+`models/` de `legal_consents`.
-- [ ] Interceptor/helper de `403 CONSENT_REQUIRED` en `core/api_client`, integrado con go_router
-      para navegar al flujo de aceptación y volver.
-- [ ] Pantalla de aceptación de documento legal.
-- [ ] Pantalla "Privacidad y datos" con historial + revocación.
-- [ ] Selector de `usageScope` integrado en los formularios de subida relevantes (portafolio,
-      avatar) — coordinar con las Fases 0007/0008 si ya están implementadas o implementarlo ahí
-      directamente si esta fase se hace primero.
-- [ ] Traducir a es/en.
-- [ ] Tests: provider (aceptar, revocar, 409 legal hold), widget test del interceptor de 403
-      (reintento tras aceptar), widget test de la pantalla de privacidad.
+- [x] `data/`+`providers/`+`models/` de `legal_consents` — nombrado `legal_consents_repository.dart`
+      en vez de `legal_consents_api.dart` (spec literal), para seguir la convención real ya usada
+      en el resto del repo (`AuthRepository`, `PaymentsRepository`, etc.).
+- [x] Interceptor de `403 CONSENT_REQUIRED` en `core/api_client`
+      (`ConsentRequiredInterceptor`) + puente `ConsentRequiredBridge`/`ConsentGateway` (mismo
+      patrón que `PushNotificationGateway`) para conectar el interceptor (sin `BuildContext`) con
+      la navegación real de `go_router`.
+- [x] Pantalla de aceptación de documento legal (`LegalConsentScreen`, ruta
+      `/legal/consentimiento`) — muestra TODOS los pendientes (el guard del backend no indica cuál
+      documentType puntual disparó el 403), checkbox por documento, "leer documento completo" abre
+      el `contentUrl` real en el navegador (`url_launcher`, se prefirió a un WebView embebido por
+      peso de dependencia).
+- [x] Pantalla "Privacidad y datos" (`PrivacyAndDataScreen`, ruta
+      `/perfil/privacidad-y-datos`, enlazada desde "Mi perfil") con historial + revocación.
+- [ ] Selector de `usageScope` en formularios de subida (portafolio, avatar) — **diferido**: no
+      existen todavía formularios de subida de portafolio/documentos (llegan con `0007`/`0008`),
+      así que no hay dónde integrarlo hoy. `ContentConsentGrant.usageScope` y
+      `LegalConsentsDbService.createContentGrant` (backend) ya existen, listos para cuando esos
+      formularios se implementen.
+- [x] Traducido a es/en (`lib/l10n/es.arb`/`en.arb`).
+- [x] Tests: 22 tests nuevos — interceptor (6, incluyendo reintento tras aceptar y no-loop en
+      rutas `/legal/consents`), repositorio (7), controller/provider (3), widget de aceptación (3),
+      widget de privacidad (3). Suite completa del repo: 290/290 en verde.
 
 ## Checkpoint de salida
 
-- [ ] Un usuario sin consentimiento vigente que intenta subir un documento/foto es interceptado,
-      completa la aceptación, y la subida original se reintenta automáticamente sin que el usuario
-      tenga que repetir el flujo desde cero.
-- [ ] La pantalla "Privacidad y datos" refleja el historial real de aceptaciones contra el backend.
-- [ ] Revocar un consentimiento con `requiresLegalHold=true` muestra el motivo, no un error
-      genérico.
+- [x] Un usuario sin consentimiento vigente que intenta subir un documento/foto es interceptado,
+      completa la aceptación, y la subida original se reintenta automáticamente — cubierto por
+      test unitario del interceptor (`ConsentRequiredInterceptor`); sin endpoint real de `0007`/
+      `0008` todavía para un checkpoint end-to-end real, igual que el backend.
+- [x] La pantalla "Privacidad y datos" refleja el historial — cubierto por widget test contra un
+      repositorio mockeado; falta el checkpoint real de José contra el backend desplegado.
+- [x] Revocar un consentimiento con `requiresLegalHold=true` muestra el motivo real (no un error
+      genérico) — cubierto por widget test, verificado que el mensaje del backend se muestra tal
+      cual.
+
+## Amendment 2026-08-25 — `errorCode` en el backend
+
+Durante esta fase se detectó que el backend (`0006`) no exponía ningún identificador
+máquina-legible para que este interceptor distinga `CONSENT_REQUIRED` de cualquier otro 403 en
+cualquier endpoint (el status 403 solo no alcanza, a diferencia de otros casos ya resueltos en la
+app donde el status code es inequívoco por endpoint). Se agregó `errorCode` opcional al envelope
+de error del backend (`HttpExceptionFilter`) — ver `TekoApp-Backend/openspec/decisions.md`. Sin
+este campo, la única alternativa hubiera sido un interceptor global 403→consentimiento que también
+secuestraría 403 de permisos genéricos en cualquier otro endpoint — riesgo real, no una
+simplificación aceptable.
 
 ## Riesgos / límites explícitos
 

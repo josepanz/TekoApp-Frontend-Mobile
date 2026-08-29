@@ -28,6 +28,7 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _addressController = TextEditingController();
+  final _aiNoteController = TextEditingController();
 
   Category? _selectedCategory;
   ServiceType? _selectedServiceType;
@@ -35,12 +36,14 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
   LocationFailure? _locationError;
   bool _isLocating = false;
   bool _locationMissing = false;
+  bool _aiAssisted = false;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     _addressController.dispose();
+    _aiNoteController.dispose();
     super.dispose();
   }
 
@@ -78,6 +81,8 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
           latitude: location.latitude,
           longitude: location.longitude,
           address: _addressController.text.trim(),
+          aiAssisted: _aiAssisted,
+          aiNote: _aiNoteController.text.trim(),
         );
   }
 
@@ -191,6 +196,22 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
                     ? l10n.requestServiceDescriptionRequired
                     : null,
               ),
+              CheckboxListTile(
+                key: const Key('request_service_ai_assisted_checkbox'),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: Text(l10n.aiDisclosureCheckboxLabel),
+                value: _aiAssisted,
+                onChanged: (value) =>
+                    setState(() => _aiAssisted = value ?? false),
+              ),
+              if (_aiAssisted) ...[
+                const SizedBox(height: 4),
+                TekoInput(
+                  label: l10n.aiDisclosureNoteLabel,
+                  controller: _aiNoteController,
+                ),
+              ],
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.requestServiceAddressLabel,
