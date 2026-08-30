@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_gradient_background.dart';
+import '../../../shared/widgets/teko_password_field.dart';
 import '../models/login_failure.dart';
 import '../providers/login_controller_provider.dart';
 
@@ -99,13 +100,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   : null,
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
+                        TekoPasswordField(
                           controller: _passwordController,
                           enabled: !loginState.isLoading,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: l10n.loginPasswordLabel,
-                          ),
+                          labelText: l10n.loginPasswordLabel,
                           validator: (value) => (value == null || value.isEmpty)
                               ? l10n.loginPasswordRequired
                               : null,
