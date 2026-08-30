@@ -130,6 +130,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 )
                               : Text(l10n.loginSubmit),
                         ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () => context.go('/register'),
+                          child: Text(
+                            '${l10n.loginNoAccount} ${l10n.loginSignUp}',
+                          ),
+                        ),
                       ],
                     ),
                   ),

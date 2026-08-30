@@ -9,6 +9,8 @@ import '../../../core/auth/token_storage_keys.dart';
 import '../../../core/auth/user_summary.dart';
 import '../models/login_failure.dart';
 import '../models/login_result.dart';
+import '../models/register_failure.dart';
+import '../models/register_result.dart';
 import '../models/scope_failure.dart';
 
 /// Llamadas a `/auth/*` — equivalente a `features/auth` en TekoApp-Web, pero sin BFF: acá el
@@ -97,6 +99,59 @@ class AuthRepository {
     } on DioException catch (error) {
       throw _classifyLogin(error);
     }
+  }
+
+  /// `POST /onboarding` (registro público, sin sesión) — cifra `password`/`confirmPassword` cada
+  /// uno por separado con RSA-OAEP (sin el envelope `{password, nonce}` del login, ver
+  /// `OnboardingApiService.onboarding` del backend: desencripta cada campo suelto).
+  Future<RegisterResult> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNumber,
+    required String password,
+    required String confirmPassword,
+    required bool acceptTerms,
+  }) async {
+    try {
+      final publicKeyPem = await fetchPublicKeyPem();
+      final encryptor = RsaEncryptor(publicKeyPem);
+
+      final response = await _apiClient.raw.post<Map<String, dynamic>>(
+        '/onboarding',
+        data: {
+          'firstName': firstName,
+          'lastName': lastName,
+          'email': email,
+          'phoneNumber': phoneNumber,
+          'password': encryptor.encryptValue(password),
+          'confirmPassword': encryptor.encryptValue(confirmPassword),
+          'acceptTerms': acceptTerms,
+        },
+        options: ClientBasicAuth.options(),
+      );
+
+      final data = response.data!;
+      return RegisterResult(
+        referenceId: data['referenceId'] as String,
+        email: data['email'] as String,
+        status: data['status'] as String,
+      );
+    } on DioException catch (error) {
+      throw _classifyRegister(error);
+    }
+  }
+
+  /// 409 → email ya registrado. Cualquier otra respuesta del servidor → servicio no disponible.
+  /// Sin respuesta (timeout/sin red) → sin conexión.
+  RegisterFailure _classifyRegister(DioException error) {
+    if (error.response?.statusCode == 409) {
+      return const EmailAlreadyRegisteredFailure();
+    }
+    if (error.response != null) {
+      return const RegisterServiceUnavailableFailure();
+    }
+    return const RegisterNoConnectionFailure();
   }
 
   /// `GET /auth/scope` — datos frescos del usuario (nunca decodificar el JWT localmente, ver
