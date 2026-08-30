@@ -65,11 +65,20 @@ jobs:
 
       # --debug: sin keystore de release configurado todavía. Cambiar a `--release` con
       # `key.properties` (desde secrets, uno por ambiente) cuando exista la cuenta de Play Console.
+      # BASIC_AUTH_CLIENT_ID/SECRET: credencial de ApiClientCredential (BasicAuthGuard) que exigen
+      # /auth/nonce, /auth/public-key, /auth/login y /onboarding — sin esto el build corre pero
+      # cualquier request pre-login del backend responde 401 INVALID_CLIENT_ID (ver
+      # TekoApp-Backend/prisma/seed.ts, clientId "tekoapp-mobile").
       - name: Build APK debug
+        env:
+          BASIC_AUTH_CLIENT_ID: ${{ secrets.BASIC_AUTH_CLIENT_ID }}
+          BASIC_AUTH_CLIENT_SECRET: ${{ secrets.BASIC_AUTH_CLIENT_SECRET }}
         run: |
           flutter build apk --debug \
             --dart-define=API_BASE_URL=${{ steps.env.outputs.api_base_url }} \
-            --dart-define=APP_ENVIRONMENT=${{ inputs.environment }}
+            --dart-define=APP_ENVIRONMENT=${{ inputs.environment }} \
+            --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
+            --dart-define=BASIC_AUTH_CLIENT_SECRET=$BASIC_AUTH_CLIENT_SECRET
 
       - uses: actions/upload-artifact@v4
         with:
@@ -103,7 +112,12 @@ jobs:
       # no se puede firmar para dispositivo físico ni App Store. Valida que el código Dart/nativo
       # compile en iOS, nada más — ver README.md para correr en un dispositivo real desde una Mac.
       - name: Build iOS (simulador)
+        env:
+          BASIC_AUTH_CLIENT_ID: ${{ secrets.BASIC_AUTH_CLIENT_ID }}
+          BASIC_AUTH_CLIENT_SECRET: ${{ secrets.BASIC_AUTH_CLIENT_SECRET }}
         run: |
           flutter build ios --simulator --no-codesign \
             --dart-define=API_BASE_URL=${{ steps.env.outputs.api_base_url }} \
-            --dart-define=APP_ENVIRONMENT=${{ inputs.environment }}
+            --dart-define=APP_ENVIRONMENT=${{ inputs.environment }} \
+            --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
+            --dart-define=BASIC_AUTH_CLIENT_SECRET=$BASIC_AUTH_CLIENT_SECRET
