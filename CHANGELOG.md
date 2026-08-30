@@ -1,3 +1,14 @@
+## [1.0.0-develop.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.3...v1.0.0-develop.4) (2026-08-30)
+
+### Features
+
+* **auth:** botón de ojito para mostrar/ocultar contraseña ([729c4bd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/729c4bd64478045c7ee314fb4d96413d09a51410))
+* **auth:** registro público de usuario ([d736f95](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d736f95d7847b8696546962c7b87b58c72aae74c))
+
+### Bug Fixes
+
+* **ci:** pasar BASIC_AUTH_CLIENT_ID/SECRET al build y release de Flutter ([d2a96d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d2a96d531aa036cef0daf02dc5d2a558de9390d4))
+
 ## [1.0.0-develop.3](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.2...v1.0.0-develop.3) (2026-08-29)
 
 ### Documentation
