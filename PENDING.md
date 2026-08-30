@@ -46,7 +46,22 @@ Consolidado 2026-08-29. Objetivo: un solo lugar para ver qué queda sin resolver
   firmar como asset de GitHub Release; activar cuando existan los secrets reales.
 - `has_play_publish` pendiente de secrets — revisar si desactivarlo en `prod` una vez resuelto.
 
-## 5. PR abierto, en pausa deliberada
+## 5. Reportado por José 2026-08-30 — solo anotado, sin investigar/desarrollar todavía
+
+- **La app sigue sin conectarse al backend**, pese al fix de CI de esta sesión (PR #72,
+  `BASIC_AUTH_CLIENT_ID`/`SECRET` cableados en `build.yml`/`release.yml`). **Verificado 2026-08-30
+  post-merge**: el fix SÍ generó un release nuevo real —
+  [`v1.0.0-develop.4`](https://github.com/josepanz/TekoApp-Frontend-Mobile/releases/tag/v1.0.0-develop.4)
+  (publicado 2026-08-30T01:16Z), con `tekoapp-mobile-v1.0.0-develop.4.apk`/`.aab` adjuntos y el job
+  "Release" del workflow en verde (`gh run list`, run exitoso de 7m7s). **Hipótesis más probable**:
+  José probó un APK viejo (anterior al merge, ej. `v1.0.0-develop.3` o antes), que todavía no tenía
+  las credenciales — no un fallo nuevo del fix. Próxima sesión: (1) confirmar que se instala
+  específicamente `tekoapp-mobile-v1.0.0-develop.4.apk` (o uno posterior) antes de re-investigar,
+  (2) si ESE build puntual también falla, ahí sí revisar si `BASIC_AUTH_CLIENT_ID`/`SECRET` llegaron
+  con el valor correcto (typo en el nombre del secret de GitHub fallaría en silencio, sin verlo en
+  logs) y que la credencial `tekoapp-mobile` siga activa en la base de Supabase compartida.
+
+## 6. PR abierto, en pausa deliberada
 
 **PR #68** (`feature/consent-ai-disclosure-and-account-recovery-spec` → `develop`) — quedó abierto
 a propósito desde 2026-08-26 hasta cerrar el resto del roadmap en curso. **Ese roadmap ya cerró por
