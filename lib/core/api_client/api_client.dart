@@ -48,8 +48,13 @@ class ApiClient {
     return Dio(
       BaseOptions(
         baseUrl: Env.apiBaseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 15),
+        // Render free tier (backend real de todos los ambientes hoy, ver openspec/decisions.md)
+        // apaga la instancia tras inactividad y tarda en "despertar" — medido en la práctica:
+        // ~63s en un cold start real (2026-09-01), sube a <1s ya despierta. Con el timeout viejo
+        // (10s/15s) cualquier request durante ese arranque fallaba con NoConnectionFailure,
+        // indistinguible de "no conecta al backend" para quien prueba la app recién abierta.
+        connectTimeout: const Duration(seconds: 90),
+        receiveTimeout: const Duration(seconds: 90),
         headers: const {'Content-Type': 'application/json'},
       ),
     );
