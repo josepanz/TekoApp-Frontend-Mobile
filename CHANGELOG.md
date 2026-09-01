@@ -1,3 +1,10 @@
+## [1.0.0-develop.6](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.5...v1.0.0-develop.6) (2026-09-01)
+
+### Documentation
+
+* **pending:** anotar que la app sigue sin conectar, reportado por José ([f63e4f8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f63e4f8a801933747d8e0004db6fe5d92f2ce89f)), closes [#72](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/72)
+* **pending:** registrar hallazgo del cold start de Render (PR [#74](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/74)) ([aeff1be](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/aeff1be1426b69433c278b9aff19375232832f71))
+
 ## [1.0.0-develop.5](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.4...v1.0.0-develop.5) (2026-09-01)
 
 ### Bug Fixes
