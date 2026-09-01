@@ -73,4 +73,22 @@ void main() {
     // Assert
     expect(first, isNot(equals(second)));
   });
+
+  test(
+    'encryptValue cifra un valor suelto — el round-trip recupera exactamente el string original '
+    '(sin envelope {password, nonce}, contrato de OnboardingUserRequestDTO)',
+    () {
+      // Arrange
+      final encryptor = RsaEncryptor(
+        CryptoUtils.encodeRSAPublicKeyToPem(publicKey),
+      );
+
+      // Act
+      final ciphertext = encryptor.encryptValue('S3cr3t!Pass');
+      final decrypted = decrypt(ciphertext);
+
+      // Assert
+      expect(decrypted, 'S3cr3t!Pass');
+    },
+  );
 }

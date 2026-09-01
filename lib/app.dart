@@ -13,6 +13,7 @@ import 'features/contracts/widgets/contract_preview_screen.dart';
 import 'features/contracts/widgets/my_contracts_screen.dart';
 import 'features/notifications/widgets/push_notification_gateway.dart';
 import 'features/auth/widgets/login_screen.dart';
+import 'features/auth/widgets/register_screen.dart';
 import 'features/home/widgets/home_screen.dart';
 import 'features/legal_consents/widgets/consent_gateway.dart';
 import 'features/legal_consents/widgets/legal_consent_screen.dart';
@@ -127,6 +128,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
       GoRoute(
         path: '/perfil',
         builder: (context, state) => const ProfileScreen(),

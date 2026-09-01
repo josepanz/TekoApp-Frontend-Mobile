@@ -1,10 +1,50 @@
-## [1.1.0](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0...v1.1.0) (2026-08-29)
+## [1.0.0-qa.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-qa.3...v1.0.0-qa.4) (2026-09-01)
+
+### Documentation
+
+* **pending:** anotar que la app sigue sin conectar, reportado por José ([f63e4f8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f63e4f8a801933747d8e0004db6fe5d92f2ce89f)), closes [#72](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/72)
+* **pending:** registrar hallazgo del cold start de Render (PR [#74](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/74)) ([aeff1be](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/aeff1be1426b69433c278b9aff19375232832f71))
+
+### Bug Fixes
+
+* **api-client:** subir el timeout de Dio para el cold start de Render ([72db3f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/72db3f14dc962b8d6da325ecfcef1c853bce41bf))
+* **ci:** pasar BASIC_AUTH_CLIENT_ID/SECRET al build y release de Flutter ([d2a96d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d2a96d531aa036cef0daf02dc5d2a558de9390d4))
+
+### Features
+
+* **auth:** botón de ojito para mostrar/ocultar contraseña ([729c4bd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/729c4bd64478045c7ee314fb4d96413d09a51410))
+* **auth:** registro público de usuario ([d736f95](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d736f95d7847b8696546962c7b87b58c72aae74c))
+
+## [1.0.0-develop.6](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.5...v1.0.0-develop.6) (2026-09-01)
+
+### Documentation
+
+* **pending:** anotar que la app sigue sin conectar, reportado por José ([f63e4f8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f63e4f8a801933747d8e0004db6fe5d92f2ce89f)), closes [#72](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/72)
+* **pending:** registrar hallazgo del cold start de Render (PR [#74](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/74)) ([aeff1be](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/aeff1be1426b69433c278b9aff19375232832f71))
+
+## [1.0.0-develop.5](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.4...v1.0.0-develop.5) (2026-09-01)
+
+### Bug Fixes
+
+* **api-client:** subir el timeout de Dio para el cold start de Render ([72db3f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/72db3f14dc962b8d6da325ecfcef1c853bce41bf))
+
+## [1.0.0-develop.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.3...v1.0.0-develop.4) (2026-08-30)
+
+### Features
+
+* **auth:** botón de ojito para mostrar/ocultar contraseña ([729c4bd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/729c4bd64478045c7ee314fb4d96413d09a51410))
+* **auth:** registro público de usuario ([d736f95](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d736f95d7847b8696546962c7b87b58c72aae74c))
+
+### Bug Fixes
+
+* **ci:** pasar BASIC_AUTH_CLIENT_ID/SECRET al build y release de Flutter ([d2a96d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d2a96d531aa036cef0daf02dc5d2a558de9390d4))
+
+## [1.0.0-develop.3](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.2...v1.0.0-develop.3) (2026-08-29)
 
 ### Documentation
 
 * **claude:** guardar sesion 6 ([6df7715](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6df7715243fda217532e7733b9b152523718a2fb))
 * **claude:** guardar sesion 7 ([d40b542](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d40b5428a5e58ed32541d4efdd764d0657ff808b))
-* **memory:** agregar adenda de promocion develop-qa-master ([#67](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/67)) ([07563e8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/07563e83ea86fe153d5d5b49f5d77f25abb03ce3))
 * **openspec:** documentar decisiones y agregar spec de registro de usuarios ([ba0910f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ba0910f081a0bb734e6a0f5299cd91f18d778552))
 * **openspec:** documentar decisiones y specs del roadmap completo ([8c5ec7c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c5ec7c5cc1b737c3490da155eed79d124316c15))
 * **pending:** agregar consolidado de pendientes y decisiones abiertas ([46fc176](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/46fc1767fb7e854fe325068779d53b49a0562b2d))
@@ -23,294 +63,11 @@
 * **service-progress:** agregar bitacora de trabajo en el detalle de servicio ([d7eecef](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d7eecefc2719e5cec96338ae69ed80c047fcf173))
 * **shared:** agregar gradiente de marca reusable en pantallas de fondo plano ([2415d81](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2415d81e1a13db6e61477f080bd015a4ef34457d))
 
-## [1.0.0-qa.3](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-qa.2...v1.0.0-qa.3) (2026-08-29)
+## [1.0.0-develop.2](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.1...v1.0.0-develop.2) (2026-08-23)
 
 ### Documentation
 
-* **claude:** guardar sesion 6 ([6df7715](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6df7715243fda217532e7733b9b152523718a2fb))
-* **claude:** guardar sesion 7 ([d40b542](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d40b5428a5e58ed32541d4efdd764d0657ff808b))
 * **memory:** agregar adenda de promocion develop-qa-master ([#67](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/67)) ([07563e8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/07563e83ea86fe153d5d5b49f5d77f25abb03ce3))
-* **openspec:** documentar decisiones y agregar spec de registro de usuarios ([ba0910f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ba0910f081a0bb734e6a0f5299cd91f18d778552))
-* **openspec:** documentar decisiones y specs del roadmap completo ([8c5ec7c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c5ec7c5cc1b737c3490da155eed79d124316c15))
-* **pending:** agregar consolidado de pendientes y decisiones abiertas ([46fc176](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/46fc1767fb7e854fe325068779d53b49a0562b2d))
-
-### Features
-
-* **ai-disclosures:** agregar checkbox de autodeclaracion y badge de disclosure de ia ([437e289](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/437e289f14f1ff83fccee0556298427bc6bbf5ed))
-* **app-update:** agregar chequeo y actualizacion de version de la app ([a0b0434](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/a0b043475680068816dd1adee868de88c60db61c))
-* **budgets:** agregar presupuestos multi-opcion ([cb18b00](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/cb18b0038827954ece673fc78d95cd188b075c40))
-* **contracts:** agregar contratos desde presupuesto aceptado ([13ee7d0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/13ee7d06e63e38516ae098304117bf0e2cc82b25))
-* **home:** rediseñar la pantalla de inicio del cliente ([579fc7e](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/579fc7e8b8b4f27964cccc010b0edfabb2546fd1))
-* **legal-consents:** agregar cliente de consentimiento y proteccion de datos ([2da0853](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2da0853e3a2fbc216ce10a6b1af86c42d69a35b1))
-* **payments:** exponer referenceId, agregar propinas y corregir navegacion ([30332a7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/30332a7be00da13c99c21f48283880fcee0847af))
-* **professional-documents:** agregar antecedentes y documentos profesionales ([2ef28b2](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2ef28b2834f47e408eacf2f2889c221d807e2c1d))
-* **ratings:** agregar kpis de calificaciones propias y del profesional ([e75e734](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e75e734f033d44415667dd042191f6500cdeb73c))
-* **service-progress:** agregar bitacora de trabajo en el detalle de servicio ([d7eecef](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d7eecefc2719e5cec96338ae69ed80c047fcf173))
-* **shared:** agregar gradiente de marca reusable en pantallas de fondo plano ([2415d81](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2415d81e1a13db6e61477f080bd015a4ef34457d))
-
-## 1.0.0 (2026-08-23)
-
-### Bug Fixes
-
-* agregar conventional-changelog-conventionalcommits (preset usado por commit-analyzer/release-notes-generator) ([c17ffbd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c17ffbdde0bb038fcecfb0f258c453241928c2ac))
-* bundle id iOS quedaba en tekoappMobile (camelCase), corregido a mobile ([e096ec8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e096ec8ca137c541db6cb1f1bfee75d6454b46e0))
-* formato dart + brand local + CI multi-ambiente + CONTRIBUTING.md ([eef7dd1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eef7dd1675b2b000a615d6b6df81e1e985e59159))
-* indentacion rota en scaffold-native.yml rompia el parseo YAML ([609acca](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/609accab8f7f47584df98d0c41e8d58cef034b3b))
-* make the Firebase Gradle plugin conditional on google-services.json existing ([#65](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/65)) ([6ba7179](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6ba7179947f786ad5b1a7c4e24e968c76a2b7eeb))
-* secrets no es evaluable en if: de job/step - exponerlo via job check-secrets ([5778c00](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5778c00090cacdaeff0c7630835703545efb2cdb))
-* usar mv en vez de git mv (archivos aun no trackeados) en scaffold-native.yml ([5ac3247](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5ac3247eea5ab18713ce8be655b981ccd5e036e3))
-
-### Features
-
-* add socket_io_client/flutter_map deps and a socket-origin helper ([b0fce35](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/b0fce358366c63b41a76993c987f8979d7fc9af7))
-* **auth:** cifrado RSA-OAEP, cookie jar seguro y AuthRepository real ([3f8a9eb](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/3f8a9eb7e48a8b6c6fdb92dcbe322b3fab3e0bcc))
-* **auth:** interceptor de refresh automatico + sessionProvider real ([8c51425](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c51425d2421ed3993d23cbdf9ff2629500c73d2))
-* **auth:** logout real + guard de go_router basado en sesion real ([83b92e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/83b92e5b24fbb1029ce34607fa9c4927000d1678))
-* **auth:** pantalla de login real con los 3 estados de error ([88f65a7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/88f65a7b5ec992a16b7c4595318af7bdb0fd66f8))
-* **bootstrap:** cerrar checkpoints pendientes de la Fase 0001 ([c9fe663](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c9fe6636eb9e05c35e6377b96c43cf2790e5ab34))
-* **categories:** catálogo de categorías y tipos de servicio ([fcea186](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/fcea186aef4b87a43ef3fbcd68d4f4c09bd050d8))
-* **ci:** agregar pipeline de release (GitHub Release + firma + stores) ([785ff82](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/785ff82be1f5aab0959ca68115331724207ea0e8))
-* **design-system:** tokens reales, ThemeData de marca y Poppins ([7492028](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7492028a9f330ec6dc1cc2db1fe8f352287d9940)), closes [#28A745](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/28A745) [#0D1B2A](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/0D1B2A) [#F5F7FA](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/F5F7FA)
-* **design-system:** widgets base compartidos (Button, Card, Avatar, Badge, Input) ([5710469](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/571046929b1d63efde2b75f0c7846cee5780e0ea))
-* Fase 0001 — bootstrap del código Flutter (esqueleto) ([eb8ea51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eb8ea51f9c830139993b38968230b4fb35bb07d8))
-* Fase 0005 — mapa de profesionales cercanos ([#61](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/61)) ([bb438e9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bb438e9fe652a59612f664a495457b39e55a3b9a))
-* Fase 0005 — push notifications (FCM) + specs backlog 2026-08-22 ([#64](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/64)) ([c27e5d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c27e5d58075d595c08ad78b60669c085725d5587))
-* Fase 0005 — tracking en vivo del profesional asignado ([#62](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/62)) ([dbf562c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dbf562ced43870b8cd694d541fb7bf05750d21f3))
-* Fase 0006 — i18n, selector de idioma y pulido ([#63](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/63)) ([1f0858c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1f0858c308db5e9966c0d54a29dafca1586a7661))
-* locations REST repository for toggling online status ([ab98ef4](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ab98ef4ccabe046a58c63a23234ceda5ec6d1373))
-* locations socket service wrapper (core/realtime) ([06578c7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/06578c73428911269ac8d4a5c51f25ef19b9a62d))
-* online status controller — toggle + live location emission ([0747c51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0747c514c9f2b0faa9d8c9eb0d3a5b2dd5c6561a))
-* online/offline switch in the professional home screen ([d6a6946](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6a694676a69c13353193d771e4109b776fe0036))
-* **payments:** models and repository for payment methods ([f6e404a](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f6e404a99f8588b0140fc8bf50be2ed24a40de64))
-* **payments:** pay a completed service ([01c3c2f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/01c3c2f02d90cffdac7bcd907c3cb4824ffb65ef))
-* **payments:** payment history and refund screens ([128d16e](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/128d16eed73557d81fdac6a2dc02d0f10cbdc6dd))
-* **payments:** payment methods screen (list, add, set default, delete) ([c24f112](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c24f112577431784a8bdb43a342d60fb5e9fa5ce))
-* **professional:** selector de modo + gate + onboarding de perfil ([7f6cd37](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7f6cd37c66b593078b70e7edd065f885e14baf97))
-* **profile:** pantalla Mi perfil real (ver/editar + avatar) ([dc2b6b6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dc2b6b63ffcef7546fd1e767ae118af6bdfed642))
-* **promotions:** models and repository for validate/apply ([f0854e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f0854e5b1157412482e2676ea26a53115fbc1730))
-* **ratings:** bidirectional rating on service completion ([bd43f28](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bd43f28fdccc2778607004f62cc5b4c833235284))
-* **services:** modelos y repositorio compartido de Service/ServiceRequest ([0471e38](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0471e38f130cff1a09482b84850304ef81e31d33))
-* **services:** modo cliente — mis servicios (listado + detalle) ([1e0f8c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1e0f8c9478a6f34af9cb81f93b607d2901e7f6a3))
-* **services:** modo cliente — pedir servicio ([e102ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e102ae545ff0493fb712732e218d4b5e1e438601))
-* **services:** modo cliente — ver propuestas competidoras y elegir una ([c2effb3](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c2effb38c9eea87ace7b83c7111f0627fa933a3c))
-* **services:** modo profesional — marcar en progreso / completado ([d5b5ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d5b5ae5d7de9251255f60c8f4b908010a6cc9c70))
-* **services:** modo profesional — servicios disponibles + proponerse ([d001222](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d001222687bcede46a567445e4ad485c1cac8b7f))
-
-### Refactoring
-
-* extract shared location-permission/position-stream/token-reader providers ([32e9f20](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/32e9f2035bbf4880757fc44a93b2cf5589561cfb))
-
-### Documentation
-
-* agregar ARCHITECTURE.md en la raiz y corregir email de contacto ([04dd62c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/04dd62c75ca0ef7dcfef2560794e12dc95577d6d))
-* agregar ecosistema .claude completo y reflejar desbloqueo de FCM ([e730f6d](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e730f6da00ee65a129aa5b5848541408e3c46359))
-* cerrar checklist de código de la Fase 0003 ([744a2a6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/744a2a6bf3dea8d3c230ffe537e743ea456d7233)), closes [41-#49](https://github.com/josepanz/41-/issues/49)
-* close Fase 0004 (payments and ratings) ([e000d14](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e000d14089fc2f454c1fd67fb22840d3de098890))
-* **decisions:** confirmar almacenamiento de tokens y padding RSA contra el backend real ([e7927f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e7927f10e72a3ed287f4b8d597377526ca7ce12b))
-* document backlog of 5 requested features + dev-demo guide pointer ([d6b9650](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6b9650672151009130aaeeaebacb28aaebc4f5e))
-* documentacion completa SDD (OpenSpec) para arrancar el codigo de mobile ([2e282ab](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e282ab4f3819734d3b3302607b6ac054066b60c))
-* Fase 0004 decisions + build knowledge graph for the repo ([2e1f0b0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e1f0b0330776103806f680d7db470972ef693d9))
-* formalizar decisiones de la Fase 0003 (marketplace de servicios) ([28a41c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/28a41c93908cac4fdd89657ac591830a792b57e8))
-* pick flutter_map/OSM for maps, scope location emission to foreground-only ([7cd4aa1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7cd4aa125f7bb4e7ff8fa36ea62d47484aed83a2))
-
-## 1.0.0 (2026-08-23)
-
-### Bug Fixes
-
-* agregar conventional-changelog-conventionalcommits (preset usado por commit-analyzer/release-notes-generator) ([c17ffbd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c17ffbdde0bb038fcecfb0f258c453241928c2ac))
-* bundle id iOS quedaba en tekoappMobile (camelCase), corregido a mobile ([e096ec8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e096ec8ca137c541db6cb1f1bfee75d6454b46e0))
-* formato dart + brand local + CI multi-ambiente + CONTRIBUTING.md ([eef7dd1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eef7dd1675b2b000a615d6b6df81e1e985e59159))
-* indentacion rota en scaffold-native.yml rompia el parseo YAML ([609acca](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/609accab8f7f47584df98d0c41e8d58cef034b3b))
-* make the Firebase Gradle plugin conditional on google-services.json existing ([#65](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/65)) ([6ba7179](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6ba7179947f786ad5b1a7c4e24e968c76a2b7eeb))
-* secrets no es evaluable en if: de job/step - exponerlo via job check-secrets ([5778c00](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5778c00090cacdaeff0c7630835703545efb2cdb))
-* usar mv en vez de git mv (archivos aun no trackeados) en scaffold-native.yml ([5ac3247](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5ac3247eea5ab18713ce8be655b981ccd5e036e3))
-
-### Features
-
-* add socket_io_client/flutter_map deps and a socket-origin helper ([b0fce35](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/b0fce358366c63b41a76993c987f8979d7fc9af7))
-* **auth:** cifrado RSA-OAEP, cookie jar seguro y AuthRepository real ([3f8a9eb](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/3f8a9eb7e48a8b6c6fdb92dcbe322b3fab3e0bcc))
-* **auth:** interceptor de refresh automatico + sessionProvider real ([8c51425](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c51425d2421ed3993d23cbdf9ff2629500c73d2))
-* **auth:** logout real + guard de go_router basado en sesion real ([83b92e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/83b92e5b24fbb1029ce34607fa9c4927000d1678))
-* **auth:** pantalla de login real con los 3 estados de error ([88f65a7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/88f65a7b5ec992a16b7c4595318af7bdb0fd66f8))
-* **bootstrap:** cerrar checkpoints pendientes de la Fase 0001 ([c9fe663](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c9fe6636eb9e05c35e6377b96c43cf2790e5ab34))
-* **categories:** catálogo de categorías y tipos de servicio ([fcea186](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/fcea186aef4b87a43ef3fbcd68d4f4c09bd050d8))
-* **ci:** agregar pipeline de release (GitHub Release + firma + stores) ([785ff82](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/785ff82be1f5aab0959ca68115331724207ea0e8))
-* **design-system:** tokens reales, ThemeData de marca y Poppins ([7492028](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7492028a9f330ec6dc1cc2db1fe8f352287d9940)), closes [#28A745](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/28A745) [#0D1B2A](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/0D1B2A) [#F5F7FA](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/F5F7FA)
-* **design-system:** widgets base compartidos (Button, Card, Avatar, Badge, Input) ([5710469](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/571046929b1d63efde2b75f0c7846cee5780e0ea))
-* Fase 0001 — bootstrap del código Flutter (esqueleto) ([eb8ea51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eb8ea51f9c830139993b38968230b4fb35bb07d8))
-* Fase 0005 — mapa de profesionales cercanos ([#61](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/61)) ([bb438e9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bb438e9fe652a59612f664a495457b39e55a3b9a))
-* Fase 0005 — push notifications (FCM) + specs backlog 2026-08-22 ([#64](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/64)) ([c27e5d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c27e5d58075d595c08ad78b60669c085725d5587))
-* Fase 0005 — tracking en vivo del profesional asignado ([#62](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/62)) ([dbf562c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dbf562ced43870b8cd694d541fb7bf05750d21f3))
-* Fase 0006 — i18n, selector de idioma y pulido ([#63](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/63)) ([1f0858c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1f0858c308db5e9966c0d54a29dafca1586a7661))
-* locations REST repository for toggling online status ([ab98ef4](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ab98ef4ccabe046a58c63a23234ceda5ec6d1373))
-* locations socket service wrapper (core/realtime) ([06578c7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/06578c73428911269ac8d4a5c51f25ef19b9a62d))
-* online status controller — toggle + live location emission ([0747c51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0747c514c9f2b0faa9d8c9eb0d3a5b2dd5c6561a))
-* online/offline switch in the professional home screen ([d6a6946](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6a694676a69c13353193d771e4109b776fe0036))
-* **payments:** models and repository for payment methods ([f6e404a](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f6e404a99f8588b0140fc8bf50be2ed24a40de64))
-* **payments:** pay a completed service ([01c3c2f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/01c3c2f02d90cffdac7bcd907c3cb4824ffb65ef))
-* **payments:** payment history and refund screens ([128d16e](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/128d16eed73557d81fdac6a2dc02d0f10cbdc6dd))
-* **payments:** payment methods screen (list, add, set default, delete) ([c24f112](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c24f112577431784a8bdb43a342d60fb5e9fa5ce))
-* **professional:** selector de modo + gate + onboarding de perfil ([7f6cd37](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7f6cd37c66b593078b70e7edd065f885e14baf97))
-* **profile:** pantalla Mi perfil real (ver/editar + avatar) ([dc2b6b6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dc2b6b63ffcef7546fd1e767ae118af6bdfed642))
-* **promotions:** models and repository for validate/apply ([f0854e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f0854e5b1157412482e2676ea26a53115fbc1730))
-* **ratings:** bidirectional rating on service completion ([bd43f28](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bd43f28fdccc2778607004f62cc5b4c833235284))
-* **services:** modelos y repositorio compartido de Service/ServiceRequest ([0471e38](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0471e38f130cff1a09482b84850304ef81e31d33))
-* **services:** modo cliente — mis servicios (listado + detalle) ([1e0f8c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1e0f8c9478a6f34af9cb81f93b607d2901e7f6a3))
-* **services:** modo cliente — pedir servicio ([e102ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e102ae545ff0493fb712732e218d4b5e1e438601))
-* **services:** modo cliente — ver propuestas competidoras y elegir una ([c2effb3](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c2effb38c9eea87ace7b83c7111f0627fa933a3c))
-* **services:** modo profesional — marcar en progreso / completado ([d5b5ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d5b5ae5d7de9251255f60c8f4b908010a6cc9c70))
-* **services:** modo profesional — servicios disponibles + proponerse ([d001222](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d001222687bcede46a567445e4ad485c1cac8b7f))
-
-### Refactoring
-
-* extract shared location-permission/position-stream/token-reader providers ([32e9f20](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/32e9f2035bbf4880757fc44a93b2cf5589561cfb))
-
-### Documentation
-
-* agregar ARCHITECTURE.md en la raiz y corregir email de contacto ([04dd62c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/04dd62c75ca0ef7dcfef2560794e12dc95577d6d))
-* agregar ecosistema .claude completo y reflejar desbloqueo de FCM ([e730f6d](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e730f6da00ee65a129aa5b5848541408e3c46359))
-* cerrar checklist de código de la Fase 0003 ([744a2a6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/744a2a6bf3dea8d3c230ffe537e743ea456d7233)), closes [41-#49](https://github.com/josepanz/41-/issues/49)
-* close Fase 0004 (payments and ratings) ([e000d14](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e000d14089fc2f454c1fd67fb22840d3de098890))
-* **decisions:** confirmar almacenamiento de tokens y padding RSA contra el backend real ([e7927f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e7927f10e72a3ed287f4b8d597377526ca7ce12b))
-* document backlog of 5 requested features + dev-demo guide pointer ([d6b9650](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6b9650672151009130aaeeaebacb28aaebc4f5e))
-* documentacion completa SDD (OpenSpec) para arrancar el codigo de mobile ([2e282ab](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e282ab4f3819734d3b3302607b6ac054066b60c))
-* Fase 0004 decisions + build knowledge graph for the repo ([2e1f0b0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e1f0b0330776103806f680d7db470972ef693d9))
-* formalizar decisiones de la Fase 0003 (marketplace de servicios) ([28a41c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/28a41c93908cac4fdd89657ac591830a792b57e8))
-* pick flutter_map/OSM for maps, scope location emission to foreground-only ([7cd4aa1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7cd4aa125f7bb4e7ff8fa36ea62d47484aed83a2))
-
-## [1.0.0-qa.2](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-qa.1...v1.0.0-qa.2) (2026-08-23)
-
-### Bug Fixes
-
-* make the Firebase Gradle plugin conditional on google-services.json existing ([#65](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/65)) ([6ba7179](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/6ba7179947f786ad5b1a7c4e24e968c76a2b7eeb))
-
-## 1.0.0-qa.1 (2026-08-23)
-
-### Features
-
-* add socket_io_client/flutter_map deps and a socket-origin helper ([b0fce35](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/b0fce358366c63b41a76993c987f8979d7fc9af7))
-* **auth:** cifrado RSA-OAEP, cookie jar seguro y AuthRepository real ([3f8a9eb](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/3f8a9eb7e48a8b6c6fdb92dcbe322b3fab3e0bcc))
-* **auth:** interceptor de refresh automatico + sessionProvider real ([8c51425](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c51425d2421ed3993d23cbdf9ff2629500c73d2))
-* **auth:** logout real + guard de go_router basado en sesion real ([83b92e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/83b92e5b24fbb1029ce34607fa9c4927000d1678))
-* **auth:** pantalla de login real con los 3 estados de error ([88f65a7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/88f65a7b5ec992a16b7c4595318af7bdb0fd66f8))
-* **bootstrap:** cerrar checkpoints pendientes de la Fase 0001 ([c9fe663](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c9fe6636eb9e05c35e6377b96c43cf2790e5ab34))
-* **categories:** catálogo de categorías y tipos de servicio ([fcea186](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/fcea186aef4b87a43ef3fbcd68d4f4c09bd050d8))
-* **ci:** agregar pipeline de release (GitHub Release + firma + stores) ([785ff82](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/785ff82be1f5aab0959ca68115331724207ea0e8))
-* **design-system:** tokens reales, ThemeData de marca y Poppins ([7492028](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7492028a9f330ec6dc1cc2db1fe8f352287d9940)), closes [#28A745](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/28A745) [#0D1B2A](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/0D1B2A) [#F5F7FA](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/F5F7FA)
-* **design-system:** widgets base compartidos (Button, Card, Avatar, Badge, Input) ([5710469](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/571046929b1d63efde2b75f0c7846cee5780e0ea))
-* Fase 0001 — bootstrap del código Flutter (esqueleto) ([eb8ea51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eb8ea51f9c830139993b38968230b4fb35bb07d8))
-* Fase 0005 — mapa de profesionales cercanos ([#61](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/61)) ([bb438e9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bb438e9fe652a59612f664a495457b39e55a3b9a))
-* Fase 0005 — push notifications (FCM) + specs backlog 2026-08-22 ([#64](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/64)) ([c27e5d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c27e5d58075d595c08ad78b60669c085725d5587))
-* Fase 0005 — tracking en vivo del profesional asignado ([#62](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/62)) ([dbf562c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dbf562ced43870b8cd694d541fb7bf05750d21f3))
-* Fase 0006 — i18n, selector de idioma y pulido ([#63](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/63)) ([1f0858c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1f0858c308db5e9966c0d54a29dafca1586a7661))
-* locations REST repository for toggling online status ([ab98ef4](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ab98ef4ccabe046a58c63a23234ceda5ec6d1373))
-* locations socket service wrapper (core/realtime) ([06578c7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/06578c73428911269ac8d4a5c51f25ef19b9a62d))
-* online status controller — toggle + live location emission ([0747c51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0747c514c9f2b0faa9d8c9eb0d3a5b2dd5c6561a))
-* online/offline switch in the professional home screen ([d6a6946](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6a694676a69c13353193d771e4109b776fe0036))
-* **payments:** models and repository for payment methods ([f6e404a](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f6e404a99f8588b0140fc8bf50be2ed24a40de64))
-* **payments:** pay a completed service ([01c3c2f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/01c3c2f02d90cffdac7bcd907c3cb4824ffb65ef))
-* **payments:** payment history and refund screens ([128d16e](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/128d16eed73557d81fdac6a2dc02d0f10cbdc6dd))
-* **payments:** payment methods screen (list, add, set default, delete) ([c24f112](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c24f112577431784a8bdb43a342d60fb5e9fa5ce))
-* **professional:** selector de modo + gate + onboarding de perfil ([7f6cd37](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7f6cd37c66b593078b70e7edd065f885e14baf97))
-* **profile:** pantalla Mi perfil real (ver/editar + avatar) ([dc2b6b6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dc2b6b63ffcef7546fd1e767ae118af6bdfed642))
-* **promotions:** models and repository for validate/apply ([f0854e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f0854e5b1157412482e2676ea26a53115fbc1730))
-* **ratings:** bidirectional rating on service completion ([bd43f28](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bd43f28fdccc2778607004f62cc5b4c833235284))
-* **services:** modelos y repositorio compartido de Service/ServiceRequest ([0471e38](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0471e38f130cff1a09482b84850304ef81e31d33))
-* **services:** modo cliente — mis servicios (listado + detalle) ([1e0f8c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1e0f8c9478a6f34af9cb81f93b607d2901e7f6a3))
-* **services:** modo cliente — pedir servicio ([e102ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e102ae545ff0493fb712732e218d4b5e1e438601))
-* **services:** modo cliente — ver propuestas competidoras y elegir una ([c2effb3](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c2effb38c9eea87ace7b83c7111f0627fa933a3c))
-* **services:** modo profesional — marcar en progreso / completado ([d5b5ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d5b5ae5d7de9251255f60c8f4b908010a6cc9c70))
-* **services:** modo profesional — servicios disponibles + proponerse ([d001222](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d001222687bcede46a567445e4ad485c1cac8b7f))
-
-### Refactoring
-
-* extract shared location-permission/position-stream/token-reader providers ([32e9f20](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/32e9f2035bbf4880757fc44a93b2cf5589561cfb))
-
-### Documentation
-
-* agregar ARCHITECTURE.md en la raiz y corregir email de contacto ([04dd62c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/04dd62c75ca0ef7dcfef2560794e12dc95577d6d))
-* agregar ecosistema .claude completo y reflejar desbloqueo de FCM ([e730f6d](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e730f6da00ee65a129aa5b5848541408e3c46359))
-* cerrar checklist de código de la Fase 0003 ([744a2a6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/744a2a6bf3dea8d3c230ffe537e743ea456d7233)), closes [41-#49](https://github.com/josepanz/41-/issues/49)
-* close Fase 0004 (payments and ratings) ([e000d14](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e000d14089fc2f454c1fd67fb22840d3de098890))
-* **decisions:** confirmar almacenamiento de tokens y padding RSA contra el backend real ([e7927f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e7927f10e72a3ed287f4b8d597377526ca7ce12b))
-* document backlog of 5 requested features + dev-demo guide pointer ([d6b9650](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6b9650672151009130aaeeaebacb28aaebc4f5e))
-* documentacion completa SDD (OpenSpec) para arrancar el codigo de mobile ([2e282ab](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e282ab4f3819734d3b3302607b6ac054066b60c))
-* Fase 0004 decisions + build knowledge graph for the repo ([2e1f0b0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e1f0b0330776103806f680d7db470972ef693d9))
-* formalizar decisiones de la Fase 0003 (marketplace de servicios) ([28a41c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/28a41c93908cac4fdd89657ac591830a792b57e8))
-* pick flutter_map/OSM for maps, scope location emission to foreground-only ([7cd4aa1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7cd4aa125f7bb4e7ff8fa36ea62d47484aed83a2))
-
-### Bug Fixes
-
-* agregar conventional-changelog-conventionalcommits (preset usado por commit-analyzer/release-notes-generator) ([c17ffbd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c17ffbdde0bb038fcecfb0f258c453241928c2ac))
-* bundle id iOS quedaba en tekoappMobile (camelCase), corregido a mobile ([e096ec8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e096ec8ca137c541db6cb1f1bfee75d6454b46e0))
-* formato dart + brand local + CI multi-ambiente + CONTRIBUTING.md ([eef7dd1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eef7dd1675b2b000a615d6b6df81e1e985e59159))
-* indentacion rota en scaffold-native.yml rompia el parseo YAML ([609acca](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/609accab8f7f47584df98d0c41e8d58cef034b3b))
-* secrets no es evaluable en if: de job/step - exponerlo via job check-secrets ([5778c00](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5778c00090cacdaeff0c7630835703545efb2cdb))
-* usar mv en vez de git mv (archivos aun no trackeados) en scaffold-native.yml ([5ac3247](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5ac3247eea5ab18713ce8be655b981ccd5e036e3))
-
-## 1.0.0-qa.1 (2026-08-23)
-
-### Features
-
-* add socket_io_client/flutter_map deps and a socket-origin helper ([b0fce35](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/b0fce358366c63b41a76993c987f8979d7fc9af7))
-* **auth:** cifrado RSA-OAEP, cookie jar seguro y AuthRepository real ([3f8a9eb](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/3f8a9eb7e48a8b6c6fdb92dcbe322b3fab3e0bcc))
-* **auth:** interceptor de refresh automatico + sessionProvider real ([8c51425](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/8c51425d2421ed3993d23cbdf9ff2629500c73d2))
-* **auth:** logout real + guard de go_router basado en sesion real ([83b92e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/83b92e5b24fbb1029ce34607fa9c4927000d1678))
-* **auth:** pantalla de login real con los 3 estados de error ([88f65a7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/88f65a7b5ec992a16b7c4595318af7bdb0fd66f8))
-* **bootstrap:** cerrar checkpoints pendientes de la Fase 0001 ([c9fe663](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c9fe6636eb9e05c35e6377b96c43cf2790e5ab34))
-* **categories:** catálogo de categorías y tipos de servicio ([fcea186](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/fcea186aef4b87a43ef3fbcd68d4f4c09bd050d8))
-* **ci:** agregar pipeline de release (GitHub Release + firma + stores) ([785ff82](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/785ff82be1f5aab0959ca68115331724207ea0e8))
-* **design-system:** tokens reales, ThemeData de marca y Poppins ([7492028](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7492028a9f330ec6dc1cc2db1fe8f352287d9940)), closes [#28A745](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/28A745) [#0D1B2A](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/0D1B2A) [#F5F7FA](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/F5F7FA)
-* **design-system:** widgets base compartidos (Button, Card, Avatar, Badge, Input) ([5710469](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/571046929b1d63efde2b75f0c7846cee5780e0ea))
-* Fase 0001 — bootstrap del código Flutter (esqueleto) ([eb8ea51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eb8ea51f9c830139993b38968230b4fb35bb07d8))
-* Fase 0005 — mapa de profesionales cercanos ([#61](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/61)) ([bb438e9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bb438e9fe652a59612f664a495457b39e55a3b9a))
-* Fase 0005 — push notifications (FCM) + specs backlog 2026-08-22 ([#64](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/64)) ([c27e5d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c27e5d58075d595c08ad78b60669c085725d5587))
-* Fase 0005 — tracking en vivo del profesional asignado ([#62](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/62)) ([dbf562c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dbf562ced43870b8cd694d541fb7bf05750d21f3))
-* Fase 0006 — i18n, selector de idioma y pulido ([#63](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/63)) ([1f0858c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1f0858c308db5e9966c0d54a29dafca1586a7661))
-* locations REST repository for toggling online status ([ab98ef4](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ab98ef4ccabe046a58c63a23234ceda5ec6d1373))
-* locations socket service wrapper (core/realtime) ([06578c7](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/06578c73428911269ac8d4a5c51f25ef19b9a62d))
-* online status controller — toggle + live location emission ([0747c51](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0747c514c9f2b0faa9d8c9eb0d3a5b2dd5c6561a))
-* online/offline switch in the professional home screen ([d6a6946](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6a694676a69c13353193d771e4109b776fe0036))
-* **payments:** models and repository for payment methods ([f6e404a](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f6e404a99f8588b0140fc8bf50be2ed24a40de64))
-* **payments:** pay a completed service ([01c3c2f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/01c3c2f02d90cffdac7bcd907c3cb4824ffb65ef))
-* **payments:** payment history and refund screens ([128d16e](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/128d16eed73557d81fdac6a2dc02d0f10cbdc6dd))
-* **payments:** payment methods screen (list, add, set default, delete) ([c24f112](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c24f112577431784a8bdb43a342d60fb5e9fa5ce))
-* **professional:** selector de modo + gate + onboarding de perfil ([7f6cd37](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7f6cd37c66b593078b70e7edd065f885e14baf97))
-* **profile:** pantalla Mi perfil real (ver/editar + avatar) ([dc2b6b6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/dc2b6b63ffcef7546fd1e767ae118af6bdfed642))
-* **promotions:** models and repository for validate/apply ([f0854e5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f0854e5b1157412482e2676ea26a53115fbc1730))
-* **ratings:** bidirectional rating on service completion ([bd43f28](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bd43f28fdccc2778607004f62cc5b4c833235284))
-* **services:** modelos y repositorio compartido de Service/ServiceRequest ([0471e38](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/0471e38f130cff1a09482b84850304ef81e31d33))
-* **services:** modo cliente — mis servicios (listado + detalle) ([1e0f8c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/1e0f8c9478a6f34af9cb81f93b607d2901e7f6a3))
-* **services:** modo cliente — pedir servicio ([e102ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e102ae545ff0493fb712732e218d4b5e1e438601))
-* **services:** modo cliente — ver propuestas competidoras y elegir una ([c2effb3](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c2effb38c9eea87ace7b83c7111f0627fa933a3c))
-* **services:** modo profesional — marcar en progreso / completado ([d5b5ae5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d5b5ae5d7de9251255f60c8f4b908010a6cc9c70))
-* **services:** modo profesional — servicios disponibles + proponerse ([d001222](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d001222687bcede46a567445e4ad485c1cac8b7f))
-
-### Refactoring
-
-* extract shared location-permission/position-stream/token-reader providers ([32e9f20](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/32e9f2035bbf4880757fc44a93b2cf5589561cfb))
-
-### Documentation
-
-* agregar ARCHITECTURE.md en la raiz y corregir email de contacto ([04dd62c](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/04dd62c75ca0ef7dcfef2560794e12dc95577d6d))
-* agregar ecosistema .claude completo y reflejar desbloqueo de FCM ([e730f6d](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e730f6da00ee65a129aa5b5848541408e3c46359))
-* cerrar checklist de código de la Fase 0003 ([744a2a6](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/744a2a6bf3dea8d3c230ffe537e743ea456d7233)), closes [41-#49](https://github.com/josepanz/41-/issues/49)
-* close Fase 0004 (payments and ratings) ([e000d14](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e000d14089fc2f454c1fd67fb22840d3de098890))
-* **decisions:** confirmar almacenamiento de tokens y padding RSA contra el backend real ([e7927f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e7927f10e72a3ed287f4b8d597377526ca7ce12b))
-* document backlog of 5 requested features + dev-demo guide pointer ([d6b9650](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d6b9650672151009130aaeeaebacb28aaebc4f5e))
-* documentacion completa SDD (OpenSpec) para arrancar el codigo de mobile ([2e282ab](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e282ab4f3819734d3b3302607b6ac054066b60c))
-* Fase 0004 decisions + build knowledge graph for the repo ([2e1f0b0](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/2e1f0b0330776103806f680d7db470972ef693d9))
-* formalizar decisiones de la Fase 0003 (marketplace de servicios) ([28a41c9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/28a41c93908cac4fdd89657ac591830a792b57e8))
-* pick flutter_map/OSM for maps, scope location emission to foreground-only ([7cd4aa1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7cd4aa125f7bb4e7ff8fa36ea62d47484aed83a2))
-
-### Bug Fixes
-
-* agregar conventional-changelog-conventionalcommits (preset usado por commit-analyzer/release-notes-generator) ([c17ffbd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c17ffbdde0bb038fcecfb0f258c453241928c2ac))
-* bundle id iOS quedaba en tekoappMobile (camelCase), corregido a mobile ([e096ec8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/e096ec8ca137c541db6cb1f1bfee75d6454b46e0))
-* formato dart + brand local + CI multi-ambiente + CONTRIBUTING.md ([eef7dd1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/eef7dd1675b2b000a615d6b6df81e1e985e59159))
-* indentacion rota en scaffold-native.yml rompia el parseo YAML ([609acca](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/609accab8f7f47584df98d0c41e8d58cef034b3b))
-* secrets no es evaluable en if: de job/step - exponerlo via job check-secrets ([5778c00](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5778c00090cacdaeff0c7630835703545efb2cdb))
-* usar mv en vez de git mv (archivos aun no trackeados) en scaffold-native.yml ([5ac3247](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5ac3247eea5ab18713ce8be655b981ccd5e036e3))
 
 ## 1.0.0-develop.1 (2026-08-23)
 
