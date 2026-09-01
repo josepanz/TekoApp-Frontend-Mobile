@@ -46,7 +46,24 @@ Consolidado 2026-08-29. Objetivo: un solo lugar para ver qué queda sin resolver
   firmar como asset de GitHub Release; activar cuando existan los secrets reales.
 - `has_play_publish` pendiente de secrets — revisar si desactivarlo en `prod` una vez resuelto.
 
-## 5. PR abierto, en pausa deliberada
+## 5. Reportado por José 2026-08-30 — solo anotado, sin investigar/desarrollar todavía
+
+- **La app sigue sin conectarse al backend**, pese al fix de CI de esta sesión (PR #72,
+  `BASIC_AUTH_CLIENT_ID`/`SECRET` cableados en `build.yml`/`release.yml`). El fix SÍ generó un
+  release nuevo real —
+  [`v1.0.0-develop.4`](https://github.com/josepanz/TekoApp-Frontend-Mobile/releases/tag/v1.0.0-develop.4)
+  con APK/AAB adjuntos, workflow en verde — no era un fallo del fix en sí.
+  **Causa raíz probable encontrada 2026-09-01 (PR #74)**: medí el cold start real del backend en
+  Render (free tier) — **63.5s** para la primera respuesta tras estar dormido, contra 0.77s ya
+  despierto. `ApiClient` tenía `connectTimeout: 10s`/`receiveTimeout: 15s` — cualquier request
+  durante ese arranque fallaba con `NoConnectionFailure` mucho antes de que Render terminara de
+  levantar, indistinguible de "no conecta al backend" para quien abre la app después de un rato de
+  inactividad (el caso común de un tester real). Subido a 90s en PR #74. **No confirmado al 100%
+  como la única causa** — si José sigue viendo el problema después de instalar un build con este
+  fix, retomar la hipótesis anterior (verificar que el APK probado sea posterior a AMBOS fixes,
+  PR #72 y PR #74, antes de seguir investigando otra causa).
+
+## 6. PR abierto, en pausa deliberada
 
 **PR #68** (`feature/consent-ai-disclosure-and-account-recovery-spec` → `develop`) — quedó abierto
 a propósito desde 2026-08-26 hasta cerrar el resto del roadmap en curso. **Ese roadmap ya cerró por

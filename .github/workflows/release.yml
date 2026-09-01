@@ -153,14 +153,27 @@ jobs:
             *) echo "value=dev" >> "$GITHUB_OUTPUT" ;;
           esac
 
+      # BASIC_AUTH_CLIENT_ID/SECRET: credencial de ApiClientCredential (BasicAuthGuard) que exigen
+      # /auth/nonce, /auth/public-key, /auth/login y /onboarding — sin esto el APK compila pero
+      # cualquier request pre-login responde 401 INVALID_CLIENT_ID (ver
+      # TekoApp-Backend/prisma/seed.ts, clientId "tekoapp-mobile"). Bug real: ningún release
+      # publicado hasta el 2026-08-29 pasaba estos dart-defines, así que el APK nunca podía
+      # conectarse al backend.
       - name: Build APK + AAB release
+        env:
+          BASIC_AUTH_CLIENT_ID: ${{ secrets.BASIC_AUTH_CLIENT_ID }}
+          BASIC_AUTH_CLIENT_SECRET: ${{ secrets.BASIC_AUTH_CLIENT_SECRET }}
         run: |
           flutter build apk --release \
             --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
-            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }}
+            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }} \
+            --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
+            --dart-define=BASIC_AUTH_CLIENT_SECRET=$BASIC_AUTH_CLIENT_SECRET
           flutter build appbundle --release \
             --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
-            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }}
+            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }} \
+            --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
+            --dart-define=BASIC_AUTH_CLIENT_SECRET=$BASIC_AUTH_CLIENT_SECRET
 
       - name: Renombrar con la version (evita pisar releases anteriores en el upload)
         run: |
@@ -252,10 +265,15 @@ jobs:
           EOF
 
       - name: Build IPA release
+        env:
+          BASIC_AUTH_CLIENT_ID: ${{ secrets.BASIC_AUTH_CLIENT_ID }}
+          BASIC_AUTH_CLIENT_SECRET: ${{ secrets.BASIC_AUTH_CLIENT_SECRET }}
         run: |
           flutter build ipa --release --export-options-plist=ios/ExportOptions.plist \
             --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
-            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }}
+            --dart-define=API_BASE_URL=${{ env.API_BASE_URL }} \
+            --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
+            --dart-define=BASIC_AUTH_CLIENT_SECRET=$BASIC_AUTH_CLIENT_SECRET
 
       - name: Renombrar con la version
         run: |

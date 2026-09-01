@@ -20,11 +20,20 @@ class RsaEncryptor {
     required String nonce,
   }) {
     final payloadJson = jsonEncode({'password': password, 'nonce': nonce});
-    final input = Uint8List.fromList(utf8.encode(payloadJson));
+    return _encryptBytes(utf8.encode(payloadJson));
+  }
 
+  /// Cifra un valor suelto (sin envelope `{password, nonce}`) — el contrato que espera
+  /// `OnboardingUserRequestDTO.password`/`.confirmPassword` (backend desencripta cada campo con
+  /// `CryptoHelper.decrypt(valor, 'sha256')` directo, a diferencia del login).
+  String encryptValue(String value) {
+    return _encryptBytes(utf8.encode(value));
+  }
+
+  String _encryptBytes(List<int> bytes) {
     final cipher = OAEPEncoding.withSHA256(RSAEngine())
       ..init(true, PublicKeyParameter<RSAPublicKey>(_publicKey));
 
-    return base64.encode(cipher.process(input));
+    return base64.encode(cipher.process(Uint8List.fromList(bytes)));
   }
 }
