@@ -1,3 +1,20 @@
+## [1.2.0](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.1.0...v1.2.0) (2026-09-01)
+
+### Documentation
+
+* **pending:** anotar que la app sigue sin conectar, reportado por José ([f63e4f8](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/f63e4f8a801933747d8e0004db6fe5d92f2ce89f)), closes [#72](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/72)
+* **pending:** registrar hallazgo del cold start de Render (PR [#74](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/74)) ([aeff1be](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/aeff1be1426b69433c278b9aff19375232832f71))
+
+### Bug Fixes
+
+* **api-client:** subir el timeout de Dio para el cold start de Render ([72db3f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/72db3f14dc962b8d6da325ecfcef1c853bce41bf))
+* **ci:** pasar BASIC_AUTH_CLIENT_ID/SECRET al build y release de Flutter ([d2a96d5](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d2a96d531aa036cef0daf02dc5d2a558de9390d4))
+
+### Features
+
+* **auth:** botón de ojito para mostrar/ocultar contraseña ([729c4bd](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/729c4bd64478045c7ee314fb4d96413d09a51410))
+* **auth:** registro público de usuario ([d736f95](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/d736f95d7847b8696546962c7b87b58c72aae74c))
+
 ## [1.0.0-qa.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-qa.3...v1.0.0-qa.4) (2026-09-01)
 
 ### Documentation
