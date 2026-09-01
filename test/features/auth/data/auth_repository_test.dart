@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/features/auth/data/auth_repository.dart';
 import 'package:tekoapp_mobile/features/auth/models/login_failure.dart';
+import 'package:tekoapp_mobile/features/auth/models/register_failure.dart';
 import 'package:tekoapp_mobile/features/auth/models/scope_failure.dart';
 
 class _MockDio extends Mock implements Dio {}
@@ -237,6 +238,163 @@ void main() {
         await expectLater(
           repository.login(email: 'user@test.com', password: 'pass'),
           throwsA(isA<NoConnectionFailure>()),
+        );
+      },
+    );
+  });
+
+  group('register', () {
+    void mockPublicKeyCall() {
+      when(
+        () => dio.get<Map<String, dynamic>>(
+          '/auth/public-key',
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
+        (_) async => jsonResponse('/auth/public-key', {
+          'publicKeyPem': testPublicKeyPem,
+        }),
+      );
+    }
+
+    test('devuelve el resultado cuando el registro es exitoso', () async {
+      // Arrange
+      mockPublicKeyCall();
+      when(
+        () => dio.post<Map<String, dynamic>>(
+          '/onboarding',
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
+        (_) async => jsonResponse('/onboarding', {
+          'referenceId': 'ref-uuid-1',
+          'email': 'ana@test.com',
+          'status': 'PENDING_VERIFICATION',
+        }),
+      );
+
+      // Act
+      final result = await repository.register(
+        firstName: 'Ana',
+        lastName: 'García',
+        email: 'ana@test.com',
+        phoneNumber: '0981234567',
+        password: 'S3cr3t!Pass',
+        confirmPassword: 'S3cr3t!Pass',
+        acceptTerms: true,
+      );
+
+      // Assert
+      expect(result.referenceId, 'ref-uuid-1');
+      expect(result.email, 'ana@test.com');
+      expect(result.status, 'PENDING_VERIFICATION');
+    });
+
+    test(
+      'lanza EmailAlreadyRegisteredFailure cuando el backend responde 409',
+      () async {
+        // Arrange
+        mockPublicKeyCall();
+        when(
+          () => dio.post<Map<String, dynamic>>(
+            '/onboarding',
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/onboarding'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/onboarding'),
+              statusCode: 409,
+            ),
+          ),
+        );
+
+        // Act & Assert
+        await expectLater(
+          repository.register(
+            firstName: 'Ana',
+            lastName: 'García',
+            email: 'ana@test.com',
+            phoneNumber: '0981234567',
+            password: 'S3cr3t!Pass',
+            confirmPassword: 'S3cr3t!Pass',
+            acceptTerms: true,
+          ),
+          throwsA(isA<EmailAlreadyRegisteredFailure>()),
+        );
+      },
+    );
+
+    test(
+      'lanza RegisterServiceUnavailableFailure cuando el backend responde 5xx',
+      () async {
+        // Arrange
+        mockPublicKeyCall();
+        when(
+          () => dio.post<Map<String, dynamic>>(
+            '/onboarding',
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/onboarding'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/onboarding'),
+              statusCode: 503,
+            ),
+          ),
+        );
+
+        // Act & Assert
+        await expectLater(
+          repository.register(
+            firstName: 'Ana',
+            lastName: 'García',
+            email: 'ana@test.com',
+            phoneNumber: '0981234567',
+            password: 'S3cr3t!Pass',
+            confirmPassword: 'S3cr3t!Pass',
+            acceptTerms: true,
+          ),
+          throwsA(isA<RegisterServiceUnavailableFailure>()),
+        );
+      },
+    );
+
+    test(
+      'lanza RegisterNoConnectionFailure cuando no hay respuesta del servidor',
+      () async {
+        // Arrange
+        mockPublicKeyCall();
+        when(
+          () => dio.post<Map<String, dynamic>>(
+            '/onboarding',
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/onboarding'),
+            type: DioExceptionType.connectionError,
+          ),
+        );
+
+        // Act & Assert
+        await expectLater(
+          repository.register(
+            firstName: 'Ana',
+            lastName: 'García',
+            email: 'ana@test.com',
+            phoneNumber: '0981234567',
+            password: 'S3cr3t!Pass',
+            confirmPassword: 'S3cr3t!Pass',
+            acceptTerms: true,
+          ),
+          throwsA(isA<RegisterNoConnectionFailure>()),
         );
       },
     );
