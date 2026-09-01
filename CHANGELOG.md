@@ -1,3 +1,9 @@
+## [1.0.0-develop.5](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.4...v1.0.0-develop.5) (2026-09-01)
+
+### Bug Fixes
+
+* **api-client:** subir el timeout de Dio para el cold start de Render ([72db3f1](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/72db3f14dc962b8d6da325ecfcef1c853bce41bf))
+
 ## [1.0.0-develop.4](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.3...v1.0.0-develop.4) (2026-08-30)
 
 ### Features
