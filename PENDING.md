@@ -49,17 +49,19 @@ Consolidado 2026-08-29. Objetivo: un solo lugar para ver qué queda sin resolver
 ## 5. Reportado por José 2026-08-30 — solo anotado, sin investigar/desarrollar todavía
 
 - **La app sigue sin conectarse al backend**, pese al fix de CI de esta sesión (PR #72,
-  `BASIC_AUTH_CLIENT_ID`/`SECRET` cableados en `build.yml`/`release.yml`). **Verificado 2026-08-30
-  post-merge**: el fix SÍ generó un release nuevo real —
+  `BASIC_AUTH_CLIENT_ID`/`SECRET` cableados en `build.yml`/`release.yml`). El fix SÍ generó un
+  release nuevo real —
   [`v1.0.0-develop.4`](https://github.com/josepanz/TekoApp-Frontend-Mobile/releases/tag/v1.0.0-develop.4)
-  (publicado 2026-08-30T01:16Z), con `tekoapp-mobile-v1.0.0-develop.4.apk`/`.aab` adjuntos y el job
-  "Release" del workflow en verde (`gh run list`, run exitoso de 7m7s). **Hipótesis más probable**:
-  José probó un APK viejo (anterior al merge, ej. `v1.0.0-develop.3` o antes), que todavía no tenía
-  las credenciales — no un fallo nuevo del fix. Próxima sesión: (1) confirmar que se instala
-  específicamente `tekoapp-mobile-v1.0.0-develop.4.apk` (o uno posterior) antes de re-investigar,
-  (2) si ESE build puntual también falla, ahí sí revisar si `BASIC_AUTH_CLIENT_ID`/`SECRET` llegaron
-  con el valor correcto (typo en el nombre del secret de GitHub fallaría en silencio, sin verlo en
-  logs) y que la credencial `tekoapp-mobile` siga activa en la base de Supabase compartida.
+  con APK/AAB adjuntos, workflow en verde — no era un fallo del fix en sí.
+  **Causa raíz probable encontrada 2026-09-01 (PR #74)**: medí el cold start real del backend en
+  Render (free tier) — **63.5s** para la primera respuesta tras estar dormido, contra 0.77s ya
+  despierto. `ApiClient` tenía `connectTimeout: 10s`/`receiveTimeout: 15s` — cualquier request
+  durante ese arranque fallaba con `NoConnectionFailure` mucho antes de que Render terminara de
+  levantar, indistinguible de "no conecta al backend" para quien abre la app después de un rato de
+  inactividad (el caso común de un tester real). Subido a 90s en PR #74. **No confirmado al 100%
+  como la única causa** — si José sigue viendo el problema después de instalar un build con este
+  fix, retomar la hipótesis anterior (verificar que el APK probado sea posterior a AMBOS fixes,
+  PR #72 y PR #74, antes de seguir investigando otra causa).
 
 ## 6. PR abierto, en pausa deliberada
 
