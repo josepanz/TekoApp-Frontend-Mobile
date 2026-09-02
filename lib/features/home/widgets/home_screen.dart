@@ -7,6 +7,7 @@ import '../../../core/mode/app_mode.dart';
 import '../../../core/mode/app_mode_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_card.dart';
+import '../../professional_profile/providers/my_professional_profile_provider.dart';
 
 /// Pantalla de inicio (modo cliente) — el botón "modo profesional" en el `AppBar` lleva a
 /// `/profesional`, cuyo gate (`app.dart`) decide si mostrar el perfil activo o pedir activarlo
@@ -103,7 +104,76 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const _RecruitProfessionalCta(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Invita a convertirse en profesional — hasta ahora la única forma de descubrir
+/// `/profesional/onboarding` (que ya existe y funciona, ver
+/// `openspec/changes/0007-professional-documents-and-background-checks.md`) era el ícono chico
+/// de `swap_horiz` del AppBar, sin ningún texto explicando qué hace. Se oculta a sí misma si el
+/// usuario ya tiene perfil profesional (`myProfessionalProfileProvider` no es `null`) o mientras
+/// está cargando/en error — no repite el gate de `app.dart`, solo evita ofrecer un camino
+/// redundante a quien ya es profesional.
+class _RecruitProfessionalCta extends ConsumerWidget {
+  const _RecruitProfessionalCta();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(myProfessionalProfileProvider);
+    final hasNoProfile = profileAsync.valueOrNull == null &&
+        !profileAsync.isLoading &&
+        !profileAsync.hasError;
+
+    if (!hasNoProfile) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Semantics(
+        button: true,
+        label:
+            '${l10n.homeRecruitProfessionalQuestion} ${l10n.homeRecruitProfessionalCta}',
+        child: InkWell(
+          key: const Key('home_recruit_professional_cta'),
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            ref.read(appModeProvider.notifier).state = AppMode.professional;
+            context.push('/profesional/onboarding');
+          },
+          child: TekoCard(
+            child: Row(
+              children: [
+                Icon(Icons.work_outline, color: colorScheme.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.homeRecruitProfessionalQuestion,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      Text(
+                        l10n.homeRecruitProfessionalCta,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward, color: colorScheme.primary),
+              ],
+            ),
+          ),
         ),
       ),
     );
