@@ -1232,3 +1232,35 @@ tiene ninguna pantalla donde un cliente pague/vea sus propios pagos — el módu
 propina (monto en el detalle, ícono con tooltip en la tabla) — ningún botón para dejar una, ya que
 el staff nunca es el cliente que pagó. Detalle completo en
 `TekoApp-Frontend-Web/openspec/decisions.md`.
+
+## Galería de portafolio de trabajos — implementado 2026-09-02 (Fase 5 de onboarding-and-portfolio)
+
+Ver `openspec/specs/professional-onboarding-and-portfolio.md`, Fase 5. Depende de
+`TekoApp-Backend` Fase 4 (`professional-portfolio`, modelo `ProfessionalPortfolioItems` con
+revisión de staff) — se generaron los tipos/contrato a mano contra ese backend corriendo local en
+esa branch, mismo criterio que cualquier feature nueva de backend todavía no mergeada a develop.
+
+- `lib/features/professional_portfolio/` nuevo, espejo exacto de `professional_documents/`:
+  `data/professional_portfolio_repository.dart` (multipart directo, mismo criterio que
+  `professional_documents` — el archivo viaja en el mismo POST que crea la fila), 3 controllers
+  separados (`upload`/`update`/`delete`, un provider por operación de servidor) en vez de uno solo
+  que mezcle las 3 mutaciones.
+- `MyPortfolioScreen` (`/profesional/mi-portafolio`, gateada como profesional) — lista con
+  `FloatingActionButton` de subida, switch de visibilidad inline (sin pantalla de edición
+  separada), borrado con diálogo de confirmación (mismo patrón que `progress_timeline.dart`).
+- `PublicPortfolioSection` embebida en `ServiceDetailScreen` junto a
+  `ProfessionalDocumentsSection` — no existe una pantalla de "perfil público de profesional" en
+  este repo (mismo gap ya documentado para `professional_documents`), así que se usa el mismo
+  punto de contacto real en vez de inventar una pantalla nueva fuera de alcance.
+- **Decisión de UI encontrada al implementar, no anticipada en la spec**: el placeholder de una
+  foto mientras se resuelve su URL presignada es un `Container` de color estático, NO un
+  `CircularProgressIndicator`. Un spinner indeterminado por cada thumbnail de una lista rompe
+  `tester.pumpAndSettle()` en los widget tests (animación infinita, nunca "se asienta") — mismo
+  criterio ya documentado en `teko_avatar_test.dart` sobre no mockear `Image.network`. Se prefirió
+  cambiar el diseño (placeholder estático) antes que evitar testear la pantalla.
+- Pendiente, no de código: retirar `portfolio` de `ProfessionalDocumentTypes` (categoría antigua,
+  documento único) es una tarea de catálogo de datos, coordinada con la deprecación del lado
+  backend — no se tocó en esta fase.
+
+**Verificado**: `flutter analyze` 0 issues, `flutter test` 410/410 (12 nuevos: repositorio,
+controller de subida, widget de `MyPortfolioScreen`).
