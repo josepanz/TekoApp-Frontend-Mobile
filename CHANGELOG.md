@@ -1,3 +1,9 @@
+## [1.0.0-develop.8](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.7...v1.0.0-develop.8) (2026-09-04)
+
+### Features
+
+* **professional-portfolio:** galería de portafolio de trabajos ([#78](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/78)) ([bd8c21f](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/bd8c21f665dba159bc92a2070b5c40d7573ceaf4))
+
 ## [1.0.0-develop.7](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.6...v1.0.0-develop.7) (2026-09-04)
 
 ### Features
