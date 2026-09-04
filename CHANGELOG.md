@@ -1,3 +1,9 @@
+## [1.0.0-develop.7](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.6...v1.0.0-develop.7) (2026-09-04)
+
+### Features
+
+* **home:** agregar CTA de reclutamiento de profesionales ([#77](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/77)) ([7122a33](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/7122a3310cad75cc3eb6512db094ecb60348444f))
+
 ## [1.0.0-develop.6](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.5...v1.0.0-develop.6) (2026-09-01)
 
 ### Documentation

@@ -13,6 +13,8 @@
       }
     }
   },
+  "homeRecruitProfessionalQuestion": "¿Querés trabajar con nosotros?",
+  "homeRecruitProfessionalCta": "Postulate como profesional",
   "loginTitle": "Iniciar sesión",
   "loginEmailLabel": "Email",
   "loginPasswordLabel": "Contraseña",
