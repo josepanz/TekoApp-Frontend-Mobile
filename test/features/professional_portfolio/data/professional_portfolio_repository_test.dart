@@ -69,8 +69,7 @@ void main() {
           data: any(named: 'data'),
         ),
       ).thenAnswer(
-        (_) async =>
-            jsonResponse('/professionals/me/portfolio', itemJson()),
+        (_) async => jsonResponse('/professionals/me/portfolio', itemJson()),
       );
 
       // Act
@@ -105,8 +104,7 @@ void main() {
         DioException(
           requestOptions: RequestOptions(path: '/professionals/me/portfolio'),
           response: Response(
-            requestOptions:
-                RequestOptions(path: '/professionals/me/portfolio'),
+            requestOptions: RequestOptions(path: '/professionals/me/portfolio'),
             statusCode: 400,
           ),
         ),

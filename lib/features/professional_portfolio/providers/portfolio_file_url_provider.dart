@@ -6,7 +6,5 @@ import 'professional_portfolio_repository_provider.dart';
 /// cacheada más allá del widget que la muestra.
 final portfolioFileUrlProvider =
     FutureProvider.autoDispose.family<String, String>((ref, key) {
-  return ref
-      .watch(professionalPortfolioRepositoryProvider)
-      .resolveFileUrl(key);
+  return ref.watch(professionalPortfolioRepositoryProvider).resolveFileUrl(key);
 });

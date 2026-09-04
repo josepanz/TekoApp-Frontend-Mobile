@@ -73,7 +73,8 @@ void main() {
     ).called(1);
   });
 
-  test('deja el estado en error cuando el archivo no es válido (400)', () async {
+  test('deja el estado en error cuando el archivo no es válido (400)',
+      () async {
     // Arrange
     when(
       () => repository.upload(

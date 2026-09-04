@@ -21,7 +21,8 @@ Future<void> _pump(
         myPortfolioProvider.overrideWith((ref) async => items),
         // Nunca resuelve: evita renderizar `Image.network` en el test (mismo criterio que
         // `teko_avatar_test.dart` — no vale la pena mockear la carga de imagen de red).
-        portfolioFileUrlProvider.overrideWith((ref, key) => Completer<String>().future),
+        portfolioFileUrlProvider
+            .overrideWith((ref, key) => Completer<String>().future),
       ],
       child: const MaterialApp(
         locale: Locale('es'),
