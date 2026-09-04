@@ -74,6 +74,13 @@ class _ProfessionalActiveBody extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               TekoButton(
+                key: const Key('professional_home_my_portfolio_button'),
+                label: l10n.myPortfolioScreenTitle,
+                variant: TekoButtonVariant.outline,
+                onPressed: () => context.push('/profesional/mi-portafolio'),
+              ),
+              const SizedBox(height: 8),
+              TekoButton(
                 key: const Key('professional_home_my_contracts_button'),
                 label: l10n.myContractsTitle,
                 variant: TekoButtonVariant.outline,

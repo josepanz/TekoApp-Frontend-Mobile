@@ -37,37 +37,35 @@ galería real todavía.
 - Tocar `ProfessionalOnboardingScreen`, el mode-switch, o el flujo de documentos de compliance —
   todo eso ya funciona y no es parte de esta spec.
 
-## Fase 3 — CTA de reclutamiento en el home
+## Fase 3 — CTA de reclutamiento en el home ✅ CERRADA
 
-- [ ] `lib/features/home/widgets/home_screen.dart` — agregar una card visible solo si
+- [x] `lib/features/home/widgets/home_screen.dart` — card visible solo si
       `myProfessionalProfileProvider` no tiene datos (mismo gate que ya usa el botón del AppBar),
-      con copy real ("¿Querés trabajar con nosotros? Postulate como profesional") y navegación a
-      `/profesional/onboarding` (ya existe, no hay que crear ruta nueva).
-- [ ] Claves nuevas en `es.arb`/`en.arb` (`homeRecruitProfessionalTitle`/`...Cta`, etc.),
-      `flutter gen-l10n`.
-- [ ] Test: la card no aparece si el usuario ya tiene perfil profesional.
-- [ ] `flutter analyze`, `flutter test` en 0 issues.
+      con copy real y navegación a `/profesional/onboarding`.
+- [x] Claves nuevas en `es.arb`/`en.arb`, `flutter gen-l10n`.
+- [x] Test: la card no aparece si el usuario ya tiene perfil profesional.
+- [x] `flutter analyze`, `flutter test` en 0 issues.
 
-## Fase 5 — Galería de portafolio (depende de Backend Fase 4)
+## Fase 5 — Galería de portafolio (depende de Backend Fase 4) ✅ CERRADA
 
-**No arrancar hasta que el contrato de `GET/POST/PATCH/DELETE /professionals/me/portfolio` de
-`TekoApp-Backend` esté confirmado e implementado.**
-
-- [ ] Nuevo `lib/features/professional_portfolio/` (`data/`, `providers/`, `models/`, `widgets/`)
+- [x] Nuevo `lib/features/professional_portfolio/` (`data/`, `providers/`, `models/`, `widgets/`)
       — espejo de `professional_documents/` pero para el modelo nuevo.
-- [ ] `PortfolioUploadSheet` — subir foto (cámara o galería, `image_picker`, mismo patrón que
+- [x] `UploadPortfolioItemSheet` — subir foto (cámara o galería, `image_picker`, mismo patrón que
       `UploadDocumentSheet`) + caption opcional.
-- [ ] `PortfolioGalleryWidget` — grilla de fotos con reordenar/ocultar/borrar, embebida en la
-      pantalla de perfil profesional (confirmar el nombre real del archivo al implementar).
-- [ ] Mostrar el portafolio visible en la vista pública del profesional que el cliente ve al
-      elegirlo (confirmar contra el código real qué pantalla es, antes de asumir el nombre).
+- [x] `MyPortfolioScreen` (`/profesional/mi-portafolio`, gateada como profesional) — lista de fotos
+      con estado, visibilidad (switch) y borrado (confirmación), botón flotante de subida.
+- [x] `PublicPortfolioSection` — fotos aprobadas y visibles, embebida en `ServiceDetailScreen`
+      junto a `ProfessionalDocumentsSection` (mismo punto de contacto real, no una pantalla de
+      "perfil público" que no existe en este repo — mismo criterio ya documentado para
+      `professional_documents`).
 - [ ] Retirar `portfolio` de las categorías seleccionables en el flujo genérico de
-      `professional_documents` una vez la galería nueva esté disponible (evitar que quede
-      duplicado — coordinar con la deprecación de `DocumentCategory.PORTFOLIO` del lado backend).
-- [ ] Tests (provider, widget) + `flutter analyze`/`flutter test` en 0 issues.
+      `professional_documents` — no tocado en esta fase: es una tarea de catálogo de datos
+      (desactivar `ProfessionalDocumentTypes` con `category=PORTFOLIO`), no de código.
+- [x] Tests (repositorio, controller de subida, widget de `MyPortfolioScreen`) +
+      `flutter analyze`/`flutter test` en 0 issues (410/410).
 
 ## Checkpoint de salida (Mobile)
 
-- [ ] Un cliente ve el CTA de reclutamiento en el home si todavía no es profesional, y no lo ve si
-      ya lo es.
-- [ ] Un profesional arma su portafolio (múltiples fotos) desde la app, tras Backend Fase 4.
+- [x] Un cliente ve el CTA de reclutamiento en el home si todavía no es profesional, y no lo ve si
+      ya lo es (Fase 3, PR previo).
+- [x] Un profesional arma su portafolio (múltiples fotos) desde la app.

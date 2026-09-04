@@ -16,6 +16,7 @@ import '../../ratings/models/rating_type.dart';
 import '../../ratings/providers/rate_controller_provider.dart';
 import '../../ratings/providers/service_ratings_provider.dart';
 import '../../professional_documents/widgets/professional_documents_section.dart';
+import '../../professional_portfolio/widgets/public_portfolio_section.dart';
 import '../../ratings/widgets/rate_dialog.dart';
 import '../../service_progress/widgets/progress_timeline.dart';
 import '../models/service.dart';
@@ -104,6 +105,10 @@ class _ServiceDetailBody extends StatelessWidget {
             ProgressTimeline(service: service),
             const SizedBox(height: 24),
             ProfessionalDocumentsSection(
+              professionalReferenceId: service.professional!.referenceId,
+            ),
+            const SizedBox(height: 24),
+            PublicPortfolioSection(
               professionalReferenceId: service.professional!.referenceId,
             ),
           ],

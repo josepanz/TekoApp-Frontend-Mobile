@@ -25,6 +25,7 @@ import 'features/payments/widgets/payment_detail_screen.dart';
 import 'features/payments/widgets/payment_history_screen.dart';
 import 'features/payments/widgets/payment_methods_screen.dart';
 import 'features/professional_documents/widgets/my_documents_screen.dart';
+import 'features/professional_portfolio/widgets/my_portfolio_screen.dart';
 import 'features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'features/professional_profile/widgets/professional_home_screen.dart';
 import 'features/professional_profile/widgets/professional_onboarding_screen.dart';
@@ -58,6 +59,7 @@ const _protectedPaths = {
   '/profesional/onboarding',
   '/profesional/mis-servicios',
   '/profesional/mis-documentos',
+  '/profesional/mi-portafolio',
   '/profesional/mis-calificaciones',
   '/pagos/metodos',
   '/pagos/metodos/nuevo',
@@ -73,6 +75,7 @@ const _professionalGatedPaths = {
   '/profesional',
   '/profesional/mis-servicios',
   '/profesional/mis-documentos',
+  '/profesional/mi-portafolio',
   '/profesional/mis-calificaciones',
   '/servicios/:serviceId/solicitudes/:requestId/presupuesto',
 };
@@ -205,6 +208,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profesional/mis-documentos',
         builder: (context, state) => const MyDocumentsScreen(),
+      ),
+      GoRoute(
+        path: '/profesional/mi-portafolio',
+        builder: (context, state) => const MyPortfolioScreen(),
       ),
       GoRoute(
         path: '/profesional/mis-calificaciones',
