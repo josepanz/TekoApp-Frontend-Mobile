@@ -9,7 +9,21 @@ import 'package:tekoapp_mobile/core/auth/user_summary.dart';
 import 'package:tekoapp_mobile/core/mode/app_mode.dart';
 import 'package:tekoapp_mobile/core/mode/app_mode_provider.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
+import 'package:tekoapp_mobile/features/professional_profile/models/professional_profile.dart';
+import 'package:tekoapp_mobile/features/professional_profile/models/professional_status.dart';
+import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
+
+const _profile = ProfessionalProfile(
+  id: 2,
+  referenceId: 'prof-uuid-1',
+  categoryId: 3,
+  description: 'Plomero',
+  hourlyRate: 50000,
+  status: ProfessionalStatus.approved,
+  isAvailable: true,
+  isOnline: false,
+);
 
 const _user = UserSummary(
   referenceId: 'ref-1',
@@ -29,7 +43,10 @@ class _FixedSessionNotifier extends SessionNotifier {
   SessionState build() => _fixed;
 }
 
-Future<void> _pumpScreen(WidgetTester tester) async {
+Future<void> _pumpScreen(
+  WidgetTester tester, {
+  ProfessionalProfile? professionalProfile,
+}) async {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -64,6 +81,11 @@ Future<void> _pumpScreen(WidgetTester tester) async {
         builder: (context, state) =>
             const Scaffold(body: Text('pantalla-profesional')),
       ),
+      GoRoute(
+        path: '/profesional/onboarding',
+        builder: (context, state) =>
+            const Scaffold(body: Text('pantalla-onboarding-profesional')),
+      ),
     ],
   );
 
@@ -72,6 +94,9 @@ Future<void> _pumpScreen(WidgetTester tester) async {
       overrides: [
         sessionProvider.overrideWith(
           () => _FixedSessionNotifier(const SessionAuthenticated(_user)),
+        ),
+        myProfessionalProfileProvider.overrideWith(
+          (ref) => Future.value(professionalProfile),
         ),
       ],
       child: MaterialApp.router(
@@ -156,4 +181,48 @@ void main() {
     expect(find.text('pantalla-profesional'), findsOneWidget);
     expect(container.read(appModeProvider), AppMode.professional);
   });
+
+  testWidgets(
+    'muestra el CTA de reclutamiento cuando el usuario no es profesional',
+    (tester) async {
+      // Arrange & Act
+      await _pumpScreen(tester);
+
+      // Assert
+      expect(find.text('¿Querés trabajar con nosotros?'), findsOneWidget);
+      expect(find.text('Postulate como profesional'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'el CTA de reclutamiento cambia el modo y navega al onboarding profesional',
+    (tester) async {
+      // Arrange
+      await _pumpScreen(tester);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomeScreen)),
+      );
+
+      // Act
+      final ctaFinder = find.byKey(const Key('home_recruit_professional_cta'));
+      await tester.ensureVisible(ctaFinder);
+      await tester.tap(ctaFinder);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('pantalla-onboarding-profesional'), findsOneWidget);
+      expect(container.read(appModeProvider), AppMode.professional);
+    },
+  );
+
+  testWidgets(
+    'oculta el CTA de reclutamiento cuando el usuario ya es profesional',
+    (tester) async {
+      // Arrange & Act
+      await _pumpScreen(tester, professionalProfile: _profile);
+
+      // Assert
+      expect(find.text('¿Querés trabajar con nosotros?'), findsNothing);
+    },
+  );
 }
