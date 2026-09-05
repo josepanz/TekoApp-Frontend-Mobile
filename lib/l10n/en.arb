@@ -387,5 +387,8 @@
   "uploadPortfolioItemError": "We couldn't upload the photo — try again",
   "publicPortfolioSectionTitle": "Past work",
   "publicPortfolioSectionEmpty": "No past work photos yet",
-  "publicPortfolioSectionError": "We couldn't load the portfolio"
+  "publicPortfolioSectionError": "We couldn't load the portfolio",
+  "asyncStateGenericError": "An unexpected error occurred.",
+  "asyncStateEmpty": "No data to display.",
+  "asyncStateRetryButton": "Retry"
 }

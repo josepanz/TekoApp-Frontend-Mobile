@@ -489,5 +489,8 @@
   "uploadPortfolioItemError": "No pudimos subir la foto — intentá de nuevo",
   "publicPortfolioSectionTitle": "Trabajos anteriores",
   "publicPortfolioSectionEmpty": "Todavía no tiene fotos de trabajos anteriores",
-  "publicPortfolioSectionError": "No pudimos cargar el portafolio"
+  "publicPortfolioSectionError": "No pudimos cargar el portafolio",
+  "asyncStateGenericError": "Ocurrió un error inesperado.",
+  "asyncStateEmpty": "No hay datos para mostrar.",
+  "asyncStateRetryButton": "Reintentar"
 }
