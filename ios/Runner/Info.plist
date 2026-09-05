@@ -26,8 +26,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>TekoApp usa la cámara para que subas documentos de verificación y fotos de los trabajos que realizaste.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>TekoApp usa tu ubicación para completar la dirección al pedir un servicio.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>TekoApp accede a tu galería para que elijas desde el carrete esas mismas fotos de documentos y trabajos realizados.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
