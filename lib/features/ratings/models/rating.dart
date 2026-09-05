@@ -3,7 +3,9 @@ import 'rating_type.dart';
 /// `Rating` — desde 0008-id-referenceid-standardization el backend expone `id` (Int interno,
 /// secuencial) y `referenceId` (UUID) por separado (ver `openspec/decisions.md`). `id` sirve SOLO
 /// para ordenamiento, nunca para navegar/consultar/rutear — usar siempre `referenceId` para eso.
-/// `userId`/`professionalId` son el Int interno crudo (mismo patrón que `Service`).
+/// `userId`/`professionalId` son el Int interno crudo (mismo patrón que `Service`), pero pueden
+/// llegar en `null`: el backend los devuelve así cuando `isAnonymous=true` y quien consulta no es
+/// el autor de la calificación.
 class Rating {
   const Rating({
     required this.id,
@@ -23,8 +25,12 @@ class Rating {
 
   /// UUID público — la clave real para navegación/deep-linking y lookups por API.
   final String referenceId;
-  final int userId;
-  final int professionalId;
+
+  /// `null` cuando `isAnonymous=true` y quien consulta no es el autor.
+  final int? userId;
+
+  /// `null` cuando `isAnonymous=true` y quien consulta no es el autor.
+  final int? professionalId;
   final RatingType type;
   final double rating;
   final String? review;
@@ -36,8 +42,8 @@ class Rating {
     return Rating(
       id: json['id'] as int,
       referenceId: json['referenceId'] as String,
-      userId: json['userId'] as int,
-      professionalId: json['professionalId'] as int,
+      userId: json['userId'] as int?,
+      professionalId: json['professionalId'] as int?,
       type: RatingType.fromJson(json['type'] as String),
       rating: (json['rating'] as num).toDouble(),
       review: json['review'] as String?,
