@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/resolved_network_image.dart';
 import '../models/portfolio_item.dart';
 import '../providers/portfolio_file_url_provider.dart';
 import '../providers/public_portfolio_provider.dart';
@@ -68,22 +69,11 @@ class _PublicPortfolioPhoto extends ConsumerWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: switch (fileUrlAsync) {
-        AsyncData(:final value) => Image.network(
-            value,
-            width: 88,
-            height: 88,
-            fit: BoxFit.cover,
-          ),
-        // Placeholder estático (no un spinner animado): evita el problema clásico de
-        // `pumpAndSettle()` con animaciones indefinidas en los tests — ver `teko_avatar_test.dart`
-        // para el mismo criterio de no mockear `Image.network`.
-        _ => Container(
-            width: 88,
-            height: 88,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-      },
+      child: ResolvedNetworkImage(
+        urlAsync: fileUrlAsync,
+        width: 88,
+        height: 88,
+      ),
     );
   }
 }
