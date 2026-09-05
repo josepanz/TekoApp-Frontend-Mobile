@@ -676,10 +676,10 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 
 | ID | Sev | Estado | Commit | Notas |
 |---|---|---|---|---|
-| B-01 | CRÍTICO | [ ] | | |
-| B-02 | CRÍTICO | [ ] | | Verificación en device real queda para José |
-| B-03 | MEDIO | [ ] | | |
-| B-04 | ALTO | [ ] | | |
+| B-01 | CRÍTICO | [x] | c78cd12 | |
+| B-02 | CRÍTICO | [x] | 71a4fab | Verificación en device real queda para José |
+| B-03 | MEDIO | [x] | 9f22f1f | |
+| B-04 | ALTO | [x] | f7443f0 | |
 | M-01 | MEDIO | [ ] | | |
 | M-02 | MEDIO | [ ] | | |
 | M-03 | MEDIO | [ ] | | |
