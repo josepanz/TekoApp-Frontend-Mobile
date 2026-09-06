@@ -824,7 +824,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | M-02 | MEDIO | [x] | 36632b1 | |
 | M-03 | MEDIO | [x] | 99d4f59 | connectionState expuesto, sin consumidor en UI todavía (no hay pantalla que lo pida) |
 | M-04 | ALTO | [x] | 11a1685 | Script propio (no openapi_generator/swagger_dart_code_generator); PoC en `ratings`, probado contra fixture local — ver CODEGEN.md |
-| M-05 | BAJO | [ ] | | Diferir si no hay pantalla que lo pida |
+| M-05 | BAJO | [x] | 957bbfb | Ejecutada por pedido explícito (no diferida). D-03 ya resuelto en backend: professionalNetAmount ya no es siempre null, se agregó |
 | M-06 | ALTO | [x] | 08fa295 | |
 | M-07 | ALTO | [x] | 88100d9 | Solo `uploads/*` (5 call-sites) — es lo único versionado que Mobile llama fuera de auth/onboarding |
 | I-01 | CRÍTICO | [ ] | | Bloqueado por el endpoint del backend |
