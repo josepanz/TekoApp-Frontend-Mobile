@@ -35,11 +35,11 @@ void main() {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/uploads/image',
+          '/v1/uploads/image',
           data: any(named: 'data'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/uploads/image', {'key': 'foto-1.jpg'}),
+        (_) async => jsonResponse('/v1/uploads/image', {'key': 'foto-1.jpg'}),
       );
 
       // Act
@@ -208,12 +208,12 @@ void main() {
       // Arrange
       when(
         () => dio.get<Map<String, dynamic>>(
-          '/uploads/presigned-url',
+          '/v1/uploads/presigned-url',
           queryParameters: {'key': 'foto-1.jpg'},
         ),
       ).thenAnswer(
         (_) async => jsonResponse(
-          '/uploads/presigned-url',
+          '/v1/uploads/presigned-url',
           {'url': 'https://s3/foto-1.jpg?sig=abc'},
         ),
       );

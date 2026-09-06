@@ -107,11 +107,11 @@ void main() {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/uploads/avatar',
+          '/v1/uploads/avatar',
           data: any(named: 'data'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/uploads/avatar', {'key': 'abc123.jpg'}),
+        (_) async => jsonResponse('/v1/uploads/avatar', {'key': 'abc123.jpg'}),
       );
 
       // Act
@@ -178,11 +178,12 @@ void main() {
         // Arrange
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/uploads/avatar',
+            '/v1/uploads/avatar',
             data: any(named: 'data'),
           ),
         ).thenThrow(
-          DioException(requestOptions: RequestOptions(path: '/uploads/avatar')),
+          DioException(
+              requestOptions: RequestOptions(path: '/v1/uploads/avatar')),
         );
 
         // Act & Assert

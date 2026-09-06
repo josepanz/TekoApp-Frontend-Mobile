@@ -67,7 +67,8 @@ class ProfileRepository {
 
     try {
       final response = await _apiClient.raw.post<Map<String, dynamic>>(
-        '/uploads/avatar',
+        // `UploadsController` está versionado en el backend (@Version('1')); ver M-07.
+        '/v1/uploads/avatar',
         data: FormData.fromMap({
           'file': MultipartFile.fromBytes(
             bytes,
