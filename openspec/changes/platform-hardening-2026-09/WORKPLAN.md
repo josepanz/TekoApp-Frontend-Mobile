@@ -181,6 +181,8 @@ funcionalidad o riesgo real · **MEDIO** = bug con workaround · **BAJO/ESTILO**
 | M-03 | MEDIO | realtime | El socket de ubicación no reconecta ni avisa cuando se cae |
 | M-04 | ALTO | contrato | Sin codegen desde swagger: cada modelo a mano, nada detecta un drift |
 | M-05 | BAJO | contrato | `Payment.fromJson` descarta campos que el backend sí devuelve |
+| M-06 | ALTO | robustez | Un 403 de consentimiento que no se puede satisfacer cuelga la app sin salida |
+| M-07 | ALTO | contrato | Solo auth lleva `/v1`; el resto de los endpoints versionados da 404 |
 | I-01 | CRÍTICO | legal | No hay borrado de cuenta (Apple 5.1.1(v), Play, Ley PY 6534/2020) |
 | I-02 | MEDIO | seguridad | Sin `--obfuscate`: el secreto de cliente sale con `strings` del APK |
 | I-03 | MEDIO | soporte | Un usuario con un pago fallido no tiene ningún canal in-app |
@@ -596,6 +598,144 @@ no hay pantalla pedida.
 
 ---
 
+### M-06 · ALTO · Un `403 CONSENT_REQUIRED` que no se puede satisfacer cuelga la app para siempre
+
+**[VERIFICADO A MANO]** (reproducido en un Samsung SM-G990B2 real contra el backend local,
+2026-09-06: el botón de subir al portafolio quedó girando indefinidamente, sin error, sin crash y
+sin pantalla de consentimientos)
+
+**Archivos**:
+- `lib/features/legal_consents/providers/consent_required_bridge_provider.dart` (el `Completer`)
+- `lib/features/legal_consents/widgets/consent_gateway.dart` (`_handleConsentRequired`)
+- `lib/core/api_client/consent_required_interceptor.dart` (quien espera el `Future`)
+
+**Síntoma**: ante un `403 CONSENT_REQUIRED`, la app se queda cargando **para siempre**. No muestra
+error, no crashea, no ofrece salida: el spinner del botón gira indefinidamente y la única forma de
+salir es matar la app. Peor que un error, porque el usuario no tiene forma de saber qué pasó.
+
+**Causa raíz**: `ConsentRequiredInterceptor` hace `await _onConsentRequired()` y queda esperando un
+`Completer<bool>` que **nadie garantiza que se complete**. Hay tres caminos por los que el
+`resolve()` nunca ocurre, y ninguno tiene red de contención:
+
+1. **`ConsentGateway._handleConsentRequired` sale temprano sin resolver**:
+   ```dart
+   if (_isShowingConsentFlow || !mounted) return;   // ← no llama resolve()
+   ```
+2. **El `push` va con `unawaited`**: si `GoRouter.push('/legal/consentimiento')` lanza, la
+   excepción se traga y tampoco se resuelve.
+3. **`_controller` es `StreamController.broadcast()`**: si el evento se emite y no hay listener en
+   ese instante exacto, se descarta silenciosamente (un broadcast no bufferea).
+
+Además **no hay timeout en ningún lado**, así que cualquiera de los tres deja el `Future` colgado
+de forma permanente.
+
+**Cómo se descubrió (contexto que importa)**: la base de prueba tenía `legal_document_versions`
+con **0 filas**, así que el guard del backend devolvía `CONSENT_REQUIRED` de forma permanente y la
+pantalla de aceptación no tenía nada que ofrecer — un estado imposible de resolver desde la UI.
+Ese escenario de datos es real y volverá a pasar (ver T-04 del WORKPLAN de `TekoApp-Backend`), así
+que la app tiene que degradar con dignidad en vez de colgarse.
+
+**Verificación previa obligatoria** — escribí primero un test que falle
+(`test/core/api_client/consent_required_interceptor_test.dart`, extender el existente si lo hay):
+
+```dart
+// Un 403 CONSENT_REQUIRED cuyo flujo de consentimiento NUNCA resuelve debe terminar en error,
+// no quedar pendiente para siempre. Hoy este test queda colgado hasta el timeout de `flutter test`.
+final interceptor = ConsentRequiredInterceptor(dio, () => Completer<bool>().future);
+// ... disparar el onError con un 403 + errorCode CONSENT_REQUIRED
+// esperado tras el fix: el handler recibe un error dentro de un plazo acotado
+```
+
+**Cambio** — las tres cosas, no una:
+
+1. **Timeout en el interceptor**: `await _onConsentRequired().timeout(<D>, onTimeout: () => false)`.
+   Elegí la duración y **justificala en un comentario**; 60s es un punto de partida razonable
+   (suficiente para que una persona lea y acepte, acotado para no colgar la app). Al vencer, seguir
+   por `handler.next(err)` — el usuario ve el error real del backend, que es honesto.
+2. **`resolve()` en TODAS las salidas de `_handleConsentRequired`**: el `return` temprano por
+   `!mounted` / `_isShowingConsentFlow` debe llamar `resolve(false)` antes de salir, y el `push`
+   debe ir en `try/catch/finally` que resuelva pase lo que pase (hoy `unawaited` se come la
+   excepción).
+3. **No perder el evento**: hoy `requestConsentAndWait` emite en un broadcast sin verificar que
+   haya alguien escuchando. Agregá el guard: si `!_controller.hasListener`, completar el
+   `Completer` con `false` inmediatamente en vez de emitir al vacío.
+
+**Trampa**: no rompas la deduplicación que ya existe y está bien pensada — dos requests que fallan
+con `CONSENT_REQUIRED` casi a la vez comparten el MISMO `Completer` a propósito, para no abrir dos
+pantallas de aceptación. El timeout tiene que resolver ese completer compartido una sola vez (ojo
+con `complete()` sobre un completer ya completado: lanza `StateError`).
+
+**Tests a agregar**:
+- El flujo de consentimiento nunca resuelve → el request falla por timeout, no queda colgado.
+- `resolve(false)` (usuario canceló) → propaga el error original, sin reintento.
+- `resolve(true)` → reintenta el request original (no-regresión del camino feliz).
+- Sin listener en el bridge → el `Future` se completa en `false` en vez de colgarse.
+- Dos requests concurrentes con `CONSENT_REQUIRED` → un solo evento emitido, ambos resueltos juntos
+  (no-regresión de la deduplicación).
+
+**Criterios de aceptación**: ningún camino deja un `Completer` sin resolver; la suite completa en
+verde sin que ningún test dependa del timeout global de `flutter test` para terminar.
+
+**Commit**: `fix(consentimientos): evitar que un 403 CONSENT_REQUIRED cuelgue la app sin salida`
+
+---
+
+### M-07 · ALTO · Solo las llamadas de auth llevan el prefijo `/v1`; el resto de los endpoints versionados sigue roto
+
+**[VERIFICADO A MANO]** (confirmado contra el backend real el 2026-09-05: sin `/v1` la ruta
+devuelve 404, con `/v1` responde)
+
+**Archivos**: `lib/features/profile/data/profile_repository.dart` (`/uploads/avatar`), y todo
+`lib/features/*/data/*.dart` que pegue a `uploads/`, `roles/`, `users/` u `onboarding/`.
+
+**Síntoma**: el backend expone **algunos** controllers con `@Version('1')` y otros sin versionar.
+Nest sirve los versionados **solo** bajo `/tekoapp-backend/api/v1/...`; sin ese segmento devuelve
+404. El fix de hoy (commit `c653576`) cubrió únicamente `/auth/*` y `/onboarding`, por decisión
+explícita de alcance. **Todo lo demás que esté versionado sigue roto y nadie lo detecta**, porque
+la suite mockea Dio y nunca pega a un backend real.
+
+**Mapa verificado el 2026-09-05** (releelo contra el backend antes de accionar, puede haber
+cambiado):
+
+| Versionados (`/v1` obligatorio) | Sin versionar (sin `/v1`) |
+|---|---|
+| `auth/*`, `onboarding`, `uploads/*`, `roles/*`, `users/*` | `professionals/*`, `services/*`, `locations/*`, `payments/*`, `ratings/*`, `promotions/*`, `notifications/*` |
+
+**Verificación previa obligatoria** — **no confíes en la tabla de arriba**, regenerala vos:
+
+```bash
+# En TekoApp-Backend, con el server levantado, mirá qué rutas quedan mapeadas con "(version: 1)":
+grep -E "Mapped \{.*\}" <log-de-arranque> | grep "version: 1"
+# Y del lado Mobile, listá todos los paths que se piden hoy:
+grep -rnoE "'/[a-z0-9/_-]+'" lib/features/*/data/*.dart lib/core/ | sort -u
+```
+
+Cruzá ambas listas. Un endpoint que Mobile pide sin `/v1` y el backend expone con `version: 1` es
+un 404 garantizado en runtime.
+
+**Cambio**: agregar `/v1` **solo** a los paths cuyo controller esté versionado. **No lo agregues
+globalmente en el `baseUrl`**: rompería todos los endpoints no versionados, que son la mayoría.
+
+**Decisión de diseño a tomar y documentar en el commit**: hoy el prefijo va hardcodeado por
+call-site (así quedó en `auth_repository.dart`). Si al cruzar las listas aparecen muchos más
+call-sites, evaluá centralizarlo (una constante compartida, o un interceptor que sepa qué prefijos
+versionar) — pero **no inventes una abstracción para dos casos**. Elegí según el número real que te
+dé la verificación previa.
+
+**Trampa**: `RefreshTokenInterceptor._excludedPaths` compara paths exactos. Si cambiás un path que
+esté en esa lista, actualizá la lista en el mismo commit o el interceptor deja de excluirlo.
+
+**Tests**: actualizar los mocks de Dio de cada repositorio tocado para esperar el path nuevo (los
+tests son la única red que tenés acá, porque el path viaja como string).
+
+**Nota de fondo**: esto es un síntoma de que **la política de versionado de la API no existe** —
+ver I-04 del WORKPLAN de `TekoApp-Backend`. Mientras no se defina, esta clase de bug va a volver.
+No cierres I-04 como "documentación" sin que incluya qué controllers deben versionarse.
+
+**Commit**: `fix(api): prefijar /v1 en el resto de los endpoints versionados del backend`
+
+---
+
 ## 5. WORKFLOW 3 — Sostenibilidad (specs y decisiones, poco código)
 
 Estas tareas **no** son mecánicas. Requieren decisiones de producto/legales. Si las ejecuta un
@@ -685,6 +825,8 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | M-03 | MEDIO | [ ] | | |
 | M-04 | ALTO | [ ] | | Entregable: propuesta + 1 dominio, no migración completa |
 | M-05 | BAJO | [ ] | | Diferir si no hay pantalla que lo pida |
+| M-06 | ALTO | [ ] | | Reproducido en device real 2026-09-06. Requiere timeout + resolver en todas las salidas |
+| M-07 | ALTO | [ ] | | Parcial: `auth`/`onboarding` ya cubiertos en `c653576`. Falta el resto |
 | I-01 | CRÍTICO | [ ] | | Bloqueado por el endpoint del backend |
 | I-02 | MEDIO | [ ] | | |
 | I-03 | MEDIO | [ ] | | Spec primero |
