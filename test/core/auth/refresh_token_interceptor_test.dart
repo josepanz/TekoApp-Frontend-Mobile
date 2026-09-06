@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +22,9 @@ void main() {
   setUpAll(() {
     registerFallbackValue(RequestOptions(path: '/'));
     registerFallbackValue(Options());
+    registerFallbackValue(
+      Response<dynamic>(requestOptions: RequestOptions(path: '/')),
+    );
   });
 
   setUp(() {
@@ -150,6 +155,99 @@ void main() {
         () => secureStorage.delete(key: TokenStorageKeys.accessToken),
       ).called(1);
       verify(() => handler.next(error)).called(1);
+    },
+  );
+
+  test(
+    'dos 401 casi simultáneos comparten un solo refresh en vuelo (M-01)',
+    () async {
+      // Arrange — dos requests distintos expiran a la vez; el POST de refresh no
+      // resuelve hasta que lo completamos a mano, para simular la concurrencia real.
+      final firstError = unauthorizedError('/v1/services');
+      final secondError = unauthorizedError('/v1/ratings');
+      final refreshCompleter = Completer<Response<Map<String, dynamic>>>();
+      when(
+        () => dio.post<Map<String, dynamic>>(
+          '/v1/auth/refresh-token',
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer((_) => refreshCompleter.future);
+      when(
+        () => secureStorage.write(
+          key: TokenStorageKeys.accessToken,
+          value: 'new-token',
+        ),
+      ).thenAnswer((_) async {});
+      when(() => dio.fetch<dynamic>(any())).thenAnswer(
+        (invocation) async => Response<dynamic>(
+          requestOptions:
+              invocation.positionalArguments.first as RequestOptions,
+          data: {'ok': true},
+        ),
+      );
+
+      // Act
+      interceptor.onError(firstError, handler);
+      interceptor.onError(secondError, handler);
+      await pumpEventQueue();
+      refreshCompleter.complete(
+        Response(
+          requestOptions: RequestOptions(path: '/v1/auth/refresh-token'),
+          data: {'accessToken': 'new-token'},
+        ),
+      );
+      await pumpEventQueue();
+
+      // Assert — un solo POST de refresh, ambos requests reintentados.
+      verify(
+        () => dio.post<Map<String, dynamic>>(
+          '/v1/auth/refresh-token',
+          options: any(named: 'options'),
+        ),
+      ).called(1);
+      verify(() => handler.resolve(any())).called(2);
+    },
+  );
+
+  test(
+    'si el refresh en vuelo falla, los dos 401 concurrentes reciben su error '
+    'original y el token se limpia una sola vez (M-01)',
+    () async {
+      // Arrange
+      final firstError = unauthorizedError('/v1/services');
+      final secondError = unauthorizedError('/v1/ratings');
+      final refreshCompleter = Completer<Response<Map<String, dynamic>>>();
+      when(
+        () => dio.post<Map<String, dynamic>>(
+          '/v1/auth/refresh-token',
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer((_) => refreshCompleter.future);
+      when(
+        () => secureStorage.delete(key: TokenStorageKeys.accessToken),
+      ).thenAnswer((_) async {});
+
+      // Act
+      interceptor.onError(firstError, handler);
+      interceptor.onError(secondError, handler);
+      await pumpEventQueue();
+      refreshCompleter.completeError(
+        unauthorizedError('/v1/auth/refresh-token'),
+      );
+      await pumpEventQueue();
+
+      // Assert
+      verify(
+        () => dio.post<Map<String, dynamic>>(
+          '/v1/auth/refresh-token',
+          options: any(named: 'options'),
+        ),
+      ).called(1);
+      verify(
+        () => secureStorage.delete(key: TokenStorageKeys.accessToken),
+      ).called(1);
+      verify(() => handler.next(firstError)).called(1);
+      verify(() => handler.next(secondError)).called(1);
     },
   );
 }
