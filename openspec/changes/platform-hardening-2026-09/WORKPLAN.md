@@ -826,7 +826,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | M-04 | ALTO | [ ] | | Entregable: propuesta + 1 dominio, no migración completa |
 | M-05 | BAJO | [ ] | | Diferir si no hay pantalla que lo pida |
 | M-06 | ALTO | [x] | 08fa295 | |
-| M-07 | ALTO | [ ] | | Parcial: `auth`/`onboarding` ya cubiertos en `c653576`. Falta el resto |
+| M-07 | ALTO | [x] | 88100d9 | Solo `uploads/*` (5 call-sites) — es lo único versionado que Mobile llama fuera de auth/onboarding |
 | I-01 | CRÍTICO | [ ] | | Bloqueado por el endpoint del backend |
 | I-02 | MEDIO | [ ] | | |
 | I-03 | MEDIO | [ ] | | Spec primero |
