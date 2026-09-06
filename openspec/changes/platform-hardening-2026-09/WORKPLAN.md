@@ -825,7 +825,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | M-03 | MEDIO | [ ] | | |
 | M-04 | ALTO | [ ] | | Entregable: propuesta + 1 dominio, no migración completa |
 | M-05 | BAJO | [ ] | | Diferir si no hay pantalla que lo pida |
-| M-06 | ALTO | [ ] | | Reproducido en device real 2026-09-06. Requiere timeout + resolver en todas las salidas |
+| M-06 | ALTO | [x] | 08fa295 | |
 | M-07 | ALTO | [ ] | | Parcial: `auth`/`onboarding` ya cubiertos en `c653576`. Falta el resto |
 | I-01 | CRÍTICO | [ ] | | Bloqueado por el endpoint del backend |
 | I-02 | MEDIO | [ ] | | |
