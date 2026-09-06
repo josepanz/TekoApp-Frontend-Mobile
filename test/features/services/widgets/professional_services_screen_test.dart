@@ -284,6 +284,7 @@ void main() {
           'rating': 4,
           'review': null,
           'isAnonymous': false,
+          'isReported': false,
           'isActive': true,
           'createdAt': '2026-08-08T10:00:00.000Z',
         },
