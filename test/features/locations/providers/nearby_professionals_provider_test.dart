@@ -17,6 +17,10 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   bool connected = false;
 
   @override
+  Stream<LocationsSocketConnectionState> get connectionState =>
+      const Stream.empty();
+
+  @override
   void connect(String accessToken) => connected = true;
 
   @override

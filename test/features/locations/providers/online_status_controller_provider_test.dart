@@ -23,6 +23,10 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   final emitted = <Map<String, double>>[];
 
   @override
+  Stream<LocationsSocketConnectionState> get connectionState =>
+      const Stream.empty();
+
+  @override
   void connect(String accessToken) {
     connected = true;
     tokenUsed = accessToken;
