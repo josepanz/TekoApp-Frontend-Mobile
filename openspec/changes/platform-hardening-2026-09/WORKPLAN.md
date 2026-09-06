@@ -828,7 +828,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | M-06 | ALTO | [x] | 08fa295 | |
 | M-07 | ALTO | [x] | 88100d9 | Solo `uploads/*` (5 call-sites) — es lo único versionado que Mobile llama fuera de auth/onboarding |
 | I-01 | CRÍTICO | [ ] | | Bloqueado por el endpoint del backend |
-| I-02 | MEDIO | [ ] | | |
+| I-02 | MEDIO | [x] | 1f31b43 | Solo release.yml (build.yml es --debug/--no-codesign, no distribuible); no elimina el secreto, ver decisions.md |
 | I-03 | MEDIO | [ ] | | Spec primero |
 | I-04 | BAJO | [ ] | | Spec primero |
 | I-05 | BAJO | [ ] | | Spec primero |
