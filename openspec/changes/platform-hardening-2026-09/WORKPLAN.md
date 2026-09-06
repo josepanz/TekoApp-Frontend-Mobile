@@ -831,5 +831,5 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | I-02 | MEDIO | [x] | 1f31b43 | Solo release.yml (build.yml es --debug/--no-codesign, no distribuible); no elimina el secreto, ver decisions.md |
 | I-03 | MEDIO | [x] | 96c3529 | Spec en openspec/specs/support-channel.md — bloqueada por backend, no implementada |
 | I-04 | BAJO | [x] | 17ae9b3 | Spec en notification-preferences-and-inbox.md. Hallazgo: bandeja NO bloqueada por backend (API ya existe), pero ningún dominio dispara notificaciones todavía — gap de TekoApp-Backend |
-| I-05 | BAJO | [ ] | | Spec primero |
+| I-05 | BAJO | [x] | e96a907 | Spec en biometric-login.md. Hallazgo: hoy no hay fricción en apertura normal (sesión ya se restaura sola); biométrico solo ayuda post-logout explícito |
 | E-01 | ESTILO | [x] | 7babcec | Commit propio por pedido explícito (no se estaba tocando el archivo por otra razón) |
