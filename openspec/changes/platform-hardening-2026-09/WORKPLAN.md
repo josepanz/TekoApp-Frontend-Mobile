@@ -820,7 +820,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | B-02 | CRÍTICO | [x] | 71a4fab | Verificación en device real queda para José |
 | B-03 | MEDIO | [x] | 9f22f1f | |
 | B-04 | ALTO | [x] | f7443f0 | |
-| M-01 | MEDIO | [ ] | | |
+| M-01 | MEDIO | [x] | 7d6c643 | |
 | M-02 | MEDIO | [ ] | | |
 | M-03 | MEDIO | [ ] | | |
 | M-04 | ALTO | [ ] | | Entregable: propuesta + 1 dominio, no migración completa |
