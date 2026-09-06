@@ -832,4 +832,4 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | I-03 | MEDIO | [ ] | | Spec primero |
 | I-04 | BAJO | [ ] | | Spec primero |
 | I-05 | BAJO | [ ] | | Spec primero |
-| E-01 | ESTILO | [ ] | | Solo si tocás el archivo por otra razón |
+| E-01 | ESTILO | [x] | 7babcec | Commit propio por pedido explícito (no se estaba tocando el archivo por otra razón) |
