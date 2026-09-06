@@ -830,6 +830,6 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | I-01 | CRÍTICO | [ ] | | Bloqueado por el endpoint del backend |
 | I-02 | MEDIO | [x] | 1f31b43 | Solo release.yml (build.yml es --debug/--no-codesign, no distribuible); no elimina el secreto, ver decisions.md |
 | I-03 | MEDIO | [x] | 96c3529 | Spec en openspec/specs/support-channel.md — bloqueada por backend, no implementada |
-| I-04 | BAJO | [ ] | | Spec primero |
+| I-04 | BAJO | [x] | 17ae9b3 | Spec en notification-preferences-and-inbox.md. Hallazgo: bandeja NO bloqueada por backend (API ya existe), pero ningún dominio dispara notificaciones todavía — gap de TekoApp-Backend |
 | I-05 | BAJO | [ ] | | Spec primero |
 | E-01 | ESTILO | [x] | 7babcec | Commit propio por pedido explícito (no se estaba tocando el archivo por otra razón) |
