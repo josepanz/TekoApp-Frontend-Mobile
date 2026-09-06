@@ -37,7 +37,7 @@ class ProfileRepository {
   }) async {
     try {
       await _apiClient.raw.put<Map<String, dynamic>>(
-        '/auth/me',
+        '/v1/auth/me',
         data: {
           if (firstName != null) 'firstName': firstName,
           if (lastName != null) 'lastName': lastName,

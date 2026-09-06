@@ -35,10 +35,10 @@ void main() {
       // Arrange
       when(
         () => dio.put<Map<String, dynamic>>(
-          '/auth/me',
+          '/v1/auth/me',
           data: any(named: 'data'),
         ),
-      ).thenAnswer((_) async => jsonResponse('/auth/me', {}));
+      ).thenAnswer((_) async => jsonResponse('/v1/auth/me', {}));
 
       // Act
       await repository.updateMe(firstName: 'Ana');
@@ -46,7 +46,7 @@ void main() {
       // Assert
       final captured = verify(
         () => dio.put<Map<String, dynamic>>(
-          '/auth/me',
+          '/v1/auth/me',
           data: captureAny(named: 'data'),
         ),
       ).captured.single as Map<String, dynamic>;
@@ -59,14 +59,14 @@ void main() {
         // Arrange
         when(
           () => dio.put<Map<String, dynamic>>(
-            '/auth/me',
+            '/v1/auth/me',
             data: any(named: 'data'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/auth/me'),
+            requestOptions: RequestOptions(path: '/v1/auth/me'),
             response: Response(
-              requestOptions: RequestOptions(path: '/auth/me'),
+              requestOptions: RequestOptions(path: '/v1/auth/me'),
               statusCode: 400,
             ),
           ),
@@ -86,11 +86,11 @@ void main() {
         // Arrange
         when(
           () => dio.put<Map<String, dynamic>>(
-            '/auth/me',
+            '/v1/auth/me',
             data: any(named: 'data'),
           ),
         ).thenThrow(
-          DioException(requestOptions: RequestOptions(path: '/auth/me')),
+          DioException(requestOptions: RequestOptions(path: '/v1/auth/me')),
         );
 
         // Act & Assert

@@ -20,10 +20,10 @@ class RefreshTokenInterceptor extends Interceptor {
   final FlutterSecureStorage _secureStorage;
 
   static const _excludedPaths = {
-    '/auth/login',
-    '/auth/nonce',
-    '/auth/public-key',
-    '/auth/refresh-token',
+    '/v1/auth/login',
+    '/v1/auth/nonce',
+    '/v1/auth/public-key',
+    '/v1/auth/refresh-token',
   };
 
   @override
@@ -35,7 +35,7 @@ class RefreshTokenInterceptor extends Interceptor {
 
     try {
       final refreshResponse = await _dio.post<Map<String, dynamic>>(
-        '/auth/refresh-token',
+        '/v1/auth/refresh-token',
         options: ClientBasicAuth.options(),
       );
       final newAccessToken = refreshResponse.data?['accessToken'] as String?;
