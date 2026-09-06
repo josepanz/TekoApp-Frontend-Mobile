@@ -822,7 +822,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | B-04 | ALTO | [x] | f7443f0 | |
 | M-01 | MEDIO | [x] | 7d6c643 | |
 | M-02 | MEDIO | [x] | 36632b1 | |
-| M-03 | MEDIO | [ ] | | |
+| M-03 | MEDIO | [x] | 99d4f59 | connectionState expuesto, sin consumidor en UI todavía (no hay pantalla que lo pida) |
 | M-04 | ALTO | [ ] | | Entregable: propuesta + 1 dominio, no migración completa |
 | M-05 | BAJO | [ ] | | Diferir si no hay pantalla que lo pida |
 | M-06 | ALTO | [x] | 08fa295 | |
