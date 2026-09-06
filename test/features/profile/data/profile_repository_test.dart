@@ -183,7 +183,8 @@ void main() {
           ),
         ).thenThrow(
           DioException(
-              requestOptions: RequestOptions(path: '/v1/uploads/avatar')),
+            requestOptions: RequestOptions(path: '/v1/uploads/avatar'),
+          ),
         );
 
         // Act & Assert
