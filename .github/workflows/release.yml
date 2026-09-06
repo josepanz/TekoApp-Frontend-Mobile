@@ -159,17 +159,25 @@ jobs:
       # TekoApp-Backend/prisma/seed.ts, clientId "tekoapp-mobile"). Bug real: ningún release
       # publicado hasta el 2026-08-29 pasaba estos dart-defines, así que el APK nunca podía
       # conectarse al backend.
+      #
+      # --obfuscate --split-debug-info (ver I-02): sin BFF, el secret de Basic Auth de cliente
+      # vive en el binario — esto NO lo elimina (sigue siendo bytes extraíbles con `strings`),
+      # sube el costo de encontrarlo de trivial a molesto ofuscando los símbolos Dart alrededor.
+      # Sin los símbolos que --split-debug-info separa, un stacktrace de producción
+      # (Crashlytics/Sentry cuando exista) llega ilegible — se archivan como artifact más abajo.
       - name: Build APK + AAB release
         env:
           BASIC_AUTH_CLIENT_ID: ${{ secrets.BASIC_AUTH_CLIENT_ID }}
           BASIC_AUTH_CLIENT_SECRET: ${{ secrets.BASIC_AUTH_CLIENT_SECRET }}
         run: |
           flutter build apk --release \
+            --obfuscate --split-debug-info=build/symbols/android-apk \
             --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
             --dart-define=API_BASE_URL=${{ env.API_BASE_URL }} \
             --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
             --dart-define=BASIC_AUTH_CLIENT_SECRET=$BASIC_AUTH_CLIENT_SECRET
           flutter build appbundle --release \
+            --obfuscate --split-debug-info=build/symbols/android-aab \
             --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
             --dart-define=API_BASE_URL=${{ env.API_BASE_URL }} \
             --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
@@ -185,6 +193,12 @@ jobs:
         with:
           name: android-release-artifacts
           path: release-artifacts/
+
+      - name: Archivar simbolos de debug (Android)
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-symbols-${{ needs.release.outputs.new_version }}
+          path: build/symbols/
 
       - name: Subir al GitHub Release
         env:
@@ -264,12 +278,16 @@ jobs:
           </plist>
           EOF
 
+      # --obfuscate --split-debug-info: mismo criterio que Android (ver I-02, comentario en el
+      # job build-android) — sube el costo de extraer el secret de cliente embebido, no lo
+      # elimina. Los símbolos se archivan más abajo para poder simbolizar un crash real.
       - name: Build IPA release
         env:
           BASIC_AUTH_CLIENT_ID: ${{ secrets.BASIC_AUTH_CLIENT_ID }}
           BASIC_AUTH_CLIENT_SECRET: ${{ secrets.BASIC_AUTH_CLIENT_SECRET }}
         run: |
           flutter build ipa --release --export-options-plist=ios/ExportOptions.plist \
+            --obfuscate --split-debug-info=build/symbols/ios \
             --dart-define=APP_ENVIRONMENT=${{ steps.environment.outputs.value }} \
             --dart-define=API_BASE_URL=${{ env.API_BASE_URL }} \
             --dart-define=BASIC_AUTH_CLIENT_ID=$BASIC_AUTH_CLIENT_ID \
@@ -284,6 +302,12 @@ jobs:
         with:
           name: ios-release-artifacts
           path: release-artifacts/
+
+      - name: Archivar simbolos de debug (iOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-debug-symbols-${{ needs.release.outputs.new_version }}
+          path: build/symbols/
 
       - name: Subir al GitHub Release
         env:

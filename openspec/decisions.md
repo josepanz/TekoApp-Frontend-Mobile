@@ -1264,3 +1264,30 @@ esa branch, mismo criterio que cualquier feature nueva de backend todavía no me
 
 **Verificado**: `flutter analyze` 0 issues, `flutter test` 410/410 (12 nuevos: repositorio,
 controller de subida, widget de `MyPortfolioScreen`).
+
+## Ofuscación del binario de release — decidido e implementado 2026-09-06 (I-02)
+
+Cierra la limitación documentada en `.claude/rules/auth.md`, sección "Qué NO replicar del BFF de
+`TekoApp-Web`": sin servidor intermedio, el secreto de Basic Auth de cliente (`BASIC_AUTH_CLIENT_ID`/
+`BASIC_AUTH_CLIENT_SECRET`, ver `Env` en `lib/core/config/env.dart`) entra por `--dart-define` y
+queda embebido en el binario.
+
+**Decisión**: `flutter build apk/appbundle/ipa --release` en `.github/workflows/release.yml` ahora
+llevan `--obfuscate --split-debug-info=build/symbols/<plataforma>`, con los símbolos archivados
+como artifact del workflow (`android-debug-symbols-<version>`/`ios-debug-symbols-<version>`).
+
+**Qué NO resuelve, a propósito** (no confundir con una solución): `--obfuscate` renombra símbolos
+Dart (nombres de clases/métodos) en el snapshot AOT compilado — **no** elimina ni cifra el
+contenido de un string constante. El valor literal del secreto (embebido vía
+`String.fromEnvironment`) sigue siendo bytes extraíbles con `strings` sobre el binario, igual que
+antes. Lo que cambia es que ese string ya no aparece rodeado de nombres de clase/método legibles
+que ayuden a un atacante a ubicarlo rápido — sube el costo de encontrarlo de trivial a molesto,
+nunca lo vuelve imposible. La única forma real de eliminar el riesgo es un BFF (ver `TekoApp-Web`),
+explícitamente descartado para Mobile por alcance (`.claude/rules/auth.md`).
+
+**Por qué no `build.yml`** (a diferencia de lo que asumía el WORKPLAN original): ese workflow solo
+compila `--debug` (Android) y `--no-codesign` para simulador (iOS) — validación de compilación, sin
+firma, no genera un binario distribuible. La ofuscación es un concern de release, no de CI de
+validación; agregarla ahí no protegería nada real y solo agregaría ruido a builds de humo.
+
+No se tocó `env.dart` — el fix es enteramente a nivel de flags de build, no de código Dart.
