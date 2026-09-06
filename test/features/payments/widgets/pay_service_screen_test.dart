@@ -212,6 +212,8 @@ void main() {
             'paymentMethod': 'CREDIT_CARD',
             'paymentProvider': 'STRIPE',
             'transactionId': 'txn-1',
+            'platformFee': 0.0,
+            'isRecurring': false,
             'createdAt': '2026-08-08T10:00:00.000Z',
           },
         ),
