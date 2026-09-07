@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
+import 'package:tekoapp_mobile/core/auth/biometric_device_supported_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/auth/user_summary.dart';
@@ -62,6 +63,11 @@ final _pushMessagingTestOverrides = <Override>[
   pushRegistrationControllerProvider.overrideWith(
     () => _NoopPushRegistrationController(),
   ),
+  // El test de logout termina de nuevo en `login_screen.dart`, que llama a
+  // `BiometricLoginService` — el plugin real `local_auth` no tiene implementación de plataforma
+  // bajo `flutter test`, y el canal se queda esperando una respuesta que nunca llega (no lanza,
+  // así que ni un `try/catch` lo atrapa). Ver el mismo override en `login_screen_test.dart`.
+  biometricDeviceSupportedProvider.overrideWith((ref) async => false),
 ];
 
 void main() {
@@ -71,6 +77,9 @@ void main() {
       // Arrange
       final repository = _MockAuthRepository();
       when(() => repository.clearSession()).thenAnswer((_) async {});
+      when(
+        () => repository.hasBiometricCredentials(),
+      ).thenAnswer((_) async => false);
       const user = UserSummary(
         referenceId: 'ref-1',
         email: 'a@b.com',
@@ -246,4 +255,106 @@ void main() {
       expect(find.text('Sign out'), findsOneWidget);
     },
   );
+
+  group('switch de login biométrico', () {
+    testWidgets(
+      'aparece activado si ya hay credenciales guardadas, y desactivarlo las borra',
+      (tester) async {
+        // Arrange
+        final repository = _MockAuthRepository();
+        when(
+          () => repository.hasBiometricCredentials(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => repository.clearBiometricCredentials(),
+        ).thenAnswer((_) async {});
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              authRepositoryProvider.overrideWithValue(repository),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Assert — arranca activado
+        final switchKey = find.byKey(const Key('profile_biometric_switch'));
+        await tester.ensureVisible(switchKey);
+        expect(tester.widget<Switch>(switchKey).value, isTrue);
+
+        // Act — lo desactiva
+        await tester.tap(switchKey);
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(() => repository.clearBiometricCredentials()).called(1);
+        expect(tester.widget<Switch>(switchKey).value, isFalse);
+      },
+    );
+
+    testWidgets(
+      'aparece desactivado y sin poder tocarse si no hay credenciales guardadas',
+      (tester) async {
+        // Arrange
+        final repository = _MockAuthRepository();
+        when(
+          () => repository.hasBiometricCredentials(),
+        ).thenAnswer((_) async => false);
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              authRepositoryProvider.overrideWithValue(repository),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Assert — no se puede activar desde acá (ver docstring de `_BiometricLoginToggle`).
+        final switchKey = find.byKey(const Key('profile_biometric_switch'));
+        await tester.ensureVisible(switchKey);
+        final switchWidget = tester.widget<Switch>(switchKey);
+        expect(switchWidget.value, isFalse);
+        expect(switchWidget.onChanged, isNull);
+        verifyNever(() => repository.clearBiometricCredentials());
+      },
+    );
+  });
 }

@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_avatar.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_input.dart';
+import '../../auth/providers/biometric_opt_in_controller_provider.dart';
 import '../models/profile_failure.dart';
 import '../providers/update_profile_controller_provider.dart';
 import '../providers/upload_avatar_controller_provider.dart';
@@ -57,6 +58,47 @@ class _LanguageSelector extends ConsumerWidget {
           onChanged: (code) => ref
               .read(localeControllerProvider.notifier)
               .setLocale(code == null ? null : Locale(code)),
+        ),
+      ],
+    );
+  }
+}
+
+/// Estado del opt-in de login biométrico (ver `openspec/specs/biometric-login.md`) — solo se
+/// puede DESACTIVAR desde acá. Activarlo requiere la contraseña en texto plano, que esta pantalla
+/// no tiene; se ofrece en su lugar como un diálogo justo después de un login exitoso
+/// (`login_screen.dart`, `_handleLoginSuccess`).
+class _BiometricLoginToggle extends ConsumerWidget {
+  const _BiometricLoginToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final enabled =
+        ref.watch(biometricOptInControllerProvider).valueOrNull ?? false;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.profileBiometricLabel),
+              if (!enabled)
+                Text(
+                  l10n.profileBiometricHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+            ],
+          ),
+        ),
+        Switch(
+          key: const Key('profile_biometric_switch'),
+          value: enabled,
+          onChanged: enabled
+              ? (_) =>
+                  ref.read(biometricOptInControllerProvider.notifier).disable()
+              : null,
         ),
       ],
     );
@@ -264,6 +306,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 24),
               const _LanguageSelector(),
+              const SizedBox(height: 12),
+              const _BiometricLoginToggle(),
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_privacy_and_data_button'),

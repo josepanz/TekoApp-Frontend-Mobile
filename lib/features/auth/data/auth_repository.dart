@@ -42,6 +42,50 @@ class AuthRepository {
     await _cookieJar?.deleteAll();
   }
 
+  /// Opt-in de login biométrico (ver `openspec/specs/biometric-login.md`): guarda email +
+  /// contraseña en el mismo `flutter_secure_storage` que ya usa `accessToken`. Se llama solo
+  /// tras un login exitoso y con confirmación explícita del usuario — nunca automático.
+  Future<void> saveBiometricCredentials({
+    required String email,
+    required String password,
+  }) async {
+    await _secureStorage.write(
+      key: TokenStorageKeys.biometricEmail,
+      value: email,
+    );
+    await _secureStorage.write(
+      key: TokenStorageKeys.biometricPassword,
+      value: password,
+    );
+  }
+
+  /// Desactiva el opt-in (switch en `profile_screen.dart`) — a diferencia de `clearSession()`,
+  /// esto SÍ tiene que borrar las credenciales guardadas: es la única forma de hacerlo.
+  Future<void> clearBiometricCredentials() async {
+    await _secureStorage.delete(key: TokenStorageKeys.biometricEmail);
+    await _secureStorage.delete(key: TokenStorageKeys.biometricPassword);
+  }
+
+  /// Si hay credenciales guardadas, la pantalla de login puede ofrecer el botón biométrico.
+  Future<bool> hasBiometricCredentials() async {
+    final email =
+        await _secureStorage.read(key: TokenStorageKeys.biometricEmail);
+    return email != null;
+  }
+
+  /// `null` si no hay credenciales guardadas (o quedaron a medio escribir — nunca debería pasar,
+  /// pero un email sin password no es un estado usable). El caller repite el login normal
+  /// (`login(email:, password:)`) con lo que devuelve acá, nunca un camino de sesión paralelo.
+  Future<({String email, String password})?> readBiometricCredentials() async {
+    final email =
+        await _secureStorage.read(key: TokenStorageKeys.biometricEmail);
+    final password = await _secureStorage.read(
+      key: TokenStorageKeys.biometricPassword,
+    );
+    if (email == null || password == null) return null;
+    return (email: email, password: password);
+  }
+
   /// `GET /auth/public-key` — clave pública RSA para cifrar el login (ver
   /// `openspec/decisions.md`, sección "Cifrado RSA del login").
   ///
