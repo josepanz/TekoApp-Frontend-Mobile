@@ -2,6 +2,8 @@ import 'payment_method.dart';
 import 'payment_status.dart';
 import 'tip.dart';
 
+part 'payment.g.dart';
+
 /// `Payments` — desde 0008-id-referenceid-standardization el backend expone `id` (Int interno,
 /// secuencial) y `referenceId` (UUID) por separado (ver `openspec/decisions.md`). `id` sirve SOLO
 /// para ordenamiento, nunca para navegar/consultar/rutear — usar siempre `referenceId` para eso.
@@ -21,6 +23,11 @@ import 'tip.dart';
 /// ajustado por reembolsos) en vez de devolver siempre `null` — verificado contra
 /// `payments-response.helper.ts`/`professional-net-amount.helper.ts` el 2026-09-06. Sigue
 /// nullable porque el DTO lo declara opcional, no porque el backend no lo escriba.
+///
+/// `fromJson` está generado desde el schema real de `PaymentDetailResponseDTO` (ver M-04,
+/// `tool/openapi_codegen/generate_model.dart` y `payment.g.dart`) — validado contra
+/// `--openapi-url` de un backend corriendo, no contra un fixture a mano. No aparecieron campos
+/// nuevos: M-05 ya había expuesto todo lo que el DTO real devuelve.
 class Payment {
   const Payment({
     required this.id,
@@ -110,55 +117,6 @@ class Payment {
   /// Monto disponible para un nuevo reembolso — `totalAmount` menos lo ya reembolsado.
   double get amountAvailableForRefund => totalAmount - refundedAmount;
 
-  factory Payment.fromJson(Map<String, dynamic> json) {
-    return Payment(
-      id: json['id'] as int,
-      referenceId: json['referenceId'] as String,
-      userId: json['userId'] as int,
-      professionalId: json['professionalId'] as int,
-      serviceId: json['serviceId'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      currencyCode: json['currencyCode'] as String,
-      fee: (json['fee'] as num).toDouble(),
-      tax: (json['tax'] as num).toDouble(),
-      totalAmount: (json['totalAmount'] as num).toDouble(),
-      status: PaymentStatus.fromJson(json['status'] as String),
-      paymentMethod:
-          PaymentMethodType.fromJson(json['paymentMethod'] as String),
-      paymentProvider: PaymentProviderType.fromJson(
-        json['paymentProvider'] as String,
-      ),
-      transactionId: json['transactionId'] as String,
-      platformFee: (json['platformFee'] as num).toDouble(),
-      isRecurring: json['isRecurring'] as bool,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      description: json['description'] as String?,
-      refundDetails: json['refundDetails'] as Map<String, dynamic>?,
-      tip: json['tip'] != null
-          ? Tip.fromJson(json['tip'] as Map<String, dynamic>)
-          : null,
-      externalTransactionId: json['externalTransactionId'] as String?,
-      paymentDetails: json['paymentDetails'] as Map<String, dynamic>?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      processedAt: json['processedAt'] != null
-          ? DateTime.parse(json['processedAt'] as String)
-          : null,
-      paidAt: json['paidAt'] != null
-          ? DateTime.parse(json['paidAt'] as String)
-          : null,
-      failedAt: json['failedAt'] != null
-          ? DateTime.parse(json['failedAt'] as String)
-          : null,
-      failureReason: json['failureReason'] as String?,
-      professionalNetAmount:
-          (json['professionalNetAmount'] as num?)?.toDouble(),
-      recurringInterval: json['recurringInterval'] as String?,
-      nextPaymentDate: json['nextPaymentDate'] != null
-          ? DateTime.parse(json['nextPaymentDate'] as String)
-          : null,
-      lastChangedAt: json['lastChangedAt'] != null
-          ? DateTime.parse(json['lastChangedAt'] as String)
-          : null,
-    );
-  }
+  factory Payment.fromJson(Map<String, dynamic> json) =>
+      _$PaymentFromJson(json);
 }

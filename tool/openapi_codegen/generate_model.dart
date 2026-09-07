@@ -7,6 +7,12 @@
 // objetos — se extiende a medida que un dominio nuevo lo necesite (ver CODEGEN.md, "Cómo
 // extender").
 //
+// v2 (M-04, dominios payments/services/professionals): agrega `--ref-fields` (objeto anidado vía
+// `$ref` directo o `allOf: [{$ref}]`, delega en el `fromJson` que la clase Dart ya tiene),
+// `--rename-fields` (clave del JSON con un nombre de parámetro Dart distinto, ver
+// `Service.users` → `client`) y arrays de `string` (`type: array, items: {type: string}` →
+// `List<String>`). Sigue sin resolver arrays de objetos anidados.
+//
 // Uso (contra el fixture local, sin backend corriendo):
 //   dart run tool/openapi_codegen/generate_model.dart \
 //     --schema RatingDetailResponseDTO --class Rating \
@@ -33,6 +39,8 @@ class _Options {
     this.openapiUrl,
     this.intFields = const {},
     this.enumFields = const {},
+    this.refFields = const {},
+    this.renameFields = const {},
   });
 
   final String schemaName;
@@ -43,6 +51,19 @@ class _Options {
   final String? openapiUrl;
   final Set<String> intFields;
   final Map<String, String> enumFields;
+
+  /// Campo del schema (clave del JSON) → clase Dart que ya tiene su propio
+  /// `factory <Clase>.fromJson(Map<String, dynamic> json)` — para objetos anidados vía `$ref`
+  /// (directo o envuelto en `allOf`, patrón que usa `@nestjs/swagger` para adjuntar `nullable`
+  /// junto a un `$ref`). No resuelve el schema referenciado: delega en el `fromJson` que el
+  /// dominio ya tiene escrito a mano.
+  final Map<String, String> refFields;
+
+  /// Clave del JSON → nombre del parámetro Dart, para los pocos campos donde el backend expone
+  /// una clave distinta al nombre que el modelo Dart ya usa (p.ej. `Service.users` → `client`,
+  /// ver M-04/CODEGEN.md). El acceso a `json['<clave>']` sigue usando la clave del JSON; solo
+  /// cambia el nombre del parámetro nombrado que se emite.
+  final Map<String, String> renameFields;
 }
 
 Future<void> main(List<String> args) async {
@@ -111,7 +132,8 @@ String _generate(Map<String, dynamic> schema, _Options options) {
       nullable: nullable,
       options: options,
     );
-    buffer.writeln('      $name: $expression,');
+    final paramName = options.renameFields[name] ?? name;
+    buffer.writeln('      $paramName: $expression,');
   }
 
   buffer.writeln('    );');
@@ -127,14 +149,38 @@ String _castExpressionFor({
   final type = schema['type'] as String?;
   final format = schema['format'] as String?;
   final enumTarget = options.enumFields[name];
+  final refTarget = options.refFields[name];
   final suffix = nullable ? '?' : '';
   final access = "json['$name']";
+
+  if (refTarget != null) {
+    if (nullable) {
+      return '$access == null ? null : $refTarget.fromJson('
+          '$access as Map<String, dynamic>)';
+    }
+    return '$refTarget.fromJson($access as Map<String, dynamic>)';
+  }
 
   if (enumTarget != null) {
     if (nullable) {
       return '$access == null ? null : $enumTarget.fromJson($access as String)';
     }
     return '$enumTarget.fromJson($access as String)';
+  }
+
+  if (type == 'array') {
+    final itemsType = (schema['items'] as Map<String, dynamic>?)?['type'];
+    if (itemsType == 'string') {
+      if (nullable) {
+        return '($access as List<dynamic>?)?.cast<String>()';
+      }
+      return '($access as List<dynamic>).cast<String>()';
+    }
+    throw UnsupportedError(
+      'Array de items "$itemsType" no soportado para "$name" — solo '
+      'arrays de string. Extendé _castExpressionFor en '
+      'tool/openapi_codegen/generate_model.dart.',
+    );
   }
 
   if (type == 'string' && format == 'date-time') {
@@ -196,6 +242,8 @@ _Options _parseArgs(List<String> args) {
   String? openapiUrl;
   var intFields = <String>{};
   var enumFields = <String, String>{};
+  var refFields = <String, String>{};
+  var renameFields = <String, String>{};
 
   for (var i = 0; i < args.length; i += 2) {
     final flag = args[i];
@@ -220,6 +268,16 @@ _Options _parseArgs(List<String> args) {
           for (final pair in value.split(','))
             pair.split(':')[0]: pair.split(':')[1],
         };
+      case '--ref-fields':
+        refFields = {
+          for (final pair in value.split(','))
+            pair.split(':')[0]: pair.split(':')[1],
+        };
+      case '--rename-fields':
+        renameFields = {
+          for (final pair in value.split(','))
+            pair.split(':')[0]: pair.split(':')[1],
+        };
       default:
         stderr.writeln('Flag desconocido: $flag');
         exit(1);
@@ -234,7 +292,8 @@ _Options _parseArgs(List<String> args) {
       'Uso: dart run tool/openapi_codegen/generate_model.dart --schema <Nombre> '
       '--class <Clase> --out <archivo.g.dart> --part <archivo.dart> '
       '(--openapi-file <path> | --openapi-url <url>) '
-      '[--int-fields a,b] [--enum-fields campo:Enum,...]',
+      '[--int-fields a,b] [--enum-fields campo:Enum,...] '
+      '[--ref-fields campo:Clase,...] [--rename-fields claveJson:campoDart,...]',
     );
     exit(1);
   }
@@ -248,5 +307,7 @@ _Options _parseArgs(List<String> args) {
     openapiUrl: openapiUrl,
     intFields: intFields,
     enumFields: enumFields,
+    refFields: refFields,
+    renameFields: renameFields,
   );
 }

@@ -61,8 +61,14 @@ Map<String, dynamic> _serviceJson({int userId = 1}) => {
       'latitude': -25.2,
       'longitude': -57.5,
       'address': 'Av. España 1234',
+      'images': <String>[],
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
+      'users': {
+        'referenceId': 'client-uuid-1',
+        'firstName': 'María',
+        'lastName': 'López',
+      },
     };
 
 Map<String, dynamic> _paymentJson({
