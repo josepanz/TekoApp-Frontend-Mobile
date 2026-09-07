@@ -28,8 +28,14 @@ Map<String, dynamic> _serviceJson({
       'latitude': -25.2,
       'longitude': -57.5,
       'address': 'Av. España 1234',
+      'images': <String>[],
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
+      'users': {
+        'referenceId': 'client-uuid-default',
+        'firstName': 'Cliente',
+        'lastName': 'Default',
+      },
     };
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {

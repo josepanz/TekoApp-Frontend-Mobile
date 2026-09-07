@@ -21,8 +21,14 @@ Map<String, dynamic> _serviceJson(String status) => {
       'latitude': -25.2,
       'longitude': -57.5,
       'address': 'Calle 1',
+      'images': <String>[],
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
+      'users': {
+        'referenceId': 'client-uuid-1',
+        'firstName': 'Ana',
+        'lastName': 'Gómez',
+      },
     };
 
 void main() {

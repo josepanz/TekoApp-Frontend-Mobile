@@ -1,5 +1,7 @@
 import 'service_status.dart';
 
+part 'service.g.dart';
+
 /// Categoría resumida tal cual la anida `ServiceDetailResponseDTO.category` — no es el mismo
 /// modelo que `features/categories/models/category.dart` (ese trae `referenceId`/
 /// `parentCategoryId`, este es solo lo que el backend anida dentro de un `Service`).
@@ -88,6 +90,13 @@ class ServiceProfessionalSummary {
 /// no los limpia en este endpoint. No usarlos para navegación/rutas; solo sirven para comparar
 /// "¿es mi servicio?"/"¿soy el profesional asignado?" contra el `id` numérico del usuario logueado
 /// (`GET /auth/scope`, que sí expone ese mismo Int).
+///
+/// `fromJson` está generado desde el schema real de `ServiceDetailResponseDTO` (ver M-04,
+/// `tool/openapi_codegen/generate_model.dart` y `service.g.dart`) — validado contra `--openapi-url`
+/// de un backend corriendo. Migrarlo expuso 2 cosas que el modelo a mano tenía mal:
+/// `actualHours`/`images`/`scheduledAt` se descartaban en silencio (mismo patrón que B-01/M-05), y
+/// `client` (la clave JSON es `users`, no `client`) se trataba como opcional cuando el backend lo
+/// devuelve siempre — ver el docstring de [client].
 class Service {
   const Service({
     required this.id,
@@ -101,22 +110,25 @@ class Service {
     required this.latitude,
     required this.longitude,
     required this.address,
+    required this.images,
     required this.isUrgent,
     required this.createdAt,
+    required this.client,
     this.professionalId,
     this.hourlyRate,
     this.fixedPrice,
     this.totalAmount,
     this.finalAmount,
     this.estimatedHours,
+    this.actualHours,
     this.additionalNotes,
+    this.scheduledAt,
     this.startedAt,
     this.completedAt,
     this.cancelledAt,
     this.cancellationReason,
     this.category,
     this.professional,
-    this.client,
   });
 
   /// Int interno secuencial — solo para ordenamiento, nunca para navegar/consultar/rutear.
@@ -132,6 +144,9 @@ class Service {
   final String description;
   final ServiceStatus status;
   final double? estimatedHours;
+
+  /// Horas reales trabajadas — distinto de [estimatedHours]. Sin consumidor en la UI todavía.
+  final double? actualHours;
   final double? hourlyRate;
   final double? fixedPrice;
   final double? totalAmount;
@@ -140,7 +155,15 @@ class Service {
   final double longitude;
   final String address;
   final String? additionalNotes;
+
+  /// Fotos adjuntas al pedido — el backend siempre lo devuelve (puede ser `[]`). Sin consumidor
+  /// en la UI todavía.
+  final List<String> images;
   final bool isUrgent;
+
+  /// Fecha/hora agendada para el servicio, si el cliente eligió una — distinto de [createdAt].
+  /// Sin consumidor en la UI todavía.
+  final DateTime? scheduledAt;
   final DateTime? startedAt;
   final DateTime? completedAt;
   final DateTime? cancelledAt;
@@ -148,51 +171,11 @@ class Service {
   final DateTime createdAt;
   final ServiceCategorySummary? category;
   final ServiceProfessionalSummary? professional;
-  final ServiceClientSummary? client;
 
-  factory Service.fromJson(Map<String, dynamic> json) {
-    return Service(
-      id: json['id'] as int,
-      referenceId: json['referenceId'] as String,
-      userId: json['userId'] as int,
-      professionalId: json['professionalId'] as int?,
-      categoryId: json['categoryId'] as int,
-      serviceTypeId: json['serviceTypeId'] as int,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      status: ServiceStatus.fromJson(json['status'] as String),
-      estimatedHours: (json['estimatedHours'] as num?)?.toDouble(),
-      hourlyRate: (json['hourlyRate'] as num?)?.toDouble(),
-      fixedPrice: (json['fixedPrice'] as num?)?.toDouble(),
-      totalAmount: (json['totalAmount'] as num?)?.toDouble(),
-      finalAmount: (json['finalAmount'] as num?)?.toDouble(),
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      address: json['address'] as String,
-      additionalNotes: json['additionalNotes'] as String?,
-      isUrgent: json['isUrgent'] as bool,
-      startedAt: _parseDate(json['startedAt']),
-      completedAt: _parseDate(json['completedAt']),
-      cancelledAt: _parseDate(json['cancelledAt']),
-      cancellationReason: json['cancellationReason'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      category: json['category'] != null
-          ? ServiceCategorySummary.fromJson(
-              json['category'] as Map<String, dynamic>,
-            )
-          : null,
-      professional: json['professional'] != null
-          ? ServiceProfessionalSummary.fromJson(
-              json['professional'] as Map<String, dynamic>,
-            )
-          : null,
-      client: json['users'] != null
-          ? ServiceClientSummary.fromJson(json['users'] as Map<String, dynamic>)
-          : null,
-    );
-  }
+  /// Cliente dueño del servicio — el backend SIEMPRE lo devuelve (`ServiceDetailResponseDTO.users`
+  /// es requerido, nunca `null`), a diferencia de lo que asumía este modelo antes de M-04.
+  final ServiceClientSummary client;
 
-  static DateTime? _parseDate(dynamic value) {
-    return value == null ? null : DateTime.parse(value as String);
-  }
+  factory Service.fromJson(Map<String, dynamic> json) =>
+      _$ServiceFromJson(json);
 }

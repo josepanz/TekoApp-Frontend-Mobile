@@ -16,15 +16,36 @@ import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 class _MockDio extends Mock implements Dio {}
 
-const _profile = ProfessionalProfile(
+final _profile = ProfessionalProfile(
   id: 2,
   referenceId: 'prof-uuid-1',
+  userId: 10,
   categoryId: 3,
   description: 'Plomero',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.pending,
   isAvailable: false,
   isOnline: false,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
@@ -139,8 +160,14 @@ void main() {
               'latitude': -25.2,
               'longitude': -57.5,
               'address': 'Av. España 1234',
+              'images': <String>[],
               'isUrgent': false,
               'createdAt': '2026-08-08T10:00:00.000Z',
+              'users': {
+                'referenceId': 'client-uuid-1',
+                'firstName': 'Ana',
+                'lastName': 'Gómez',
+              },
             },
           ],
           'pagination': {

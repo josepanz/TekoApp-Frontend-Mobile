@@ -27,8 +27,14 @@ Service _service({required ServiceStatus status}) {
     latitude: -25.2,
     longitude: -57.5,
     address: 'Calle 1',
+    images: const [],
     isUrgent: false,
     createdAt: DateTime.utc(2026, 8, 27),
+    client: const ServiceClientSummary(
+      referenceId: 'client-ref-1',
+      firstName: 'Ana',
+      lastName: 'Gómez',
+    ),
     professionalId: 5,
     professional: const ServiceProfessionalSummary(
       id: 5,
@@ -43,12 +49,33 @@ ProfessionalProfile _professionalProfile(String referenceId) {
   return ProfessionalProfile(
     id: 5,
     referenceId: referenceId,
+    userId: 10,
     categoryId: 1,
     description: 'Plomero',
     hourlyRate: 50000,
+    skills: const [],
+    certifications: const [],
+    yearsOfExperience: 5,
     status: ProfessionalStatus.approved,
     isAvailable: true,
     isOnline: false,
+    verificationStatus: 'VERIFIED',
+    requiredDocumentsVerified: true,
+    totalServices: 10,
+    averageRating: 4.5,
+    totalRatings: 8,
+    createdAt: DateTime.utc(2026, 1, 1),
+    user: const ProfessionalUserSummary(
+      id: 10,
+      email: 'profesional@example.com',
+      firstName: 'Ana',
+      lastName: 'Pérez',
+    ),
+    category: const ProfessionalCategorySummary(
+      id: 1,
+      name: 'Plomería',
+      slug: 'plomeria',
+    ),
   );
 }
 

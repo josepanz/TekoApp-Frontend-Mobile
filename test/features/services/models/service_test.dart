@@ -15,6 +15,7 @@ Map<String, dynamic> _baseServiceJson({Map<String, dynamic>? users}) {
     'latitude': -25.2,
     'longitude': -57.5,
     'address': 'Av. España 1234',
+    'images': <String>[],
     'isUrgent': false,
     'createdAt': '2026-08-08T10:00:00.000Z',
     if (users != null) 'users': users,
@@ -37,19 +38,20 @@ void main() {
       final service = Service.fromJson(json);
 
       // Assert
-      expect(service.client?.referenceId, 'client-uuid-1');
-      expect(service.client?.firstName, 'Juan');
+      expect(service.client.referenceId, 'client-uuid-1');
+      expect(service.client.firstName, 'Juan');
     });
 
-    test('queda en null cuando el backend no anida "users"', () {
-      // Arrange
-      final json = _baseServiceJson();
+    test(
+      'lanza si el backend no anida "users" — ServiceDetailResponseDTO.users es requerido, '
+      'nunca null (ver M-04)',
+      () {
+        // Arrange
+        final json = _baseServiceJson();
 
-      // Act
-      final service = Service.fromJson(json);
-
-      // Assert
-      expect(service.client, isNull);
-    });
+        // Act & Assert
+        expect(() => Service.fromJson(json), throwsA(anything));
+      },
+    );
   });
 }
