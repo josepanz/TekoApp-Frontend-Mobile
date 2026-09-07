@@ -45,9 +45,9 @@ void main() {
   test('deja pasar el error sin intentar refrescar si no es 401', () async {
     // Arrange
     final error = DioException(
-      requestOptions: RequestOptions(path: '/v1/auth/scope'),
+      requestOptions: RequestOptions(path: '/auth/scope'),
       response: Response(
-        requestOptions: RequestOptions(path: '/v1/auth/scope'),
+        requestOptions: RequestOptions(path: '/auth/scope'),
         statusCode: 500,
       ),
     );
@@ -70,7 +70,7 @@ void main() {
     'deja pasar el error sin refrescar si el 401 viene del propio refresh-token',
     () async {
       // Arrange
-      final error = unauthorizedError('/v1/auth/refresh-token');
+      final error = unauthorizedError('/auth/refresh-token');
 
       // Act
       interceptor.onError(error, handler);
@@ -91,15 +91,15 @@ void main() {
     'refresca el accessToken y reintenta el request original en un 401',
     () async {
       // Arrange
-      final error = unauthorizedError('/v1/auth/scope');
+      final error = unauthorizedError('/auth/scope');
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh-token',
+          '/auth/refresh-token',
           options: any(named: 'options'),
         ),
       ).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(path: '/v1/auth/refresh-token'),
+          requestOptions: RequestOptions(path: '/auth/refresh-token'),
           data: {'accessToken': 'new-token'},
         ),
       );
@@ -110,7 +110,7 @@ void main() {
         ),
       ).thenAnswer((_) async {});
       final retryResponse = Response<dynamic>(
-        requestOptions: RequestOptions(path: '/v1/auth/scope'),
+        requestOptions: RequestOptions(path: '/auth/scope'),
         data: {'ok': true},
       );
       when(() => dio.fetch<dynamic>(any()))
@@ -135,13 +135,13 @@ void main() {
     'limpia el accessToken y deja pasar el error original si el refresh también falla',
     () async {
       // Arrange
-      final error = unauthorizedError('/v1/auth/scope');
+      final error = unauthorizedError('/auth/scope');
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh-token',
+          '/auth/refresh-token',
           options: any(named: 'options'),
         ),
-      ).thenThrow(unauthorizedError('/v1/auth/refresh-token'));
+      ).thenThrow(unauthorizedError('/auth/refresh-token'));
       when(
         () => secureStorage.delete(key: TokenStorageKeys.accessToken),
       ).thenAnswer((_) async {});
@@ -163,12 +163,12 @@ void main() {
     () async {
       // Arrange — dos requests distintos expiran a la vez; el POST de refresh no
       // resuelve hasta que lo completamos a mano, para simular la concurrencia real.
-      final firstError = unauthorizedError('/v1/services');
-      final secondError = unauthorizedError('/v1/ratings');
+      final firstError = unauthorizedError('/services');
+      final secondError = unauthorizedError('/ratings');
       final refreshCompleter = Completer<Response<Map<String, dynamic>>>();
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh-token',
+          '/auth/refresh-token',
           options: any(named: 'options'),
         ),
       ).thenAnswer((_) => refreshCompleter.future);
@@ -192,7 +192,7 @@ void main() {
       await pumpEventQueue();
       refreshCompleter.complete(
         Response(
-          requestOptions: RequestOptions(path: '/v1/auth/refresh-token'),
+          requestOptions: RequestOptions(path: '/auth/refresh-token'),
           data: {'accessToken': 'new-token'},
         ),
       );
@@ -201,7 +201,7 @@ void main() {
       // Assert — un solo POST de refresh, ambos requests reintentados.
       verify(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh-token',
+          '/auth/refresh-token',
           options: any(named: 'options'),
         ),
       ).called(1);
@@ -214,12 +214,12 @@ void main() {
     'original y el token se limpia una sola vez (M-01)',
     () async {
       // Arrange
-      final firstError = unauthorizedError('/v1/services');
-      final secondError = unauthorizedError('/v1/ratings');
+      final firstError = unauthorizedError('/services');
+      final secondError = unauthorizedError('/ratings');
       final refreshCompleter = Completer<Response<Map<String, dynamic>>>();
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh-token',
+          '/auth/refresh-token',
           options: any(named: 'options'),
         ),
       ).thenAnswer((_) => refreshCompleter.future);
@@ -232,14 +232,14 @@ void main() {
       interceptor.onError(secondError, handler);
       await pumpEventQueue();
       refreshCompleter.completeError(
-        unauthorizedError('/v1/auth/refresh-token'),
+        unauthorizedError('/auth/refresh-token'),
       );
       await pumpEventQueue();
 
       // Assert
       verify(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh-token',
+          '/auth/refresh-token',
           options: any(named: 'options'),
         ),
       ).called(1);

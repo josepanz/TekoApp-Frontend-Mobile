@@ -50,7 +50,11 @@ class ApiClient {
   static Dio _buildDefaultDio() {
     return Dio(
       BaseOptions(
-        baseUrl: Env.apiBaseUrl,
+        // El backend estandarizó TODAS sus rutas bajo `/v1` (`defaultVersion: '1'` en su
+        // `main.ts`). Se centraliza acá, una sola vez, en vez de escribirlo a mano en cada
+        // call-site (así quedaba antes en auth/onboarding/uploads, ver M-07 del WORKPLAN de
+        // platform-hardening-2026-09) — ningún path de `data/` debe empezar con `/v1` de nuevo.
+        baseUrl: '${Env.apiBaseUrl}/v1',
         // Render free tier (backend real de todos los ambientes hoy, ver openspec/decisions.md)
         // apaga la instancia tras inactividad y tarda en "despertar" — medido en la práctica:
         // ~63s en un cold start real (2026-09-01), sube a <1s ya despierta. Con el timeout viejo

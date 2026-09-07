@@ -45,14 +45,12 @@ class AuthRepository {
   /// `GET /auth/public-key` — clave pública RSA para cifrar el login (ver
   /// `openspec/decisions.md`, sección "Cifrado RSA del login").
   ///
-  /// Prefijo `/v1`: el controller de auth del backend está marcado `@Version('1')` — sin el
-  /// prefijo, Nest devuelve 404 (confirmado 2026-09-05 contra un backend real; hasta ahora nadie
-  /// lo había detectado porque los tests mockean Dio, nunca pegan a un backend vivo). Ver I-04 del
-  /// WORKPLAN de TekoApp-Backend: la política de versionado todavía no está definida de punta a
-  /// punta (varios controllers no versionados conviven con estos que sí).
+  /// El prefijo `/v1` (todas las rutas del backend están versionadas, ver `main.ts`) vive en el
+  /// `baseUrl` de `ApiClient` — este path va relativo, sin escribirlo a mano (ver M-07 del
+  /// WORKPLAN de platform-hardening-2026-09).
   Future<String> fetchPublicKeyPem() async {
     final response = await _apiClient.raw.get<Map<String, dynamic>>(
-      '/v1/auth/public-key',
+      '/auth/public-key',
       options: ClientBasicAuth.options(),
     );
     return response.data!['publicKeyPem'] as String;
@@ -61,7 +59,7 @@ class AuthRepository {
   /// `POST /auth/nonce` — nonce anti-replay de uso único, viaja dentro del payload cifrado.
   Future<String> fetchNonce() async {
     final response = await _apiClient.raw.post<Map<String, dynamic>>(
-      '/v1/auth/nonce',
+      '/auth/nonce',
       options: ClientBasicAuth.options(),
     );
     return response.data!['nonce'] as String;
@@ -83,7 +81,7 @@ class AuthRepository {
       ).encryptLoginPayload(password: password, nonce: nonce);
 
       final response = await _apiClient.raw.post<Map<String, dynamic>>(
-        '/v1/auth/login',
+        '/auth/login',
         data: {'email': email, 'encryptedPassword': encryptedPassword},
         options: ClientBasicAuth.options(),
       );
@@ -124,7 +122,7 @@ class AuthRepository {
       final encryptor = RsaEncryptor(publicKeyPem);
 
       final response = await _apiClient.raw.post<Map<String, dynamic>>(
-        '/v1/onboarding',
+        '/onboarding',
         data: {
           'firstName': firstName,
           'lastName': lastName,
@@ -167,7 +165,7 @@ class AuthRepository {
   Future<UserSummary> fetchScope() async {
     try {
       final response = await _apiClient.raw.get<Map<String, dynamic>>(
-        '/v1/auth/scope',
+        '/auth/scope',
       );
       return UserSummary.fromJson(
         response.data!['user'] as Map<String, dynamic>,

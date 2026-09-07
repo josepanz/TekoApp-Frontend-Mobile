@@ -35,10 +35,10 @@ void main() {
       // Arrange
       when(
         () => dio.put<Map<String, dynamic>>(
-          '/v1/auth/me',
+          '/auth/me',
           data: any(named: 'data'),
         ),
-      ).thenAnswer((_) async => jsonResponse('/v1/auth/me', {}));
+      ).thenAnswer((_) async => jsonResponse('/auth/me', {}));
 
       // Act
       await repository.updateMe(firstName: 'Ana');
@@ -46,7 +46,7 @@ void main() {
       // Assert
       final captured = verify(
         () => dio.put<Map<String, dynamic>>(
-          '/v1/auth/me',
+          '/auth/me',
           data: captureAny(named: 'data'),
         ),
       ).captured.single as Map<String, dynamic>;
@@ -59,14 +59,14 @@ void main() {
         // Arrange
         when(
           () => dio.put<Map<String, dynamic>>(
-            '/v1/auth/me',
+            '/auth/me',
             data: any(named: 'data'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/auth/me'),
+            requestOptions: RequestOptions(path: '/auth/me'),
             response: Response(
-              requestOptions: RequestOptions(path: '/v1/auth/me'),
+              requestOptions: RequestOptions(path: '/auth/me'),
               statusCode: 400,
             ),
           ),
@@ -86,11 +86,11 @@ void main() {
         // Arrange
         when(
           () => dio.put<Map<String, dynamic>>(
-            '/v1/auth/me',
+            '/auth/me',
             data: any(named: 'data'),
           ),
         ).thenThrow(
-          DioException(requestOptions: RequestOptions(path: '/v1/auth/me')),
+          DioException(requestOptions: RequestOptions(path: '/auth/me')),
         );
 
         // Act & Assert
@@ -107,11 +107,11 @@ void main() {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/uploads/avatar',
+          '/uploads/avatar',
           data: any(named: 'data'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/uploads/avatar', {'key': 'abc123.jpg'}),
+        (_) async => jsonResponse('/uploads/avatar', {'key': 'abc123.jpg'}),
       );
 
       // Act
@@ -178,12 +178,12 @@ void main() {
         // Arrange
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/uploads/avatar',
+            '/uploads/avatar',
             data: any(named: 'data'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/uploads/avatar'),
+            requestOptions: RequestOptions(path: '/uploads/avatar'),
           ),
         );
 

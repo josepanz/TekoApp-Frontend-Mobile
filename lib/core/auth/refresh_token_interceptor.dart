@@ -27,11 +27,16 @@ class RefreshTokenInterceptor extends Interceptor {
   /// esperan este mismo resultado en vez de disparar un segundo request.
   Completer<String?>? _refreshCompleter;
 
+  // Comparan contra `RequestOptions.path` (el string relativo que cada call-site pasa a
+  // `dio.get/post(...)`), NO contra la URL absoluta. Desde que `/v1` vive en el `baseUrl` de
+  // `ApiClient` (ver `api_client.dart`) y ya no se escribe a mano por call-site, estos paths van
+  // SIN el prefijo — si alguno de los cuatro vuelve a llevar `/v1` a mano, esta lista deja de
+  // matchear en silencio y el interceptor intentaría refrescar sobre su propio login/refresh.
   static const _excludedPaths = {
-    '/v1/auth/login',
-    '/v1/auth/nonce',
-    '/v1/auth/public-key',
-    '/v1/auth/refresh-token',
+    '/auth/login',
+    '/auth/nonce',
+    '/auth/public-key',
+    '/auth/refresh-token',
   };
 
   @override
@@ -74,7 +79,7 @@ class RefreshTokenInterceptor extends Interceptor {
   Future<void> _performRefresh(Completer<String?> completer) async {
     try {
       final refreshResponse = await _dio.post<Map<String, dynamic>>(
-        '/v1/auth/refresh-token',
+        '/auth/refresh-token',
         options: ClientBasicAuth.options(),
       );
       final newAccessToken = refreshResponse.data?['accessToken'] as String?;

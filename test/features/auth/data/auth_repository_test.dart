@@ -55,11 +55,11 @@ void main() {
       // Arrange
       when(
         () => dio.get<Map<String, dynamic>>(
-          '/v1/auth/public-key',
+          '/auth/public-key',
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/auth/public-key', {
+        (_) async => jsonResponse('/auth/public-key', {
           'publicKeyPem': testPublicKeyPem,
         }),
       );
@@ -77,11 +77,11 @@ void main() {
       // Arrange
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/nonce',
+          '/auth/nonce',
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/auth/nonce', {'nonce': 'nonce-abc'}),
+        (_) async => jsonResponse('/auth/nonce', {'nonce': 'nonce-abc'}),
       );
 
       // Act
@@ -96,21 +96,21 @@ void main() {
     void mockPreLoginCalls() {
       when(
         () => dio.get<Map<String, dynamic>>(
-          '/v1/auth/public-key',
+          '/auth/public-key',
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/auth/public-key', {
+        (_) async => jsonResponse('/auth/public-key', {
           'publicKeyPem': testPublicKeyPem,
         }),
       );
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/auth/nonce',
+          '/auth/nonce',
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/auth/nonce', {'nonce': 'nonce-abc'}),
+        (_) async => jsonResponse('/auth/nonce', {'nonce': 'nonce-abc'}),
       );
     }
 
@@ -121,12 +121,12 @@ void main() {
         mockPreLoginCalls();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/auth/login',
+            '/auth/login',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenAnswer(
-          (_) async => jsonResponse('/v1/auth/login', {
+          (_) async => jsonResponse('/auth/login', {
             'login': true,
             'requiredNewPassword': false,
             'accessToken': 'access-token-123',
@@ -165,15 +165,15 @@ void main() {
         mockPreLoginCalls();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/auth/login',
+            '/auth/login',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/auth/login'),
+            requestOptions: RequestOptions(path: '/auth/login'),
             response: Response(
-              requestOptions: RequestOptions(path: '/v1/auth/login'),
+              requestOptions: RequestOptions(path: '/auth/login'),
               statusCode: 401,
             ),
           ),
@@ -194,15 +194,15 @@ void main() {
         mockPreLoginCalls();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/auth/login',
+            '/auth/login',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/auth/login'),
+            requestOptions: RequestOptions(path: '/auth/login'),
             response: Response(
-              requestOptions: RequestOptions(path: '/v1/auth/login'),
+              requestOptions: RequestOptions(path: '/auth/login'),
               statusCode: 503,
             ),
           ),
@@ -223,13 +223,13 @@ void main() {
         mockPreLoginCalls();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/auth/login',
+            '/auth/login',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/auth/login'),
+            requestOptions: RequestOptions(path: '/auth/login'),
             type: DioExceptionType.connectionError,
           ),
         );
@@ -247,11 +247,11 @@ void main() {
     void mockPublicKeyCall() {
       when(
         () => dio.get<Map<String, dynamic>>(
-          '/v1/auth/public-key',
+          '/auth/public-key',
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/auth/public-key', {
+        (_) async => jsonResponse('/auth/public-key', {
           'publicKeyPem': testPublicKeyPem,
         }),
       );
@@ -262,12 +262,12 @@ void main() {
       mockPublicKeyCall();
       when(
         () => dio.post<Map<String, dynamic>>(
-          '/v1/onboarding',
+          '/onboarding',
           data: any(named: 'data'),
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/onboarding', {
+        (_) async => jsonResponse('/onboarding', {
           'referenceId': 'ref-uuid-1',
           'email': 'ana@test.com',
           'status': 'PENDING_VERIFICATION',
@@ -298,15 +298,15 @@ void main() {
         mockPublicKeyCall();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/onboarding',
+            '/onboarding',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/onboarding'),
+            requestOptions: RequestOptions(path: '/onboarding'),
             response: Response(
-              requestOptions: RequestOptions(path: '/v1/onboarding'),
+              requestOptions: RequestOptions(path: '/onboarding'),
               statusCode: 409,
             ),
           ),
@@ -335,15 +335,15 @@ void main() {
         mockPublicKeyCall();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/onboarding',
+            '/onboarding',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/onboarding'),
+            requestOptions: RequestOptions(path: '/onboarding'),
             response: Response(
-              requestOptions: RequestOptions(path: '/v1/onboarding'),
+              requestOptions: RequestOptions(path: '/onboarding'),
               statusCode: 503,
             ),
           ),
@@ -372,13 +372,13 @@ void main() {
         mockPublicKeyCall();
         when(
           () => dio.post<Map<String, dynamic>>(
-            '/v1/onboarding',
+            '/onboarding',
             data: any(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/onboarding'),
+            requestOptions: RequestOptions(path: '/onboarding'),
             type: DioExceptionType.connectionError,
           ),
         );
@@ -437,9 +437,9 @@ void main() {
     test('devuelve el UserSummary mapeado desde GET /auth/scope', () async {
       // Arrange
       when(
-        () => dio.get<Map<String, dynamic>>('/v1/auth/scope'),
+        () => dio.get<Map<String, dynamic>>('/auth/scope'),
       ).thenAnswer(
-        (_) async => jsonResponse('/v1/auth/scope', {
+        (_) async => jsonResponse('/auth/scope', {
           'user': {
             'id': 'ref-uuid-1',
             'email': 'user@test.com',
@@ -463,11 +463,11 @@ void main() {
       'lanza SessionExpiredFailure cuando el backend responde 401 (refresh ya falló)',
       () async {
         // Arrange
-        when(() => dio.get<Map<String, dynamic>>('/v1/auth/scope')).thenThrow(
+        when(() => dio.get<Map<String, dynamic>>('/auth/scope')).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/auth/scope'),
+            requestOptions: RequestOptions(path: '/auth/scope'),
             response: Response(
-              requestOptions: RequestOptions(path: '/v1/auth/scope'),
+              requestOptions: RequestOptions(path: '/auth/scope'),
               statusCode: 401,
             ),
           ),
@@ -485,9 +485,9 @@ void main() {
       'lanza ScopeUnavailableFailure ante 5xx o sin conexión (nunca cierra sesión)',
       () async {
         // Arrange
-        when(() => dio.get<Map<String, dynamic>>('/v1/auth/scope')).thenThrow(
+        when(() => dio.get<Map<String, dynamic>>('/auth/scope')).thenThrow(
           DioException(
-            requestOptions: RequestOptions(path: '/v1/auth/scope'),
+            requestOptions: RequestOptions(path: '/auth/scope'),
             type: DioExceptionType.connectionError,
           ),
         );

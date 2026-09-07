@@ -37,7 +37,7 @@ class ProfileRepository {
   }) async {
     try {
       await _apiClient.raw.put<Map<String, dynamic>>(
-        '/v1/auth/me',
+        '/auth/me',
         data: {
           if (firstName != null) 'firstName': firstName,
           if (lastName != null) 'lastName': lastName,
@@ -67,8 +67,7 @@ class ProfileRepository {
 
     try {
       final response = await _apiClient.raw.post<Map<String, dynamic>>(
-        // `UploadsController` está versionado en el backend (@Version('1')); ver M-07.
-        '/v1/uploads/avatar',
+        '/uploads/avatar',
         data: FormData.fromMap({
           'file': MultipartFile.fromBytes(
             bytes,

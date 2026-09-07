@@ -124,29 +124,29 @@ void main() {
     when(() => dio.interceptors).thenReturn(Interceptors());
     when(
       () => dio.get<Map<String, dynamic>>(
-        '/v1/auth/public-key',
+        '/auth/public-key',
         options: any(named: 'options'),
       ),
     ).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: '/v1/auth/public-key'),
+        requestOptions: RequestOptions(path: '/auth/public-key'),
         data: {'publicKeyPem': publicKeyPem},
       ),
     );
     when(
       () => dio.post<Map<String, dynamic>>(
-        '/v1/auth/nonce',
+        '/auth/nonce',
         options: any(named: 'options'),
       ),
     ).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: '/v1/auth/nonce'),
+        requestOptions: RequestOptions(path: '/auth/nonce'),
         data: {'nonce': 'test-nonce'},
       ),
     );
     when(
       () => dio.post<Map<String, dynamic>>(
-        '/v1/auth/login',
+        '/auth/login',
         data: any(named: 'data'),
         options: any(named: 'options'),
       ),
@@ -160,7 +160,7 @@ void main() {
       expect(decrypted['nonce'], 'test-nonce');
 
       return Response(
-        requestOptions: RequestOptions(path: '/v1/auth/login'),
+        requestOptions: RequestOptions(path: '/auth/login'),
         data: {
           'login': true,
           'requiredNewPassword': false,
@@ -168,9 +168,9 @@ void main() {
         },
       );
     });
-    when(() => dio.get<Map<String, dynamic>>('/v1/auth/scope')).thenAnswer(
+    when(() => dio.get<Map<String, dynamic>>('/auth/scope')).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: '/v1/auth/scope'),
+        requestOptions: RequestOptions(path: '/auth/scope'),
         data: {
           'user': {
             'id': 'ref-1',

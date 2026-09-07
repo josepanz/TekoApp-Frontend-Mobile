@@ -27,8 +27,7 @@ class ServiceProgressRepository {
   }) async {
     try {
       final response = await _apiClient.raw.post<Map<String, dynamic>>(
-        // `UploadsController` está versionado en el backend (@Version('1')); ver M-07.
-        '/v1/uploads/image',
+        '/uploads/image',
         data: FormData.fromMap({
           'file': MultipartFile.fromBytes(
             bytes,
@@ -68,8 +67,7 @@ class ServiceProgressRepository {
   Future<String> resolvePhotoUrl(String key) async {
     try {
       final response = await _apiClient.raw.get<Map<String, dynamic>>(
-        // `UploadsController` está versionado en el backend (@Version('1')); ver M-07.
-        '/v1/uploads/presigned-url',
+        '/uploads/presigned-url',
         queryParameters: {'key': key},
       );
       return response.data!['url'] as String;

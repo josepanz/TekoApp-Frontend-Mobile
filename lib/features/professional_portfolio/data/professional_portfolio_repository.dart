@@ -53,8 +53,7 @@ class ProfessionalPortfolioRepository {
   Future<String> resolveFileUrl(String key) async {
     try {
       final response = await _apiClient.raw.get<Map<String, dynamic>>(
-        // `UploadsController` está versionado en el backend (@Version('1')); ver M-07.
-        '/v1/uploads/presigned-url',
+        '/uploads/presigned-url',
         queryParameters: {'key': key},
       );
       return response.data!['url'] as String;
