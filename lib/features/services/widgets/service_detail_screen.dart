@@ -4,13 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart' as ll;
 
+import '../../../core/realtime/locations_socket_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/ai_disclosure_badge.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../../legal_consents/models/ai_disclosure_entity_type.dart';
 import '../../locations/providers/assigned_professional_location_provider.dart';
+import '../../locations/providers/locations_socket_provider.dart';
 import '../../ratings/models/rating_failure.dart';
 import '../../ratings/models/rating_type.dart';
 import '../../ratings/providers/rate_controller_provider.dart';
@@ -140,6 +143,11 @@ class _ServiceDetailBody extends StatelessWidget {
 /// Mapa en vivo del profesional asignado — visible mientras el servicio está ACCEPTED/IN_PROGRESS
 /// (ver `assignedProfessionalLocationProvider`). Sin ubicación registrada todavía (404 esperado)
 /// o mientras carga, no se muestra nada — no es un dato crítico del detalle del servicio.
+///
+/// Cabo suelto de M-03: `locationsSocketConnectionStateProvider` refleja el estado del socket
+/// compartido, así que un blip de red durante el tracking se avisa acá con un `TekoBadge` en vez
+/// de dejar el mapa congelado en silencio. Vuelve a la normalidad sola (el badge desaparece) en
+/// cuanto el socket reconecta.
 class _AssignedProfessionalTrackingSection extends ConsumerWidget {
   const _AssignedProfessionalTrackingSection({required this.professionalId});
 
@@ -154,12 +162,39 @@ class _AssignedProfessionalTrackingSection extends ConsumerWidget {
     final position = location.valueOrNull;
     if (position == null) return const SizedBox.shrink();
 
+    final connectionState =
+        ref.watch(locationsSocketConnectionStateProvider).valueOrNull;
+    final connectionBadge = switch (connectionState) {
+      LocationsSocketConnectionState.reconnecting => (
+          label: l10n.serviceDetailTrackingReconnecting,
+          variant: TekoBadgeVariant.warning,
+        ),
+      LocationsSocketConnectionState.error => (
+          label: l10n.serviceDetailTrackingConnectionError,
+          variant: TekoBadgeVariant.destructive,
+        ),
+      _ => null,
+    };
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.serviceDetailTrackingTitle,
-          style: Theme.of(context).textTheme.titleMedium,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.serviceDetailTrackingTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            if (connectionBadge != null) ...[
+              const SizedBox(width: 8),
+              TekoBadge(
+                label: connectionBadge.label,
+                variant: connectionBadge.variant,
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 8),
         SizedBox(

@@ -124,6 +124,8 @@
   "nearbyProfessionalsMapError": "No pudimos cargar el mapa — revisá permisos de ubicación y tu conexión",
   "nearbyProfessionalsMapEmpty": "No hay profesionales conectados cerca tuyo por ahora",
   "serviceDetailTrackingTitle": "Ubicación del profesional en vivo",
+  "serviceDetailTrackingReconnecting": "Se perdió la conexión, reintentando…",
+  "serviceDetailTrackingConnectionError": "No se pudo restablecer la conexión",
   "profileLanguageLabel": "Idioma",
   "profileLanguageSystem": "Idioma del dispositivo",
   "profileLanguageSpanish": "Español",

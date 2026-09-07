@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,11 +10,39 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/core/auth/access_token_reader_provider.dart';
+import 'package:tekoapp_mobile/core/realtime/locations_socket_service.dart';
 import 'package:tekoapp_mobile/features/budgets/widgets/budget_comparison_screen.dart';
+import 'package:tekoapp_mobile/features/locations/providers/locations_socket_provider.dart';
 import 'package:tekoapp_mobile/features/services/widgets/service_detail_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 class _MockDio extends Mock implements Dio {}
+
+/// Doble de `LocationsSocketService` cuyo `connectionState` el test controla a mano — permite
+/// ejercitar el aviso de M-03 (`_AssignedProfessionalTrackingSection`) sin tocar un socket real.
+class _FakeLocationsSocketService implements LocationsSocketService {
+  final connectionStateController =
+      StreamController<LocationsSocketConnectionState>.broadcast();
+
+  @override
+  Stream<LocationsSocketConnectionState> get connectionState =>
+      connectionStateController.stream;
+
+  @override
+  void connect(String accessToken) {}
+
+  @override
+  void disconnect() {}
+
+  @override
+  void emitUpdateLocation({
+    required double latitude,
+    required double longitude,
+  }) {}
+
+  @override
+  void onLocationUpdated(void Function(ProfessionalLocationUpdate) listener) {}
+}
 
 /// Sin token: el tracking en vivo del profesional asignado (`assignedProfessionalLocationProvider`)
 /// corta antes de tocar el socket real — evita que estos tests toquen el `MethodChannel` real de
@@ -20,7 +50,11 @@ class _MockDio extends Mock implements Dio {}
 ///
 /// `GoRouter` real (no `MaterialApp` simple): "Ver presupuestos" navega con `context.push` a
 /// `BudgetComparisonScreen` (Fase 0009).
-Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) {
+Future<void> _pumpScreen(
+  WidgetTester tester,
+  _MockDio dio, {
+  List<Override> extraOverrides = const [],
+}) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -44,6 +78,7 @@ Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) {
       overrides: [
         apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
         accessTokenReaderProvider.overrideWithValue(() async => null),
+        ...extraOverrides,
       ],
       child: MaterialApp.router(
         locale: const Locale('es'),
@@ -173,6 +208,136 @@ void main() {
       // Assert
       expect(
         find.byKey(const Key('assigned_professional_tracking_map')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  Map<String, dynamic> inProgressServiceJson() {
+    return {
+      'id': 1,
+      'referenceId': 'service-uuid-1',
+      'userId': 1,
+      'professionalId': 2,
+      'categoryId': 3,
+      'serviceTypeId': 4,
+      'title': 'Reparación de cañería',
+      'description': 'Se necesita reparar una cañería rota',
+      'status': 'IN_PROGRESS',
+      'latitude': -25.2,
+      'longitude': -57.5,
+      'address': 'Av. España 1234',
+      'isUrgent': false,
+      'createdAt': '2026-08-08T10:00:00.000Z',
+      'professional': {
+        'id': 2,
+        'referenceId': 'prof-uuid-1',
+        'user': {'firstName': 'Ana', 'lastName': 'Pérez'},
+      },
+    };
+  }
+
+  testWidgets(
+    'avisa cuando se pierde la conexión del socket de ubicación y vuelve a la '
+    'normalidad al reconectar (M-03)',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: inProgressServiceJson(),
+        ),
+      );
+      when(
+        () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/locations/professional/2'),
+          data: {'latitude': -25.29, 'longitude': -57.62},
+        ),
+      );
+      final socket = _FakeLocationsSocketService();
+
+      // Act
+      await _pumpScreen(
+        tester,
+        dio,
+        extraOverrides: [
+          locationsSocketServiceProvider.overrideWithValue(socket),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      // Assert — todavía no hubo ningún evento de estado, sin aviso.
+      expect(find.text('Se perdió la conexión, reintentando…'), findsNothing);
+
+      // Act — se cae la conexión.
+      socket.connectionStateController.add(
+        LocationsSocketConnectionState.reconnecting,
+      );
+      await tester.pump();
+      await tester.pump();
+
+      // Assert
+      expect(
+        find.text('Se perdió la conexión, reintentando…'),
+        findsOneWidget,
+      );
+
+      // Act — reconecta.
+      socket.connectionStateController.add(
+        LocationsSocketConnectionState.connected,
+      );
+      await tester.pump();
+      await tester.pump();
+
+      // Assert — vuelve a la normalidad sola.
+      expect(find.text('Se perdió la conexión, reintentando…'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'muestra un aviso persistente cuando el socket agota los reintentos (M-03)',
+    (tester) async {
+      // Arrange
+      when(
+        () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+          data: inProgressServiceJson(),
+        ),
+      );
+      when(
+        () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/locations/professional/2'),
+          data: {'latitude': -25.29, 'longitude': -57.62},
+        ),
+      );
+      final socket = _FakeLocationsSocketService();
+
+      // Act
+      await _pumpScreen(
+        tester,
+        dio,
+        extraOverrides: [
+          locationsSocketServiceProvider.overrideWithValue(socket),
+        ],
+      );
+      await tester.pumpAndSettle();
+      socket.connectionStateController.add(
+        LocationsSocketConnectionState.error,
+      );
+      await tester.pump();
+      await tester.pump();
+
+      // Assert
+      expect(
+        find.text('No se pudo restablecer la conexión'),
         findsOneWidget,
       );
     },

@@ -16,3 +16,11 @@ final locationsSocketServiceProvider = Provider<LocationsSocketService>((ref) {
   ref.onDispose(service.disconnect);
   return service;
 });
+
+/// Estado de conexión del socket compartido (ver M-03 y `LocationsSocketService.connectionState`)
+/// — expuesto para que las pantallas que miran tracking en vivo puedan avisar "se perdió la
+/// conexión, reintentando…" en vez de dejar la ubicación muerta en silencio.
+final locationsSocketConnectionStateProvider =
+    StreamProvider<LocationsSocketConnectionState>((ref) {
+  return ref.watch(locationsSocketServiceProvider).connectionState;
+});
