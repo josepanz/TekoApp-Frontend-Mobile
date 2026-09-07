@@ -121,13 +121,44 @@ concreta de que esta clase de bug es real y recurrente, no hipotética.
 **No se migró ningún otro de los ~29 modelos restantes** — es explícitamente fuera de alcance de
 esta tarea.
 
+## 7.1 Dominios migrados al cerrar el cabo suelto de M-04: `payments`, `services`, `professionals`
+
+Extensión del generador (`tool/openapi_codegen/generate_model.dart`) para poder migrar estos tres
+dominios, ya documentada en su comentario de cabecera:
+
+- **`--ref-fields campo:Clase`** — objeto anidado vía `$ref` directo o `allOf: [{$ref}]}` (patrón
+  que usa `@nestjs/swagger` para adjuntar `nullable` junto a un `$ref`, ver `Payment.tip`). Delega
+  en el `factory <Clase>.fromJson(Map<String, dynamic>)` que el dominio ya tiene escrito a mano —
+  no resuelve el schema referenciado.
+- **`--rename-fields claveJson:campoDart`** — para el único caso real encontrado de una clave JSON
+  que no coincide con el nombre del campo Dart: `ServiceDetailResponseDTO.users` → `Service.client`.
+- **Arrays de `string`** (`type: array, items: {type: string}` → `List<String>`) — sin flag nueva,
+  se detecta directo del schema. Sigue sin resolver arrays de objetos anidados.
+
+**Validado por primera vez contra un backend real** (paso 2 del plan original, §8): las tres
+migraciones corrieron con `--openapi-url` contra un `TekoApp-Backend` local levantado en esta
+sesión, no contra un fixture a mano — cierra la brecha que dejaba abierta el PoC de `ratings`.
+
+**Drift real encontrado** (además de lo ya sabido por B-01/M-05):
+
+| Dominio | Campos que el modelo a mano descartaba en silencio | Otro hallazgo |
+|---|---|---|
+| `payments` (`Payment`) | Ninguno | M-05 ya había expuesto todo lo que el DTO real devuelve |
+| `services` (`Service`) | `actualHours`, `images`, `scheduledAt` | `client` (clave JSON `users`) se trataba como opcional pese a que el backend lo devuelve siempre — se corrigió a no-nullable |
+| `professional_profile` (`ProfessionalProfile`) | `userId`, `certifications`, `verificationStatus`, `requiredDocumentsVerified`, `currentLatitude`/`currentLongitude`/`lastLocationUpdate`, `totalServices`, `averageRating`, `totalRatings`, `createdAt`, `user`, `category` | `yearsOfExperience`/`skills` se trataban como opcionales pese a ser requeridos; `userId` es el hallazgo más notable — nunca se expuso pese a que el DTO lo devuelve siempre |
+
+Ningún campo nuevo tiene consumidor en la UI todavía — mismo criterio que `ratings`: se exponen
+para que la próxima pantalla que los necesite no tenga que volver a tocar el modelo primero.
+
+Commits: `6649ddd` (payments + extensión del generador), `c75cb89` (services), `dbd8561`
+(professional_profile).
+
 ## 8. Plan de migración incremental
 
-1. **Hecho en esta PoC**: `ratings`, con `--openapi-file` contra el fixture local.
-2. **Próximo paso, antes de tocar otro dominio**: correr el generador con `--openapi-url` contra
-   un backend real (local o el ambiente de QA desplegado) y confirmar que produce el mismo
-   `rating.g.dart` que el fixture — valida que el camino "real" funciona igual que el camino de
-   prueba usado acá.
+1. **Hecho en la PoC original**: `ratings`, con `--openapi-file` contra el fixture local.
+2. **Hecho al cerrar este cabo suelto**: `payments`, `services`, `professional_profile`, los tres
+   con `--openapi-url` contra un backend real — ver §7.1. El paso "próximo, antes de tocar otro
+   dominio" del plan original ya está resuelto.
 3. **CI**: agregar un job (o un step en el pipeline existente) que:
    - Corra `dart run tool/openapi_codegen/generate_model.dart` para cada dominio ya migrado,
      apuntando `--openapi-url` al swagger-json del ambiente de QA desplegado (no hace falta
@@ -136,9 +167,11 @@ esta tarea.
      principio que `check:types` en Web, pero verificando contra el contrato REAL en vez de
      contra lo último que alguien generó a mano.
    - Este job es aditivo (no reemplaza `flutter analyze`/`flutter test`) y se agrega recién
-     cuando haya más de un dominio migrado — con uno solo, no vale la pena el costo de mantenerlo.
-4. **Selección del próximo dominio**: candidatos naturales son los que ya se sabe que tienen
-   drift real — `payments` (ver M-05, campos que `Payment.fromJson` descarta) es el más obvio.
+     cuando haya más de un dominio migrado — con 4 dominios migrados (`ratings`, `payments`,
+     `services`, `professional_profile`), ya vale la pena el costo de mantenerlo. Pendiente.
+4. **Selección del próximo dominio**: de los ~25 modelos restantes, no hay ninguno con drift
+   confirmado conocido a la fecha de este cierre (2026-09-07) — los candidatos obvios ya se
+   migraron. Aplicar §7.1/§7 cuando alguien toque un modelo por otra razón o se confirme drift.
 5. **Nunca migrar un modelo por migrar** — cada dominio se adopta cuando alguien lo toca por otra
    razón (un bug, una feature nueva) o cuando se confirma drift real, igual que la política de
    "no agregues campos a un modelo sin consumidor" ya vigente en el repo (ver M-05).
@@ -149,5 +182,5 @@ esta tarea.
   igual — el `part`/`part of` vive DENTRO del mismo dominio, no introduce una capa nueva.
 - `ApiClient`/los interceptors de dio no cambian — este script no genera ni reemplaza nada de la
   capa de red, solo el parsing de modelos.
-- Los 29 modelos no migrados siguen exactamente como están — cero riesgo de regresión fuera de
-  `ratings`.
+- Los ~25 modelos restantes siguen exactamente como están — cero riesgo de regresión fuera de los
+  4 dominios migrados (`ratings`, `payments`, `services`, `professional_profile`).
