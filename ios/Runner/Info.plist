@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>TekoApp usa la cámara para que subas documentos de verificación y fotos de los trabajos que realizaste.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Usá tu rostro o huella para volver a entrar a tu cuenta.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>TekoApp usa tu ubicación para completar la dirección al pedir un servicio.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
