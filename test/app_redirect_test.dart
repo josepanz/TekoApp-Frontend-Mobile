@@ -28,15 +28,36 @@ const _authenticatedUser = UserSummary(
   lastName: 'Pérez',
 );
 
-const _professionalProfile = ProfessionalProfile(
+final _professionalProfile = ProfessionalProfile(
   id: 2,
   referenceId: 'prof-uuid-1',
+  userId: 10,
   categoryId: 3,
   description: 'Plomero',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.pending,
   isAvailable: false,
   isOnline: false,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 /// `sessionProvider` real llama a `flutter_secure_storage` al construirse — sin mock de

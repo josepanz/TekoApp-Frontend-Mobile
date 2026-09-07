@@ -14,15 +14,36 @@ import 'package:tekoapp_mobile/features/professional_profile/models/professional
 import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
-const _profile = ProfessionalProfile(
+final _profile = ProfessionalProfile(
   id: 2,
   referenceId: 'prof-uuid-1',
+  userId: 10,
   categoryId: 3,
   description: 'Plomero',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.approved,
   isAvailable: true,
   isOnline: false,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 const _user = UserSummary(
