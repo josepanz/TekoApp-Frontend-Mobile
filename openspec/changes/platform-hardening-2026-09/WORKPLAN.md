@@ -822,7 +822,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | B-04 | ALTO | [x] | f7443f0 | |
 | M-01 | MEDIO | [x] | 7d6c643 | |
 | M-02 | MEDIO | [x] | 36632b1 | |
-| M-03 | MEDIO | [x] | 99d4f59 | connectionState expuesto, sin consumidor en UI todavía (no hay pantalla que lo pida) |
+| M-03 | MEDIO | [x] | 99d4f59 | connectionState expuesto, sin consumidor en UI todavía (no hay pantalla que lo pida). Cabo suelto cerrado en d296bf2: badge en `_AssignedProfessionalTrackingSection` (service_detail_screen) para reconnecting/error |
 | M-04 | ALTO | [x] | 11a1685 | Script propio (no openapi_generator/swagger_dart_code_generator); PoC en `ratings`, probado contra fixture local — ver CODEGEN.md |
 | M-05 | BAJO | [x] | 957bbfb | Ejecutada por pedido explícito (no diferida). D-03 ya resuelto en backend: professionalNetAmount ya no es siempre null, se agregó |
 | M-06 | ALTO | [x] | 08fa295 | |
