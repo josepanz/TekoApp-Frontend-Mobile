@@ -827,7 +827,7 @@ Arreglalo **solo si estás tocando ese archivo por otra razón**. No abras un co
 | M-05 | BAJO | [x] | 957bbfb | Ejecutada por pedido explícito (no diferida). D-03 ya resuelto en backend: professionalNetAmount ya no es siempre null, se agregó |
 | M-06 | ALTO | [x] | 08fa295 | |
 | M-07 | ALTO | [x] | 88100d9 | Solo `uploads/*` (5 call-sites) — es lo único versionado que Mobile llama fuera de auth/onboarding |
-| I-01 | CRÍTICO | [x] | 274f947 | Spec en account-deletion.md, contra el contrato ya definido en TekoApp-Backend (f38ca86) — ninguno de los 2 lados implementado todavía |
+| I-01 | CRÍTICO | [x] | 274f947, 400fce5 | Spec en account-deletion.md (274f947), contra el contrato ya definido en TekoApp-Backend (f38ca86). Cabo suelto cerrado en 400fce5: backend implementado (`a24cf7f`), UI real contra `POST /auth/me/deletion-request`+`/cancel` bajo `auth/me` (no `users/me`, la spec asumía el segundo — contrato real verificado). Copy legal tomada de la spec (qué se anonimiza/retiene, ventana de gracia, cancelable), sin inventar texto nuevo — mismo criterio que debe seguir Web contra el mismo contrato |
 | I-02 | MEDIO | [x] | 1f31b43 | Solo release.yml (build.yml es --debug/--no-codesign, no distribuible); no elimina el secreto, ver decisions.md |
 | I-03 | MEDIO | [x] | 96c3529 | Spec en openspec/specs/support-channel.md — bloqueada por backend, no implementada |
 | I-04 | BAJO | [x] | 17ae9b3 | Spec en notification-preferences-and-inbox.md. Hallazgo: bandeja NO bloqueada por backend (API ya existe), pero ningún dominio dispara notificaciones todavía — gap de TekoApp-Backend |
