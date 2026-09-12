@@ -7,6 +7,7 @@ import '../../../core/mode/app_mode.dart';
 import '../../../core/mode/app_mode_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_card.dart';
+import '../../account_deletion/widgets/account_deletion_banner.dart';
 import '../../professional_profile/providers/my_professional_profile_provider.dart';
 
 /// Pantalla de inicio (modo cliente) — el botón "modo profesional" en el `AppBar` lleva a
@@ -48,6 +49,7 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const AccountDeletionBanner(),
             Text(
               l10n.homeGreeting(firstName),
               style: Theme.of(context).textTheme.titleLarge,

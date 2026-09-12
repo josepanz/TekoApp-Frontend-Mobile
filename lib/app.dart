@@ -7,6 +7,7 @@ import 'core/auth/session_state.dart';
 import 'core/locale/locale_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/update/update_check_gateway.dart';
+import 'features/account_deletion/widgets/account_deletion_screen.dart';
 import 'features/budgets/widgets/budget_builder_screen.dart';
 import 'features/budgets/widgets/budget_comparison_screen.dart';
 import 'features/contracts/widgets/contract_preview_screen.dart';
@@ -45,6 +46,7 @@ const _protectedPaths = {
   '/',
   '/perfil',
   '/perfil/privacidad-y-datos',
+  '/perfil/eliminar-cuenta',
   '/legal/consentimiento',
   '/solicitar',
   '/mapa/cercanos',
@@ -142,6 +144,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/perfil/privacidad-y-datos',
         builder: (context, state) => const PrivacyAndDataScreen(),
+      ),
+      GoRoute(
+        path: '/perfil/eliminar-cuenta',
+        builder: (context, state) => const AccountDeletionScreen(),
       ),
       GoRoute(
         path: '/legal/consentimiento',

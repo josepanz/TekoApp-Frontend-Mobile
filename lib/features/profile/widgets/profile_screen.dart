@@ -322,6 +322,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 variant: TekoButtonVariant.outline,
                 onPressed: () => ref.read(sessionProvider.notifier).logout(),
               ),
+              // Separación deliberada del logout — nunca el mismo estilo/proximidad, para que no
+              // se toquen por error (ver openspec/specs/account-deletion.md).
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 12),
+              TekoButton(
+                key: const Key('profile_delete_account_button'),
+                label: l10n.accountDeletionButton,
+                variant: TekoButtonVariant.destructive,
+                onPressed: () => context.push('/perfil/eliminar-cuenta'),
+              ),
             ],
           ),
         ),

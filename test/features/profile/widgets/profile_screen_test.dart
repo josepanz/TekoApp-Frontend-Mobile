@@ -357,4 +357,50 @@ void main() {
       },
     );
   });
+
+  testWidgets(
+    'el botón de eliminar cuenta navega a la pantalla de borrado, separado del logout',
+    (tester) async {
+      // Arrange
+      const user = UserSummary(
+        referenceId: 'ref-1',
+        email: 'a@b.com',
+        firstName: 'Ana',
+        lastName: 'Pérez',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
+            ),
+            ..._pushMessagingTestOverrides,
+            sessionProvider.overrideWith(
+              () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Act
+      await tester.ensureVisible(
+        find.byKey(const Key('profile_delete_account_button')),
+      );
+      await tester.tap(find.byKey(const Key('profile_delete_account_button')));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(
+        find.byKey(const Key('account_deletion_confirm_button')),
+        findsOneWidget,
+      );
+    },
+  );
 }
