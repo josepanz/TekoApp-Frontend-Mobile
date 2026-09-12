@@ -13,6 +13,11 @@
 // `Service.users` → `client`) y arrays de `string` (`type: array, items: {type: string}` →
 // `List<String>`). Sigue sin resolver arrays de objetos anidados.
 //
+// v3 (M-04, dominio promotions): agrega arrays de `number` (`type: array, items: {type:
+// number}` → `List<int>` si el campo está en `--int-fields`, `List<double>` si no — mismo
+// criterio que ya existía para escalares, ver "Limitaciones conocidas" en CODEGEN.md sobre
+// `int` vs `double`). Sigue sin resolver arrays de objetos anidados.
+//
 // Uso (contra el fixture local, sin backend corriendo):
 //   dart run tool/openapi_codegen/generate_model.dart \
 //     --schema RatingDetailResponseDTO --class Rating \
@@ -176,9 +181,20 @@ String _castExpressionFor({
       }
       return '($access as List<dynamic>).cast<String>()';
     }
+    if (itemsType == 'number') {
+      // Mismo criterio que el escalar: sin `format: int32` en el schema, `--int-fields` decide
+      // si cada elemento es `int` o `double` (ver "Limitaciones conocidas" en CODEGEN.md).
+      final elementCast = options.intFields.contains(name)
+          ? '(e as num).toInt()'
+          : '(e as num).toDouble()';
+      if (nullable) {
+        return '($access as List<dynamic>?)?.map((e) => $elementCast).toList()';
+      }
+      return '($access as List<dynamic>).map((e) => $elementCast).toList()';
+    }
     throw UnsupportedError(
       'Array de items "$itemsType" no soportado para "$name" — solo '
-      'arrays de string. Extendé _castExpressionFor en '
+      'arrays de string/number. Extendé _castExpressionFor en '
       'tool/openapi_codegen/generate_model.dart.',
     );
   }
