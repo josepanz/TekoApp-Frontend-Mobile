@@ -194,6 +194,60 @@ de objetos anidados (no lo necesitó ninguno de los 6 dominios migrados hasta ah
 Commits: `7b42e40` (professional_documents), `2cd9ae3` (promotions + extensión de arrays de
 number).
 
+## 7.3 Extensión del generador + dominio migrado 2026-09-12: `contracts`
+
+**Backend real disponible esta sesión** (a diferencia de §7.2): `cd TekoApp-Backend && node
+dist/main.js` levantó contra el `dist/` ya compilado y el `.env` existente, sin necesitar
+`start:dev`. `curl http://localhost:3000/tekoapp-backend/api/swagger-json` devolvió 200 — todo lo
+de esta ronda (extensión del generador + migración de `contracts`) se validó con
+`--openapi-url` contra ese backend real, no contra un fixture transcripto a mano.
+
+**Extensión del generador** (`tool/openapi_codegen/src/model_generator.dart`, v4): agrega arrays
+de objetos anidados (`type: array, items: {$ref: ...}` → `List<Clase>`) — la limitación
+documentada desde la v1 que bloqueaba migrar `contracts`
+(`ContractContentSnapshotDTO.lineItems: ContractLineItemSnapshotDTO[]`). Reutiliza el mismo mapa
+`--ref-fields campo:Clase` que ya resolvía un objeto anidado singular: ahora también resuelve el
+elemento de un array, delegando en el `fromJson` que esa clase Dart ya tiene escrito a mano. Sin
+flag nueva. De paso, la lógica de generación (`castExpressionFor`/`generateModelSource`) se separó
+a `tool/openapi_codegen/src/model_generator.dart` para poder testearla directo (22 tests nuevos en
+`test/tool/openapi_codegen/model_generator_test.dart` — el generador no tenía tests propios hasta
+ahora, ver la limitación que cerraba el §5 original).
+
+**Dominio migrado: `contracts`** — elegido porque es el candidato de mayor riesgo documentado en
+este archivo (§8, ronda anterior): mueve dinero (`contentSnapshot.budgetOption`) y estado legal
+(firma electrónica, `legalTermsVersion`), y era el que justificó la extensión del generador. Se
+migraron 3 clases:
+
+- `Contract` (`ContractResponseDTO`)
+- `MyContractSummary` (`MyContractSummaryResponseDTO`)
+- `ContractContentSnapshot` (`ContractContentSnapshotDTO`) — el primer dominio cuyo `lineItems`
+  (array de `ContractLineItemSnapshot`) se genera vía la extensión de arrays de `$ref`, en vez de
+  a mano.
+
+`ContractServiceSnapshot`/`ContractBudgetOptionSnapshot`/`ContractLineItemSnapshot`/
+`LegalTermsVersionSummary` quedan hand-written, referenciadas vía `--ref-fields` — mismo patrón
+que `Tip` en `payments` (§7.1): son hojas simples, sin drift encontrado, no ameritan su propia
+migración todavía (regla del §8: no migrar un modelo sin razón).
+
+**Drift encontrado: ninguno.** A diferencia de `ratings`/`Payment`/`promotions`, los 3 schemas
+reales de `contracts` coinciden campo a campo con lo que ya escribía el modelo a mano — ni un
+campo descartado en silencio. Es un resultado real y esperable a veces (mismo patrón que
+`payments` en §7.1, tabla de drift: "Ninguno"), no evidencia de que la migración no haya valido la
+pena: sigue cerrando la brecha de "nada detecta un drift futuro" que motiva M-04, y fue la que
+desbloqueó la extensión de arrays de objetos anidados.
+
+**Otros dominios evaluados esta ronda (con el backend real) y NO migrados — sin drift
+encontrado:**
+
+| Dominio | Schema(s) real(es) comparado(s) | Resultado |
+|---|---|---|
+| `budgets` | `BudgetOptionResponseDTO`, `BudgetLineItemResponseDTO` | Sin drift — coincide campo a campo con `BudgetOption`/`BudgetLineItem`. Ya se había evaluado sin backend en la ronda anterior (§8, "Descartados"); esta ronda lo reconfirma contra el contrato real. |
+| `legal_consents` | `UserConsentResponseDTO`, `ContentConsentGrantResponseDTO`, `DataConsentsHistoryResponseDTO` | Sin drift. Candidato de riesgo comparable a `contracts` (estado legal) y con el mismo shape de array-de-\$ref (`consents`/`contentGrants`) que motivó la extensión del generador — pero sin drift confirmado, no se migra todavía (regla del §8). |
+| `professional_portfolio` | `PortfolioItemResponseDTO` | Sin drift — a diferencia de `ProfessionalDocument.fileKey` (§7.2), acá `fileKey` sigue siendo requerido en el DTO real; I-01 no lo tocó. |
+| `service_progress` | `ServiceProgressEntryResponseDTO` | Sin drift — coincide campo a campo con `ServiceProgressEntry`. |
+
+Commits: `3c523ec` (extensión del generador + tests), `2cc5873` (migración de `contracts`).
+
 ## 8. Plan de migración incremental
 
 1. **Hecho en la PoC original**: `ratings`, con `--openapi-file` contra el fixture local.
@@ -203,7 +257,14 @@ number).
    (backend no disponible esa sesión), no contra `--openapi-url` real — pendiente de re-validar
    contra un backend vivo cuando haya uno disponible (mismo riesgo que cualquier fixture a mano,
    ver advertencia en §7.2).
-4. **CI**: agregar un job (o un step en el pipeline existente) que:
+4. **Hecho 2026-09-12**: `contracts` (`Contract`, `MyContractSummary`,
+   `ContractContentSnapshot`) — ver §7.3. Contra `--openapi-url` de un backend real levantado en
+   esta sesión (`node dist/main.js`), cerrando además la re-validación pendiente que dejó abierta
+   el paso 3: con el backend disponible, se reconfirmó sin drift `budgets` (evaluado sin backend
+   en la ronda de `professional_documents`/`promotions`) y se evaluaron por primera vez
+   `legal_consents`, `professional_portfolio` y `service_progress` — ninguno con drift, ninguno
+   migrado (ver tabla en §7.3).
+5. **CI**: agregar un job (o un step en el pipeline existente) que:
    - Corra `dart run tool/openapi_codegen/generate_model.dart` para cada dominio ya migrado,
      apuntando `--openapi-url` al swagger-json del ambiente de QA desplegado (no hace falta
      levantar el backend en el runner de CI — ver §1, ni Web lo hace).
@@ -211,30 +272,32 @@ number).
      principio que `check:types` en Web, pero verificando contra el contrato REAL en vez de
      contra lo último que alguien generó a mano.
    - Este job es aditivo (no reemplaza `flutter analyze`/`flutter test`) y se agrega recién
-     cuando haya más de un dominio migrado — con 6 dominios migrados (`ratings`, `payments`,
-     `services`, `professional_profile`, `professional_documents`, `promotions`), ya vale la pena
-     el costo de mantenerlo. Pendiente.
-5. **Selección del próximo dominio**: de los ~23 modelos restantes, `contracts` es el candidato
-   más obvio por riesgo (dinero + estado legal, ver "Descartados esta ronda" abajo) pero requiere
-   extender el generador para arrays de objetos anidados (`ContractContentSnapshot.lineItems`) —
-   quedó fuera de esta ronda por alcance, no por falta de riesgo. Aplicar §7.1/§7.2 cuando alguien
-   toque un modelo por otra razón o se confirme drift nuevo.
-6. **Nunca migrar un modelo por migrar** — cada dominio se adopta cuando alguien lo toca por otra
+     cuando haya más de un dominio migrado — con 7 dominios migrados (`ratings`, `payments`,
+     `services`, `professional_profile`, `professional_documents`, `promotions`, `contracts`), ya
+     vale la pena el costo de mantenerlo. Pendiente.
+6. **Selección del próximo dominio**: de los ~20 modelos restantes, ninguno tiene drift
+   confirmado a esta fecha (ver tabla de evaluados en §7.3: `budgets`, `legal_consents`,
+   `professional_portfolio`, `service_progress`). Aplicar §7.1/§7.2/§7.3 cuando alguien toque un
+   modelo por otra razón o se confirme drift nuevo — no hay un candidato obvio por riesgo sin
+   evidencia pendiente hoy.
+7. **Nunca migrar un modelo por migrar** — cada dominio se adopta cuando alguien lo toca por otra
    razón (un bug, una feature nueva) o cuando se confirma drift real, igual que la política de
    "no agregues campos a un modelo sin consumidor" ya vigente en el repo (ver M-05).
 
-### Descartados esta ronda (evaluados, no elegidos)
+### Descartados (evaluados, no elegidos — acumulado, ver también §7.3)
 
-- **`contracts`** (`Contract`/`MyContractSummary`) — dinero + estado legal, el candidato de mayor
-  riesgo en abstracto. Requiere resolver arrays de objetos anidados
-  (`ContractContentSnapshot.lineItems: ContractLineItemSnapshot[]`), que el generador no soporta
-  todavía (ver limitación documentada desde la PoC original). Extenderlo es un cambio de diseño
-  más grande que las extensiones puntuales de esta ronda (ref-fields/rename-fields/arrays de
-  number) — se prefirió no apurarlo dentro de esta sesión. Próximo candidato natural.
-- **`budgets`** (`BudgetOption`/`BudgetLineItem`) — dinero real (tarifas/presupuestos), pero no se
-  encontró drift concreto al inspeccionar los modelos a mano contra los DTOs del backend (a
-  diferencia de `professional_documents`/`promotions`, donde el drift era verificable antes de
-  tocar código). Sin evidencia de drift real, no se priorizó sobre los dos elegidos.
+- **`budgets`** (`BudgetOption`/`BudgetLineItem`) — dinero real (tarifas/presupuestos). Evaluado
+  dos veces: sin backend (ronda de `professional_documents`/`promotions`) y contra el contrato
+  real (ronda de `contracts`, §7.3). Ninguna de las dos encontró drift. No se prioriza sobre un
+  dominio con drift confirmado.
+- **`legal_consents`** (`UserConsent`/`ContentConsentGrant`/`DataConsentsHistory`) — estado legal,
+  riesgo comparable a `contracts`, y con el mismo shape de array-de-\$ref que motivó extender el
+  generador. Evaluado contra el backend real en la ronda de `contracts` (§7.3): sin drift.
+- **`professional_portfolio`** (`PortfolioItem`) — evaluado contra el backend real en la ronda de
+  `contracts` (§7.3): sin drift (`fileKey` sigue requerido, a diferencia de
+  `ProfessionalDocument.fileKey`).
+- **`service_progress`** (`ServiceProgressEntry`) — evaluado contra el backend real en la ronda de
+  `contracts` (§7.3): sin drift.
 
 ## 9. Qué NO cambia
 
@@ -242,6 +305,6 @@ number).
   igual — el `part`/`part of` vive DENTRO del mismo dominio, no introduce una capa nueva.
 - `ApiClient`/los interceptors de dio no cambian — este script no genera ni reemplaza nada de la
   capa de red, solo el parsing de modelos.
-- Los ~23 modelos restantes siguen exactamente como están — cero riesgo de regresión fuera de los
-  6 dominios migrados (`ratings`, `payments`, `services`, `professional_profile`,
-  `professional_documents`, `promotions`).
+- Los ~20 modelos restantes siguen exactamente como están — cero riesgo de regresión fuera de los
+  7 dominios migrados (`ratings`, `payments`, `services`, `professional_profile`,
+  `professional_documents`, `promotions`, `contracts`).
