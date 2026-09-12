@@ -308,3 +308,325 @@ Commits: `3c523ec` (extensión del generador + tests), `2cc5873` (migración de 
 - Los ~20 modelos restantes siguen exactamente como están — cero riesgo de regresión fuera de los
   7 dominios migrados (`ratings`, `payments`, `services`, `professional_profile`,
   `professional_documents`, `promotions`, `contracts`).
+
+## 10. Cambio de estrategia 2026-09-12: parar la migración por dominio, construir un verificador de drift
+
+`lib/features/*/models/` tiene **72 archivos de modelo** (sin contar los `.g.dart` generados);
+esta propuesta había migrado 7 dominios en 4 rondas de trabajo (§7.1-§7.3). A ese ritmo, migrar
+los 65 archivos restantes hubiera tomado 10-14 tandas más. José decidió frenar acá la migración
+dominio por dominio y construir en su lugar un **verificador de drift** — la razón, con
+evidencia concreta:
+
+**El valor nunca estuvo en generar código: estuvo en comparar contra el swagger real.** La
+migración a codegen era el VEHÍCULO para forzar esa comparación, no el fin en sí mismo. Prueba:
+de los 9 dominios verificados contra el backend real en la ronda de `contracts` (§7.3, tabla),
+4 tenían campos que el modelo a mano descartaba en silencio sin que nada lo detectara
+(`promotions`: 16 campos: `ratings`: 5 vía `Rating`; `payments`/`professional_documents` ya
+documentados en §7.1/§7.2) y otros 5 no tenían ningún drift (`contracts`, `budgets`,
+`legal_consents`, `professional_portfolio`, `service_progress`). El generador solo migra un
+modelo cuando alguien decide tocarlo — el verificador, en cambio, puede cubrir los 72 desde el
+día uno, generados o a mano, y detectar el PRÓXIMO drift sin esperar a que alguien migre ese
+dominio en particular.
+
+**Requisito de diseño más importante**: el verificador tiene que funcionar IGUAL para un modelo
+escrito a mano que para uno generado. Compara el modelo Dart tal cual vive en el repo (parseando
+sus declaraciones de campo, no regenerando nada) contra el schema real — así José puede seguir
+escribiendo modelos a mano cuando le convenga sin perder la red de seguridad. Ver §12 para cómo
+usar cada camino día a día.
+
+## 11. Diseño del verificador (`tool/openapi_codegen/check_drift.dart`)
+
+Cuatro archivos nuevos bajo `tool/openapi_codegen/`, cada uno con una responsabilidad:
+
+- **`model_mapping.dart`** (raíz del tool, versionado): la única fuente de verdad de qué clase
+  Dart corresponde a qué schema. Declara `modelMappings` (clase Dart -> schema, con
+  `renameFields` para los pocos casos donde la clave JSON no coincide con el nombre del campo
+  Dart, y `schemaFieldExemptions`/`modelFieldExemptions` para campos que a propósito no se
+  mapean) y `localModelExemptions` (modelos que NO corresponden a ningún schema — enums espejo,
+  jerarquías de errores de dominio, estado local de UI). Ver §12.1/§12.6 para cómo editarlo.
+- **`src/dart_model_parser.dart`**: lee un archivo `.dart` y extrae, de UNA clase puntual, sus
+  campos de instancia (nombre, tipo tal cual aparece en el código, nulabilidad). Es un parser por
+  línea + conteo de llaves (no usa el paquete `analyzer`, mismo criterio "sin dependencias
+  nuevas" que ya eligió §3) que confía en que el repo corre `dart format` — una declaración por
+  línea. Funciona igual sobre un modelo a mano que sobre uno generado: no le importa de dónde
+  salió el archivo, solo lee lo que hay.
+- **`src/drift_checker.dart`**: el motor de comparación. Clasifica cada campo del lado del schema
+  y del lado Dart en una categoría gruesa (`string`/`datetime`/`number`/`boolean`/`object`/
+  `ref`/`enumString`/arrays de cada uno/`custom`) reusando `refNameOf`/`arrayItemsOf` de
+  `src/schema_utils.dart` — el mismo helper que ya usa `model_generator.dart` para resolver
+  `$ref`/`allOf`/arrays, extraído para que ninguno de los dos lo duplique. Compara campo a campo
+  y devuelve una lista de `DriftFinding` (ver §12.4 para qué significa cada `DriftKind`).
+- **`check_drift.dart`**: el CLI. Carga el documento OpenAPI (mismo `--openapi-file`/
+  `--openapi-url` que el generador, vía `src/openapi_document.dart` — extraído de
+  `generate_model.dart` para que ambos compartan la misma lectura), corre `checkMapping` sobre
+  cada entrada de `modelMappings`, descubre todos los `.dart` bajo `lib/features/*/models/` en
+  disco y corre `checkCoverage` para detectar un modelo que nadie registró, imprime el reporte y
+  sale con código 1 si hay algún hallazgo de severidad crítica.
+
+**Por qué las categorías son gruesas a propósito**: el schema de OpenAPI no distingue `int` de
+`double` (misma limitación que el generador, §5), y el mapeo no declara por-campo si un `string`
+es en realidad un enum Dart o qué clase resuelve un `$ref` — exigir esa precisión sin esa
+metadata llevaría a falsos positivos constantes sobre modelos sanos (cada enum, cada objeto
+anidado, dispararía una alarma). El verificador tolera esa ambigüedad y en cambio es preciso
+donde más importa: **nulabilidad** (el caso `fileKey`: si el schema dice que un campo puede ser
+`null` y el modelo lo castea no-nullable, es CRÍTICO — puede crashear en runtime) y **presencia**
+(un campo que el schema tiene y el modelo no lee, o al revés).
+
+**Limitaciones conocidas de esta v1** (documentadas a propósito, no descubiertas después):
+
+- No compara valores de enum (`'ACTIVE' | 'INACTIVE' | ...`) — solo que el campo "tiene forma de
+  string/enum" en ambos lados. Se encontró un caso real así al construir el mapeo inicial:
+  `LegalDocumentType` (Dart) cubre 4 valores, `LegalDocumentVersionResponseDTO.documentType`
+  (schema real) ya tiene 6 — ver la exención de `legal_document_type.dart` en
+  `model_mapping.dart` para el detalle. Candidato natural para una v2.
+  No lo agregamos ahora para no ampliar el alcance de esta tanda sin que José lo pida.
+- No entiende un `fromJson` que "aplana" un objeto anidado a campos de nivel superior (ver
+  `ServiceProfessionalSummary`, que lee `json['user']['firstName']` en vez de
+  `json['firstName']`) — ese caso queda como exención local con motivo explícito, no como un
+  bug del verificador.
+- El parser de Dart es un parser por línea, no un analizador completo: confía en que el repo
+  corre `dart format` (una declaración por línea). Un modelo con varios campos en la misma línea,
+  o con anotaciones/formas de constructor muy atípicas, puede no reconocerse bien — en ese caso
+  el síntoma es que el verificador reporta campos de menos/de más que no son drift real; la
+  solución es reformatear (`dart format`) o, si el shape es genuinamente distinto, extender
+  `dart_model_parser.dart`.
+
+## 12. Cómo contribuir con modelos
+
+### 12.1 Agregar un modelo nuevo a mano
+
+1. Creá el archivo en `lib/features/<dominio>/models/<nombre_snake_case>.dart` (una clase por
+   concepto; varias clases relacionadas SÍ pueden compartir archivo, ver `contract.dart` o
+   `service.dart`, que anidan sus resúmenes hermanos en el mismo archivo que la clase principal).
+2. Seguí la convención ya establecida en el repo (ver `lib/features/budgets/models/budget_option.dart`
+   como ejemplo simple, o `lib/features/ratings/models/rating.dart` para uno con muchos campos
+   nullable):
+   - Constructor `const` con parámetros nombrados (`required` para los campos no-nullable).
+   - Un campo `final Tipo campo;` por línea (o `final Tipo? campo;` si puede faltar/venir
+     `null`) — coincidiendo la nulabilidad EXACTAMENTE con lo que dice el schema real
+     (`nullable: true` o ausente de `required`), no con lo que "parece razonable". Este es
+     el punto exacto donde falló B-01/`fileKey`: verificar contra el swagger, no adivinar.
+   - `factory Clase.fromJson(Map<String, dynamic> json) { return Clase(...); }` casteando cada
+     campo (`json['x'] as Tipo` / `json['x'] as Tipo?` / `DateTime.parse(...)` / etc.).
+3. Registralo en `tool/openapi_codegen/model_mapping.dart`, agregando una entrada a
+   `modelMappings`:
+   ```dart
+   const ModelMapping(
+     dartFile: 'lib/features/<dominio>/models/<archivo>.dart',
+     className: 'TuClase',
+     schemaName: 'NombreDelSchemaEnComponents', // el mismo que ves en /swagger-json
+   ),
+   ```
+   Si alguna clave JSON no coincide con el nombre del campo Dart, agregá `renameFields: {'claveJson': 'campoDart'}`
+   (ver el caso real `Service.client` <- `ServiceDetailResponseDTO.users`). Si el modelo NO
+   corresponde a ningún schema (estado local de UI, un enum espejo, una jerarquía de errores),
+   no lo mapees: exentalo en `localModelExemptions` (ver §12.6) — si no hacés ninguna de las dos
+   cosas, el verificador lo reporta como "SIN REGISTRAR" la próxima vez que corra.
+4. Corré el verificador (§12.3) contra un backend real o un snapshot para confirmar que tu modelo
+   nuevo coincide campo a campo con el schema.
+
+### 12.2 Agregar un modelo nuevo con el generador
+
+Para un modelo grande o muy anidado, generar el `fromJson` ahorra tipeo y, al mismo tiempo,
+fuerza la comparación contra el schema real en el momento de crearlo (no hace falta esperar a
+correr el verificador aparte, aunque igual conviene registrarlo — ver paso 4 más abajo).
+
+```
+dart run tool/openapi_codegen/generate_model.dart \
+  --schema <NombreDelSchemaEnComponents> --class <ClaseDart> \
+  --out lib/features/<dominio>/models/<archivo>.g.dart --part <archivo>.dart \
+  (--openapi-file <path-al-snapshot> | --openapi-url <url-del-swagger-json>) \
+  [--int-fields campo1,campo2] \
+  [--enum-fields campo:NombreEnumDart,...] \
+  [--ref-fields campo:ClaseDart,...] \
+  [--rename-fields claveJson:campoDart,...]
+```
+
+1. El archivo `.dart` (a mano) declara `part '<archivo>.g.dart';` arriba y
+   `factory Clase.fromJson(Map<String, dynamic> json) => _$ClaseFromJson(json);` en vez de un
+   `fromJson` escrito a mano — todo lo demás de la clase (constructor, campos, docstrings,
+   getters derivados) se sigue escribiendo a mano exactamente igual que en §12.1.
+2. `--ref-fields campo:ClaseDart` hace falta cuando el schema tiene un objeto anidado (`$ref`
+   directo, o `allOf: [{$ref}]` — el patrón que usa `@nestjs/swagger` para adjuntar `nullable`
+   junto a un `$ref`) o un array de objetos anidados (`items: {$ref: ...}`). El generador NO
+   resuelve el schema referenciado: delega en el `factory <ClaseDart>.fromJson(...)` que esa
+   clase ya tiene escrita a mano — por eso las clases "hoja" (`Tip`, `LegalTermsVersionSummary`,
+   `ContractLineItemSnapshot`, etc.) siguen siendo hand-written aunque la clase que las contiene
+   esté generada.
+3. `--int-fields`/`--enum-fields`/`--rename-fields` cubren, respectivamente: la limitación de que
+   OpenAPI no distingue `int` de `double` (ver §5), campos `string` con `enum:` que corresponden
+   a un enum Dart con su propio `fromJson(String)`, y los pocos casos donde la clave JSON no
+   coincide con el nombre del campo Dart.
+4. Registralo en `model_mapping.dart` igual que en el paso 3 de §12.1 — el verificador no sabe
+   que el modelo está generado, así que lo cubre exactamente igual que a uno a mano.
+
+### 12.3 Cómo correr el verificador de drift
+
+```
+dart run tool/openapi_codegen/check_drift.dart --openapi-url http://localhost:3000/tekoapp-backend/api/swagger-json
+```
+
+o, sin backend disponible, contra un snapshot local:
+
+```
+dart run tool/openapi_codegen/check_drift.dart --openapi-file tool/openapi_codegen/fixtures/swagger.local-example.json
+```
+
+Correlo desde la raíz del repo (`lib/features/...` en `model_mapping.dart` es relativo a ahí).
+Sale con código 0 si no hay drift de severidad crítica, 1 si lo hay — pensado para engancharse a
+un chequeo de CI (ver §14) o correr a mano antes de un PR que toque modelos.
+
+### 12.4 Cómo interpretar un reporte de drift
+
+El reporte agrupa cada hallazgo en CRÍTICO o ADVERTENCIA:
+
+| Marca | Qué significa | Qué hacer |
+|---|---|---|
+| `[FALTA EN MODELO]` | El schema tiene un campo que el modelo Dart no lee — el patrón de B-01/M-05/`Category`/`PaymentMethod`: el backend lo manda siempre y la app lo descarta en silencio. | Agregá el campo al modelo (nullable u obligatorio según diga el schema). Si de verdad no hace falta consumirlo todavía, agregalo igual (sin cablearlo a la UI, mismo criterio ya usado en `ratings`/`professional_profile`) — así no se vuelve a perder si alguien lo necesita después. |
+| `[SOBRA EN MODELO]` | El modelo Dart declara un campo que ya no está en el schema. | Puede ser (a) el backend eliminó ese campo — confirmalo y borralo del modelo; o (b) el nombre nunca coincidió con la clave JSON real — agregá `renameFields` en vez de borrar nada (ver el hallazgo real de `LoginResult.success`/`login` en §13). |
+| `[TIPO]` | La forma del campo no coincide (ej. el schema dice array y el modelo un escalar). | Revisá cuál de los dos está desactualizado — normalmente el modelo, pero si el backend cambió un contrato sin avisar, es una conversación con el equipo de backend, no solo un fix silencioso acá. |
+| `[NULABILIDAD]` cuando el schema es nullable y el modelo no | El caso `fileKey`: el backend puede mandar `null` y el modelo lo castea no-nullable — **crashea en runtime la próxima vez que llegue `null`**. Severidad crítica. | Cambiá el tipo del campo a `Tipo?` y revisá los consumidores (¿asumen que nunca es `null`?). |
+| `[NULABILIDAD]` cuando el schema NO es nullable pero el modelo sí | El modelo es más defensivo de lo necesario — no crashea, no es urgente. Severidad advertencia. | Opcional: podés endurecer el tipo a no-nullable si querés que el compilador te avise si el backend alguna vez lo relaja, pero no es obligatorio arreglarlo. |
+| `[SCHEMA NO ENCONTRADO]` | `model_mapping.dart` apunta a un `schemaName` que no existe en el documento OpenAPI cargado. | Si es un typo, corregilo. Si el backend renombró/eliminó el schema, es una señal real de que el contrato cambió — confirmá con backend antes de tocar el modelo. |
+| `[MODELO NO ENCONTRADO]` | El archivo o la clase de `model_mapping.dart` ya no existen en el repo. | El modelo se borró/renombró y nadie actualizó el mapeo — actualizá `dartFile`/`className` o eliminá la entrada si el modelo ya no aplica. |
+| `[SIN REGISTRAR]` | Un archivo bajo `lib/features/*/models/` declara una clase/enum que no está ni mapeada ni exenta. | Es la señal de "alguien agregó un modelo nuevo y se olvidó del paso 3 de §12.1/§12.2" — mapealo o exentalo (§12.6). |
+
+**El caso especial: "el modelo está bien y lo que cambió es el backend".** No todo drift es un
+bug del lado Mobile. Si el reporte dice que faltó un campo o cambió una nulabilidad, y confirmás
+contra el equipo de backend que el cambio fue intencional (un DTO nuevo, un campo que dejó de
+tener sentido), el fix puede ser tan simple como actualizar el modelo para seguir el nuevo
+contrato — el verificador no asume de qué lado está el bug, solo que hay una diferencia real que
+alguien tiene que mirar.
+
+### 12.5 Cuándo conviene cada camino
+
+Ninguno de los dos es obligatorio. Con criterio, no con regla fija:
+
+- **A mano** es lo más simple para un modelo chico (2-6 campos), o cuando la clase tiene lógica
+  propia no trivial (getters derivados, invariantes, un `fromJson` con casos especiales que no
+  encajan en el patrón genérico del generador — ver `ServiceProfessionalSummary`, que aplana un
+  objeto anidado). También es la única opción hoy para un modelo que no viene de JSON HTTP (ver
+  `PushNotificationPayload`, que parsea un `RemoteMessage` de Firebase).
+- **El generador** ahorra tiempo en un modelo grande (10+ campos, como `Promotion` o `Contract`)
+  o muy anidado (objetos/arrays de `$ref`), donde tipear cada cast a mano es tedioso y propenso a
+  error — y, de paso, fuerza mirar el schema real en el momento de crear el modelo.
+- **En ambos casos**, registrá el modelo en `model_mapping.dart` (§12.1 paso 3) — el verificador
+  es lo que realmente cierra la brecha, no la elección de cómo se escribió el `fromJson`.
+
+### 12.6 Cómo declarar una exención
+
+Dos tipos, ambos en `tool/openapi_codegen/model_mapping.dart`, ambos con `reason` como parámetro
+NOMBRADO REQUERIDO — el constructor tira `ArgumentError` si el motivo tiene menos de 8
+caracteres, así que no se puede declarar una exención con un placeholder vacío:
+
+- **`LocalModelExemption`** — para un modelo (clase o enum) que no corresponde a ningún schema.
+  Con `className: null` (el default), cubre TODAS las clases/enums de ese archivo — útil para un
+  archivo enteramente local (una jerarquía `sealed class XFailure`, un enum espejo). Con
+  `className` puntual, cubre solo esa clase dentro de un archivo que también tiene clases
+  mapeadas (ver `ServiceProfessionalSummary` dentro de `service.dart`, que convive con `Service`
+  y `ServiceCategorySummary`, ambas mapeadas).
+- **`FieldExemption`** (dentro de un `ModelMapping`, en `schemaFieldExemptions` o
+  `modelFieldExemptions`) — para un campo puntual que a propósito no se mapea, dentro de un
+  modelo que sí está mapeado a un schema. Ejemplo real: `LoginResult` mapea a
+  `LoginUserResponseDTO`, pero `refreshToken` se exime del lado del schema porque nunca viaja en
+  el body (solo como cookie httpOnly, ver `openspec/decisions.md`).
+
+Qué justifica una exención (y qué no): "no tengo tiempo de arreglarlo ahora" **no** es un motivo
+válido — el campo/modelo simplemente queda sin registrar hasta que alguien lo mapee. Un motivo
+válido explica POR QUÉ este campo/modelo nunca va a tener contraparte (una decisión de diseño,
+una limitación de una API externa, un dato que vive solo del lado del cliente).
+
+### 12.7 Advertencia: un fixture a mano puede quedar desactualizado igual que un modelo a mano
+
+Ya nos mordió una vez (ver §7.2): cuando no había backend disponible, se migraron
+`professional_documents`/`promotions` contra un fixture JSON transcripto a mano desde el DTO real
+del backend. Ese fixture es, en esencia, OTRO modelo a mano — puede quedar desactualizado
+exactamente igual que el modelo Dart que reemplaza, y nada lo re-verifica automáticamente contra
+el contrato real. **Usá `--openapi-url` contra un backend corriendo cada vez que puedas** — es
+la única fuente que no puede quedar desactualizada por definición, porque ES el contrato actual.
+Reservá `--openapi-file` (snapshot) para cuando el backend genuinamente no esté disponible, y
+tratá cualquier hallazgo de "sin drift" contra un snapshot viejo como una confirmación parcial,
+no definitiva — repetí la corrida contra `--openapi-url` en cuanto haya un backend a mano (mismo
+criterio que ya aplicó §7.3 al re-confirmar `budgets` contra el contrato real después de haberlo
+evaluado antes solo contra un fixture).
+
+## 13. Resultado de correr el verificador contra los 72 modelos reales (2026-09-12)
+
+Corrido con `--openapi-url` contra un backend real (`TekoApp-Backend`, `node dist/main.js`,
+swagger en `/tekoapp-backend/api/swagger-json`) — no contra un fixture, ver §12.7. Los 72
+archivos de modelo están cubiertos: 45 clases/enums mapeadas a un schema real (§ ver
+`model_mapping.dart`, `modelMappings`) y el resto exento con motivo (`localModelExemptions`) —
+sin ningún hallazgo `[SIN REGISTRAR]`.
+
+**24 hallazgos (22 críticos, 2 advertencias) en 6 dominios** — todos campos que el schema real
+devuelve y el modelo a mano descarta en silencio (mismo patrón que B-01/M-05/`ratings`/
+`promotions`/`professional_profile`), salvo `LoginResult` que es una desalineación de nombres:
+
+| Dominio (clase) | Hallazgo |
+|---|---|
+| `categories` (`Category`) | 9 campos descartados en silencio: `description`, `sortOrder`, `status`, `isVisible`, `requiresVerification`, `maxBudgetOptionsPerRequest`, `metadata`, `createdAt`, `lastChangedAt`. El modelo a mano solo exponía `id`/`referenceId`/`name`/`slug`/`icon`/`color`/`parentCategoryId`. |
+| `payments` (`PaymentMethod`) | 6 campos descartados en silencio: `userId`, `metadata`, `lastUsedAt`, `expiresAt`, `createdAt`, `updatedAt`. |
+| `services` (`ServiceClientSummary`) | 3 campos descartados en silencio: `id`, `email`, `phoneNumber` (el modelo solo exponía `referenceId`/`firstName`/`lastName` del `ServiceUserSummaryResponseDTO` que anida `ServiceDetailResponseDTO.users`). |
+| `locations` (`NearbyProfessional`) | 1 campo: `isAvailable` (booleano — distinto de `isOnline`, que sí se lee). |
+| `locations` (`ProfessionalLastLocation`) | 1 campo: `lastUpdate` (fecha de la última actualización de posición). |
+| `auth` (`LoginResult`) | No es un campo faltante sino un desalineamiento de nombres: el schema real (`LoginUserResponseDTO`) expone `login`/`requiredNewPassword`, el modelo Dart lee `success`/`requiresNewPassword` — nombres distintos, nunca unificados con `renameFields`. Se reporta como par FALTA/SOBRA en el reporte (ver §12.4). No se aplicó ningún rename en esta tanda a propósito: no está claro sin auditar el código de `AuthRepository` si esto ya es un bug en producción (¿`success` siempre sale `false`/`null` porque nunca lee `login`?) o si hay una capa intermedia no vista acá — queda para que José lo revise antes de decidir el fix. |
+
+Dominios ya migrados a codegen (`ratings`, `payments`/`Payment`, `services`/`Service`,
+`professional_profile`, `professional_documents`, `promotions`, `contracts`) y los evaluados sin
+backend en rondas previas (`budgets`, `legal_consents`, `professional_portfolio`,
+`service_progress`) se re-confirmaron sin drift en esta corrida — el verificador no encontró
+nada nuevo ahí, consistente con el trabajo ya hecho.
+
+**Hallazgo manual adicional (no detectado por el verificador v1, ver limitación en §11)**: el
+enum Dart `LegalDocumentType` (`legal_consents`) cubre 4 valores
+(`termsOfService`/`privacyPolicy`/`dataProcessingConsent`/`imageUsageConsent`); el schema real
+(`LegalDocumentVersionResponseDTO.documentType`) ya lista 6, agregando
+`SERVICE_CONTRACT_TERMS`/`USER_CONTENT_LIABILITY_DISCLAIMER`. Encontrado al construir el mapeo a
+mano (comparando el `enum:` del schema contra el `switch` del enum Dart), no por una corrida del
+verificador — comparar valores de enum es candidato a v2 (ver §11).
+
+**Ningún fix se aplicó en esta tanda** — por pedido explícito: reportar el drift es esta tarea,
+arreglarlo dominio por dominio es una decisión de José.
+
+## 14. CI: qué encontramos y qué haría falta
+
+`.github/workflows/ci.yml` corre en `ubuntu-latest`, hace checkout SOLO de este repo (Mobile) y
+no levanta ningún servicio de backend — `flutter analyze`/`dart format`/`flutter test`, nada
+más. No hay ninguna URL de un ambiente QA/staging commiteada acá: `Env.apiBaseUrl`
+(`lib/core/config/env.dart`) se recibe por `--dart-define` en build time, nunca hardcodeada en el
+repo ni en el workflow.
+
+Conclusión: **el CI de Mobile hoy NO puede alcanzar un swagger real**, ni del backend levantado
+localmente (obviamente no existe en un runner efímero de GitHub) ni de un ambiente QA desplegado
+(no hay URL ni secret configurado para eso). Agregar un step que corra `check_drift.dart` tal
+cual fallaría siempre por no poder conectarse — o, peor, alguien terminaría committeando un
+snapshot (`--openapi-file`) "para que ande en CI", reintroduciendo exactamente el problema que
+señala §12.7 (un fixture puede quedar tan desactualizado como el modelo que reemplaza, y encima
+esta vez el CI lo daría por bueno indefinidamente).
+
+**No se agregó nada al pipeline en esta tanda** — por pedido explícito, dado este hallazgo.
+
+**Cómo se correría si se resuelve lo anterior**: agregar un job/step nuevo, aditivo (no reemplaza
+`analyze`/`format`/`test`), del estilo:
+
+```yaml
+  check-model-drift:
+    name: Verificar drift de modelos contra el swagger
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - name: Verificar drift contra el swagger de QA
+        run: |
+          dart run tool/openapi_codegen/check_drift.dart \
+            --openapi-url ${{ secrets.QA_API_BASE_URL }}/tekoapp-backend/api/swagger-json
+```
+
+Hace falta, ANTES de agregar esto: (1) un ambiente QA de `TekoApp-Backend` desplegado y
+alcanzable desde un runner de GitHub Actions (confirmar que no está detrás de una VPN/IP
+allowlist que excluya a los runners hosteados), (2) esa URL cargada como secret del repo
+(`QA_API_BASE_URL`), y (3) una decisión de si un hallazgo de severidad "advertencia" (no crítico)
+también debería fallar el job, o solo imprimirse — hoy el código de salida usado por
+`check_drift.dart` (§12.3) solo falla ante hallazgos críticos.
