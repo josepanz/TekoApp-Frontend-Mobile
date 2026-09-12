@@ -1,3 +1,5 @@
+import 'schema_utils.dart';
+
 // Lógica de generación de `generate_model.dart`, separada del script de línea de comandos para
 // que `test/tool/openapi_codegen/model_generator_test.dart` pueda importarla directo y ejercitar
 // `generateModelSource`/`castExpressionFor` sin pasar por `Process.run` ni por I/O de archivos o
@@ -107,8 +109,8 @@ String castExpressionFor({
   final access = "json['$name']";
 
   if (type == 'array') {
-    final items = schema['items'] as Map<String, dynamic>?;
-    final itemsRef = items?[r'$ref'] as String?;
+    final items = arrayItemsOf(schema);
+    final itemsRef = items != null ? refNameOf(items) : null;
     if (itemsRef != null) {
       // v4: array de objetos anidados (`items: {$ref: ...}`) — el mismo mapa `--ref-fields` que
       // ya resuelve un objeto anidado singular ahora también resuelve el elemento de un array,

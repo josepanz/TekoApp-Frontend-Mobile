@@ -42,27 +42,24 @@
 // (mismo patrón que TekoApp-Frontend-Web/scripts/generate-api-types.mjs; en CI apunta al
 // swagger-json del ambiente desplegado, ver CODEGEN.md).
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'src/model_generator.dart';
+import 'src/openapi_document.dart';
 
 Future<void> main(List<String> args) async {
   final parsed = _parseArgs(args);
 
-  final String raw;
-  if (parsed.openapiFile != null) {
-    raw = await File(parsed.openapiFile!).readAsString();
-  } else if (parsed.openapiUrl != null) {
-    raw = await _fetch(parsed.openapiUrl!);
-  } else {
+  if (parsed.openapiFile == null && parsed.openapiUrl == null) {
     stderr.writeln('Falta --openapi-file o --openapi-url.');
     exit(1);
   }
 
-  final document = jsonDecode(raw) as Map<String, dynamic>;
-  final schemas = (document['components'] as Map<String, dynamic>)['schemas']
-      as Map<String, dynamic>;
+  final document = await loadOpenApiDocument(
+    openapiFile: parsed.openapiFile,
+    openapiUrl: parsed.openapiUrl,
+  );
+  final schemas = schemasOf(document);
   final schema = schemas[parsed.options.schemaName] as Map<String, dynamic>?;
   if (schema == null) {
     stderr.writeln(
@@ -77,23 +74,6 @@ Future<void> main(List<String> args) async {
   await outFile.create(recursive: true);
   await outFile.writeAsString(code);
   stdout.writeln('Generado ${parsed.options.out}');
-}
-
-Future<String> _fetch(String url) async {
-  final client = HttpClient();
-  try {
-    final request = await client.getUrl(Uri.parse(url));
-    final response = await request.close();
-    if (response.statusCode != 200) {
-      throw HttpException(
-        'GET $url devolvió ${response.statusCode}',
-        uri: Uri.parse(url),
-      );
-    }
-    return await response.transform(utf8.decoder).join();
-  } finally {
-    client.close();
-  }
 }
 
 class _ParsedArgs {
