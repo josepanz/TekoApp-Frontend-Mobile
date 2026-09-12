@@ -153,13 +153,57 @@ para que la próxima pantalla que los necesite no tenga que volver a tocar el mo
 Commits: `6649ddd` (payments + extensión del generador), `c75cb89` (services), `dbd8561`
 (professional_profile).
 
+## 7.2 Dominios migrados 2026-09-11: `professional_documents`, `promotions`
+
+Continuación de M-04 (backend NO disponible en esta sesión — verificado, `curl localhost:3000`
+sin respuesta — así que las dos migraciones de esta ronda corrieron con `--openapi-file` contra
+fixtures locales nuevos, transcriptos a mano desde los DTOs reales del backend, mismo método que
+la PoC de `ratings`. **Esto es una limitación real, no un detalle**: un fixture a mano puede
+quedar desactualizado igual que un modelo a mano — si el backend cambia el DTO real después de
+esta transcripción, el codegen contra el fixture viejo no lo va a detectar. La validación
+definitiva sigue siendo `--openapi-url` contra un backend vivo (ver §7.1, ya probado), pendiente
+de repetir cuando haya uno disponible.
+
+**Criterio de priorización de esta ronda**: riesgo de drift por plata/estado movido, no orden
+alfabético de los ~25 modelos restantes de aquel momento.
+
+- **`professional_documents`** — elegido porque I-01 (borrado de cuenta, esta misma sesión)
+  **acababa de cambiar su contrato real**: `ProfessionalDocumentResponseDTO.fileKey` pasó de
+  `string` a `string | null` (`null` cuando la cuenta del profesional se anonimiza). No es un
+  riesgo hipotético de "podría cambiar" — ya había cambiado. La migración expuso que
+  `ProfessionalDocument.fileKey` seguía casteado a `String` no-nullable en Mobile: se corrigió el
+  tipo y se ajustó el único consumidor real (`professional_documents_section.dart`, la vista
+  pública de documentos de un profesional) para ocultar el botón "Ver documento" cuando
+  `fileKey` es `null`, en vez de ofrecer una acción que fallaría. `ProfessionalDocumentType`
+  además descartaba en silencio `countryId`/`professionalCategoryId` (sin consumidor, se exponen
+  igual que M-05).
+- **`promotions`** — elegido porque, junto a `payments`, es el dominio que más directamente mueve
+  el monto final que paga un cliente (código de descuento → `finalAmount`). Hallazgo del mayor
+  alcance de todos los dominios migrados hasta ahora: el modelo `Promotion` a mano solo exponía
+  `code`/`name`; el backend (`PromotionDetailResponseDTO`) siempre devuelve otros 16 campos
+  descartados en silencio (`id`, `type`, `status`, `discountPercentage`, `discountAmount`,
+  `minimumAmount`, `maximumDiscount`, `maxUsage`, `maxUsagePerUser`, `currentUsage`, `validFrom`,
+  `validUntil`, `allowedUserTypes`, `specificUserIds`, `createdById`, `createdAt`,
+  `lastChangedAt`). Ninguno tiene consumidor todavía — se exponen igual que M-05/`ratings`.
+
+**Extensión del generador que esto requirió**: arrays de `number` (`specificUserIds: number[]`)
+→ `List<int>`/`List<double>` según `--int-fields`, mismo criterio que ya existía para el escalar
+equivalente. Documentada en la cabecera de `generate_model.dart` (v3). Sigue sin resolver arrays
+de objetos anidados (no lo necesitó ninguno de los 6 dominios migrados hasta ahora).
+
+Commits: `7b42e40` (professional_documents), `2cd9ae3` (promotions + extensión de arrays de
+number).
+
 ## 8. Plan de migración incremental
 
 1. **Hecho en la PoC original**: `ratings`, con `--openapi-file` contra el fixture local.
-2. **Hecho al cerrar este cabo suelto**: `payments`, `services`, `professional_profile`, los tres
-   con `--openapi-url` contra un backend real — ver §7.1. El paso "próximo, antes de tocar otro
-   dominio" del plan original ya está resuelto.
-3. **CI**: agregar un job (o un step en el pipeline existente) que:
+2. **Hecho al cerrar el cabo suelto de 2026-09-07**: `payments`, `services`,
+   `professional_profile`, los tres con `--openapi-url` contra un backend real — ver §7.1.
+3. **Hecho 2026-09-11**: `professional_documents`, `promotions` — ver §7.2. Contra fixture local
+   (backend no disponible esa sesión), no contra `--openapi-url` real — pendiente de re-validar
+   contra un backend vivo cuando haya uno disponible (mismo riesgo que cualquier fixture a mano,
+   ver advertencia en §7.2).
+4. **CI**: agregar un job (o un step en el pipeline existente) que:
    - Corra `dart run tool/openapi_codegen/generate_model.dart` para cada dominio ya migrado,
      apuntando `--openapi-url` al swagger-json del ambiente de QA desplegado (no hace falta
      levantar el backend en el runner de CI — ver §1, ni Web lo hace).
@@ -167,14 +211,30 @@ Commits: `6649ddd` (payments + extensión del generador), `c75cb89` (services), 
      principio que `check:types` en Web, pero verificando contra el contrato REAL en vez de
      contra lo último que alguien generó a mano.
    - Este job es aditivo (no reemplaza `flutter analyze`/`flutter test`) y se agrega recién
-     cuando haya más de un dominio migrado — con 4 dominios migrados (`ratings`, `payments`,
-     `services`, `professional_profile`), ya vale la pena el costo de mantenerlo. Pendiente.
-4. **Selección del próximo dominio**: de los ~25 modelos restantes, no hay ninguno con drift
-   confirmado conocido a la fecha de este cierre (2026-09-07) — los candidatos obvios ya se
-   migraron. Aplicar §7.1/§7 cuando alguien toque un modelo por otra razón o se confirme drift.
-5. **Nunca migrar un modelo por migrar** — cada dominio se adopta cuando alguien lo toca por otra
+     cuando haya más de un dominio migrado — con 6 dominios migrados (`ratings`, `payments`,
+     `services`, `professional_profile`, `professional_documents`, `promotions`), ya vale la pena
+     el costo de mantenerlo. Pendiente.
+5. **Selección del próximo dominio**: de los ~23 modelos restantes, `contracts` es el candidato
+   más obvio por riesgo (dinero + estado legal, ver "Descartados esta ronda" abajo) pero requiere
+   extender el generador para arrays de objetos anidados (`ContractContentSnapshot.lineItems`) —
+   quedó fuera de esta ronda por alcance, no por falta de riesgo. Aplicar §7.1/§7.2 cuando alguien
+   toque un modelo por otra razón o se confirme drift nuevo.
+6. **Nunca migrar un modelo por migrar** — cada dominio se adopta cuando alguien lo toca por otra
    razón (un bug, una feature nueva) o cuando se confirma drift real, igual que la política de
    "no agregues campos a un modelo sin consumidor" ya vigente en el repo (ver M-05).
+
+### Descartados esta ronda (evaluados, no elegidos)
+
+- **`contracts`** (`Contract`/`MyContractSummary`) — dinero + estado legal, el candidato de mayor
+  riesgo en abstracto. Requiere resolver arrays de objetos anidados
+  (`ContractContentSnapshot.lineItems: ContractLineItemSnapshot[]`), que el generador no soporta
+  todavía (ver limitación documentada desde la PoC original). Extenderlo es un cambio de diseño
+  más grande que las extensiones puntuales de esta ronda (ref-fields/rename-fields/arrays de
+  number) — se prefirió no apurarlo dentro de esta sesión. Próximo candidato natural.
+- **`budgets`** (`BudgetOption`/`BudgetLineItem`) — dinero real (tarifas/presupuestos), pero no se
+  encontró drift concreto al inspeccionar los modelos a mano contra los DTOs del backend (a
+  diferencia de `professional_documents`/`promotions`, donde el drift era verificable antes de
+  tocar código). Sin evidencia de drift real, no se priorizó sobre los dos elegidos.
 
 ## 9. Qué NO cambia
 
@@ -182,5 +242,6 @@ Commits: `6649ddd` (payments + extensión del generador), `c75cb89` (services), 
   igual — el `part`/`part of` vive DENTRO del mismo dominio, no introduce una capa nueva.
 - `ApiClient`/los interceptors de dio no cambian — este script no genera ni reemplaza nada de la
   capa de red, solo el parsing de modelos.
-- Los ~25 modelos restantes siguen exactamente como están — cero riesgo de regresión fuera de los
-  4 dominios migrados (`ratings`, `payments`, `services`, `professional_profile`).
+- Los ~23 modelos restantes siguen exactamente como están — cero riesgo de regresión fuera de los
+  6 dominios migrados (`ratings`, `payments`, `services`, `professional_profile`,
+  `professional_documents`, `promotions`).
