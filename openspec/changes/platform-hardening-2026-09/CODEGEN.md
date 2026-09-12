@@ -374,12 +374,21 @@ donde más importa: **nulabilidad** (el caso `fileKey`: si el schema dice que un
 
 **Limitaciones conocidas de esta v1** (documentadas a propósito, no descubiertas después):
 
-- No compara valores de enum (`'ACTIVE' | 'INACTIVE' | ...`) — solo que el campo "tiene forma de
-  string/enum" en ambos lados. Se encontró un caso real así al construir el mapeo inicial:
-  `LegalDocumentType` (Dart) cubre 4 valores, `LegalDocumentVersionResponseDTO.documentType`
-  (schema real) ya tiene 6 — ver la exención de `legal_document_type.dart` en
-  `model_mapping.dart` para el detalle. Candidato natural para una v2.
-  No lo agregamos ahora para no ampliar el alcance de esta tanda sin que José lo pida.
+- **No compara valores de enum** (`'ACTIVE' | 'INACTIVE' | ...`) — solo que el campo "tiene forma
+  de string/enum" en ambos lados. **Un reporte limpio (`check_drift` sin hallazgos) NO significa
+  que los enums estén sincronizados** — es una limitación real de esta v1, no un detalle menor:
+  un enum Dart puede quedarse corto contra los valores reales del schema sin que nada lo marque.
+  Se encontró un caso real así al construir el mapeo inicial (a mano, no por una corrida del
+  verificador): `LegalDocumentType` (Dart) cubre 4 valores,
+  `LegalDocumentVersionResponseDTO.documentType` (schema real) ya tiene 6 — ver la exención de
+  `legal_document_type.dart` en `model_mapping.dart` para el detalle, y §13 para el hallazgo
+  completo. Comparar valores de enum es un candidato claro para una v2 (necesitaría, además del
+  mapeo campo->schema que ya existe, declarar qué enum Dart le corresponde a qué campo — parecido
+  a `--enum-fields` del generador — y parsear los valores que ese enum ya reconoce desde su
+  `fromJson`, que en este repo se escribe con al menos tres formas de `switch` distintas: función
+  `factory` con `switch` expression, método `static` con `switch` statement clásico, y variantes
+  con/sin `default`). No se agregó en esta tanda porque el parseo adicional que hace falta no es
+  acotado — mismo criterio que ya usa este documento para no ampliar alcance sin que José lo pida.
 - No entiende un `fromJson` que "aplana" un objeto anidado a campos de nivel superior (ver
   `ServiceProfessionalSummary`, que lee `json['user']['firstName']` en vez de
   `json['firstName']`) — ese caso queda como exención local con motivo explícito, no como un
@@ -483,7 +492,7 @@ El reporte agrupa cada hallazgo en CRÍTICO o ADVERTENCIA:
 | Marca | Qué significa | Qué hacer |
 |---|---|---|
 | `[FALTA EN MODELO]` | El schema tiene un campo que el modelo Dart no lee — el patrón de B-01/M-05/`Category`/`PaymentMethod`: el backend lo manda siempre y la app lo descarta en silencio. | Agregá el campo al modelo (nullable u obligatorio según diga el schema). Si de verdad no hace falta consumirlo todavía, agregalo igual (sin cablearlo a la UI, mismo criterio ya usado en `ratings`/`professional_profile`) — así no se vuelve a perder si alguien lo necesita después. |
-| `[SOBRA EN MODELO]` | El modelo Dart declara un campo que ya no está en el schema. | Puede ser (a) el backend eliminó ese campo — confirmalo y borralo del modelo; o (b) el nombre nunca coincidió con la clave JSON real — agregá `renameFields` en vez de borrar nada (ver el hallazgo real de `LoginResult.success`/`login` en §13). |
+| `[SOBRA EN MODELO]` | El modelo Dart declara un campo que ya no está en el schema. | Puede ser (a) el backend eliminó ese campo — confirmalo y borralo del modelo; o (b) el nombre nunca coincidió con la clave JSON real — agregá `renameFields` en vez de borrar nada (ver el ejemplo trabajado de `LoginResult` más abajo). |
 | `[TIPO]` | La forma del campo no coincide (ej. el schema dice array y el modelo un escalar). | Revisá cuál de los dos está desactualizado — normalmente el modelo, pero si el backend cambió un contrato sin avisar, es una conversación con el equipo de backend, no solo un fix silencioso acá. |
 | `[NULABILIDAD]` cuando el schema es nullable y el modelo no | El caso `fileKey`: el backend puede mandar `null` y el modelo lo castea no-nullable — **crashea en runtime la próxima vez que llegue `null`**. Severidad crítica. | Cambiá el tipo del campo a `Tipo?` y revisá los consumidores (¿asumen que nunca es `null`?). |
 | `[NULABILIDAD]` cuando el schema NO es nullable pero el modelo sí | El modelo es más defensivo de lo necesario — no crashea, no es urgente. Severidad advertencia. | Opcional: podés endurecer el tipo a no-nullable si querés que el compilador te avise si el backend alguna vez lo relaja, pero no es obligatorio arreglarlo. |
@@ -497,6 +506,61 @@ contra el equipo de backend que el cambio fue intencional (un DTO nuevo, un camp
 tener sentido), el fix puede ser tan simple como actualizar el modelo para seguir el nuevo
 contrato — el verificador no asume de qué lado está el bug, solo que hay una diferencia real que
 alguien tiene que mirar.
+
+**Ejemplo trabajado: cuando el "drift" es en realidad un mapeo que vive fuera del modelo.** Este
+es el escenario que más fácil se resuelve mal, porque el reflejo natural es tocar el modelo (o
+peor, silenciar el hallazgo con una exención sin pensarlo) en vez de mirar quién construye ese
+modelo. `LoginResult` (`lib/features/auth/models/login_result.dart`) lo disparó en la primera
+corrida contra los 72 modelos (§13, versión anterior de este documento):
+
+```
+[FALTA EN MODELO] LoginResult.login       (el schema lo tiene, el modelo no lo lee)
+[FALTA EN MODELO] LoginResult.requiredNewPassword
+[SOBRA EN MODELO] LoginResult.success     (el modelo lo tiene, el schema no)
+[SOBRA EN MODELO] LoginResult.requiresNewPassword
+```
+
+Parece un caso de campos perdidos, pero `LoginResult` **no tiene `fromJson`** — no se genera con
+el generador ni se parsea genéricamente. `AuthRepository.login()`
+(`lib/features/auth/data/auth_repository.dart:141-146`) lo construye a mano:
+
+```dart
+return LoginResult(
+  success: response.data?['login'] as bool? ?? false,
+  requiresNewPassword:
+      response.data?['requiredNewPassword'] as bool? ?? false,
+  accessToken: accessToken,
+);
+```
+
+El mapeo real EXISTE, solo que vive en el repositorio, no en un `fromJson`: `login` (clave real
+del backend) se traduce a `success` (nombre Dart más legible), y `requiredNewPassword` a
+`requiresNewPassword`. No hay campo ignorado ni bug — es un falso positivo del verificador, que
+no puede ver código fuera de la clase del modelo.
+
+La resolución, ya aplicada en `model_mapping.dart`, distingue DOS situaciones distintas dentro
+del mismo caso:
+
+- `login` -> `success` es un **rename limpio** (`renameFields: {'login': 'success'}`): mismo
+  tipo (`boolean`), misma nulabilidad (ambos requeridos) en los dos lados. Registrarlo como
+  rename alcanza — el verificador vuelve a comparar tipo/nulabilidad normalmente, con el nombre
+  correcto, y no encuentra nada más.
+- `requiredNewPassword` -> `requiresNewPassword` **no** se registró como rename, a propósito: el
+  schema lo declara opcional (`nullable`), pero el repositorio lo normaliza con `?? false` al
+  campo Dart (`bool` no-nullable). Si se registrara como rename plano, el verificador compararía
+  nulabilidad (schema nullable vs modelo no-nullable) y reportaría un `[NULABILIDAD]` **crítico**
+  nuevo — otro falso positivo, porque el verificador no puede ver el `?? false` que hace ese
+  cambio de nulabilidad seguro. La solución fue exención de campo en los dos lados
+  (`schemaFieldExemptions`/`modelFieldExemptions`), con el motivo apuntando a las líneas exactas
+  de `auth_repository.dart` donde ocurre la normalización.
+
+**La lección general**: cuando el verificador marca drift en un modelo que NO tiene `fromJson` (o
+cuyo `fromJson` no es un cast directo campo a campo), el primer paso es preguntar "¿dónde se
+arma este objeto realmente?" antes de tocar el modelo o el schema. Si el mapeo real es un simple
+cambio de nombre, es un `renameFields`. Si además cambia la nulabilidad (o el tipo) a propósito
+con lógica de por medio (un `?? default`, una transformación), un rename plano introduce un
+segundo falso positivo — ahí corresponde una exención de campo con el motivo apuntando al código
+real que hace esa traducción, no un rename ni un silenciamiento sin explicación.
 
 ### 12.5 Cuándo conviene cada camino
 
@@ -558,9 +622,18 @@ archivos de modelo están cubiertos: 45 clases/enums mapeadas a un schema real (
 `model_mapping.dart`, `modelMappings`) y el resto exento con motivo (`localModelExemptions`) —
 sin ningún hallazgo `[SIN REGISTRAR]`.
 
-**24 hallazgos (22 críticos, 2 advertencias) en 6 dominios** — todos campos que el schema real
-devuelve y el modelo a mano descarta en silencio (mismo patrón que B-01/M-05/`ratings`/
-`promotions`/`professional_profile`), salvo `LoginResult` que es una desalineación de nombres:
+La primera corrida dio **24 hallazgos (22 críticos, 2 advertencias) en 6 dominios**. Uno de
+esos 6 (`auth`/`LoginResult`) resultó ser un falso positivo: `LoginResult` no tiene `fromJson`,
+`AuthRepository.login()` lo arma a mano y ya traduce `login`/`requiredNewPassword` (claves reales
+del backend) a `success`/`requiresNewPassword` (nombres Dart) correctamente — ver el ejemplo
+trabajado completo en §12.4. Una vez registrado ese mapeo en `model_mapping.dart` (rename para
+`login`->`success`, exención de campo para `requiredNewPassword`/`requiresNewPassword` — el
+detalle de por qué no ambos son un simple rename está en §12.4), el resultado real y vigente
+contra los 72 modelos es:
+
+**20 hallazgos (todos críticos) en 5 dominios** — todos campos que el schema real devuelve y el
+modelo a mano descarta en silencio (mismo patrón que B-01/M-05/`ratings`/`promotions`/
+`professional_profile`):
 
 | Dominio (clase) | Hallazgo |
 |---|---|
@@ -569,7 +642,6 @@ devuelve y el modelo a mano descarta en silencio (mismo patrón que B-01/M-05/`r
 | `services` (`ServiceClientSummary`) | 3 campos descartados en silencio: `id`, `email`, `phoneNumber` (el modelo solo exponía `referenceId`/`firstName`/`lastName` del `ServiceUserSummaryResponseDTO` que anida `ServiceDetailResponseDTO.users`). |
 | `locations` (`NearbyProfessional`) | 1 campo: `isAvailable` (booleano — distinto de `isOnline`, que sí se lee). |
 | `locations` (`ProfessionalLastLocation`) | 1 campo: `lastUpdate` (fecha de la última actualización de posición). |
-| `auth` (`LoginResult`) | No es un campo faltante sino un desalineamiento de nombres: el schema real (`LoginUserResponseDTO`) expone `login`/`requiredNewPassword`, el modelo Dart lee `success`/`requiresNewPassword` — nombres distintos, nunca unificados con `renameFields`. Se reporta como par FALTA/SOBRA en el reporte (ver §12.4). No se aplicó ningún rename en esta tanda a propósito: no está claro sin auditar el código de `AuthRepository` si esto ya es un bug en producción (¿`success` siempre sale `false`/`null` porque nunca lee `login`?) o si hay una capa intermedia no vista acá — queda para que José lo revise antes de decidir el fix. |
 
 Dominios ya migrados a codegen (`ratings`, `payments`/`Payment`, `services`/`Service`,
 `professional_profile`, `professional_documents`, `promotions`, `contracts`) y los evaluados sin

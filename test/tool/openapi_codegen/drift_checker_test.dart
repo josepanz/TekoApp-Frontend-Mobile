@@ -129,6 +129,57 @@ class Rating {
 
       expect(findings, isEmpty);
     });
+
+    test(
+      'LoginResult vs LoginUserResponseDTO no reporta drift (regresión del falso '
+      'positivo documentado en CODEGEN.md §12.4: el mapeo real vive en '
+      'AuthRepository.login(), no en un fromJson)',
+      () {
+        final schemas = {
+          'LoginUserResponseDTO': {
+            'type': 'object',
+            'properties': {
+              'login': {'type': 'boolean'},
+              'accessToken': {'type': 'string', 'nullable': true},
+              'refreshToken': {'type': 'string', 'nullable': true},
+              'requiredNewPassword': {'type': 'boolean', 'nullable': true},
+            },
+            'required': ['login'],
+          },
+        };
+
+        // Mismo shape que lib/features/auth/models/login_result.dart: sin fromJson, `success`/
+        // `requiresNewPassword` son los nombres Dart de `login`/`requiredNewPassword`.
+        const source = '''
+class LoginResult {
+  const LoginResult({
+    required this.success,
+    required this.requiresNewPassword,
+    this.accessToken,
+  });
+
+  final bool success;
+  final bool requiresNewPassword;
+  final String? accessToken;
+}
+''';
+
+        // Usa la entrada REAL de model_mapping.dart, no una reconstruida a mano acá — si alguien
+        // rompe este mapeo (o el archivo real deja de coincidir con este shape), este test lo
+        // detecta.
+        final mapping = modelMappings.firstWhere(
+          (m) => m.className == 'LoginResult',
+        );
+
+        final findings = checkMapping(
+          mapping: mapping,
+          schemas: schemas,
+          dartSource: source,
+        );
+
+        expect(findings, isEmpty);
+      },
+    );
   });
 
   group('checkMapping — detecta cada clase de drift', () {

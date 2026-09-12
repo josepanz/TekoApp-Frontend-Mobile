@@ -12,15 +12,12 @@
 // (el constructor lo valida en runtime). Esto es a propósito: una exención sin motivo escrito no
 // se acepta.
 
-/// Un campo de un schema que a propósito NO se mapea a ningún campo del modelo Dart (el schema lo
-/// tiene, el modelo lo omite deliberadamente) — o, con `side: ExemptionSide.model`, un campo del
-/// modelo Dart que a propósito no viene de este schema.
+/// Un campo exento de la comparación, con el motivo escrito de por qué. El LADO (schema o
+/// modelo) no es un parámetro de esta clase — lo determina en qué lista de `ModelMapping` se
+/// declara: `schemaFieldExemptions` (el schema tiene el campo, el modelo lo omite a propósito) o
+/// `modelFieldExemptions` (el modelo tiene el campo, a propósito no viene de este schema).
 class FieldExemption {
-  FieldExemption({
-    required this.field,
-    required this.reason,
-    this.side = ExemptionSide.schema,
-  }) {
+  FieldExemption({required this.field, required this.reason}) {
     if (reason.trim().length < 8) {
       throw ArgumentError(
         'La exención del campo "$field" necesita un motivo real (mínimo 8 caracteres), '
@@ -29,14 +26,9 @@ class FieldExemption {
     }
   }
 
-  /// Nombre del campo — del lado del schema si `side == schema`, del lado del modelo Dart si
-  /// `side == model`.
   final String field;
   final String reason;
-  final ExemptionSide side;
 }
-
-enum ExemptionSide { schema, model }
 
 /// Un modelo Dart (clase o enum) que NO corresponde a ningún schema del backend — estado local de
 /// UI, un enum sin schema propio en swagger, una jerarquía de errores de dominio, etc. Si
@@ -103,16 +95,44 @@ final List<ModelMapping> modelMappings = [
   ),
 
   // ---- auth ----
+  // `LoginResult` NO tiene `fromJson`: `AuthRepository.login()` (auth_repository.dart:141-146)
+  // lo construye a mano leyendo las claves reales del backend y traduciéndolas a nombres propios
+  // más legibles — `login` -> `success`, `requiredNewPassword` -> `requiresNewPassword`. Un
+  // primer análisis (sin leer auth_repository.dart) reportó esto como drift (4 hallazgos: 2
+  // campos "faltantes" del lado del schema + 2 "sobrantes" del lado del modelo) — era un falso
+  // positivo: el mapeo real existe, solo que no vive en un `fromJson` genérico. Ver CODEGEN.md
+  // §12.4 ("el caso especial: el modelo está bien") para el caso completo explicado.
   ModelMapping(
     dartFile: 'lib/features/auth/models/login_result.dart',
     className: 'LoginResult',
     schemaName: 'LoginUserResponseDTO',
+    // `login` -> `success` es un rename limpio: mismo tipo (bool), misma nulabilidad (ambos
+    // requeridos) en los dos lados.
+    renameFields: const {'login': 'success'},
     schemaFieldExemptions: [
       FieldExemption(
         field: 'refreshToken',
         reason:
             'nunca viaja en el body de la respuesta, solo como cookie httpOnly (ver '
             'openspec/decisions.md) — el modelo lo omite a propósito.',
+      ),
+      FieldExemption(
+        field: 'requiredNewPassword',
+        reason:
+            'el schema lo declara opcional/nullable, pero auth_repository.dart:143-144 lo lee '
+            'a mano y lo normaliza con `?? false` al construir LoginResult.requiresNewPassword '
+            '(bool no-nullable) — no es un rename plano porque también cambia la nulabilidad a '
+            'propósito (default seguro en el borde), así que se exime en vez de registrarse '
+            'como --rename-fields (eso generaría una discrepancia de nulabilidad falsa: el '
+            'verificador no puede ver el `?? false`).',
+      ),
+    ],
+    modelFieldExemptions: [
+      FieldExemption(
+        field: 'requiresNewPassword',
+        reason:
+            'contraparte de la exención de "requiredNewPassword" de arriba — mismo campo, visto '
+            'desde el lado del modelo. Ver esa exención para el motivo completo.',
       ),
     ],
   ),
