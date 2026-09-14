@@ -129,9 +129,11 @@ void main() {
           'isUrgent': false,
           'createdAt': '2026-08-08T10:00:00.000Z',
           'users': {
+            'id': 10,
             'referenceId': 'client-uuid-1',
             'firstName': 'María',
             'lastName': 'López',
+            'email': 'maria@example.com',
           },
           'professional': {
             'id': 2,
@@ -192,9 +194,11 @@ void main() {
             'isUrgent': false,
             'createdAt': '2026-08-08T10:00:00.000Z',
             'users': {
+              'id': 10,
               'referenceId': 'client-uuid-1',
               'firstName': 'María',
               'lastName': 'López',
+              'email': 'maria@example.com',
             },
             'professional': {
               'id': 2,
@@ -243,9 +247,11 @@ void main() {
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
       'users': {
+        'id': 10,
         'referenceId': 'client-uuid-1',
         'firstName': 'María',
         'lastName': 'López',
+        'email': 'maria@example.com',
       },
       'professional': {
         'id': 2,
@@ -400,9 +406,11 @@ void main() {
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
       'users': {
+        'id': 10,
         'referenceId': 'client-uuid-1',
         'firstName': 'María',
         'lastName': 'López',
+        'email': 'maria@example.com',
       },
     };
   }
@@ -521,9 +529,11 @@ void main() {
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
       'users': {
+        'id': 10,
         'referenceId': 'client-uuid-1',
         'firstName': 'María',
         'lastName': 'López',
+        'email': 'maria@example.com',
       },
       'professional': {
         'id': 2,

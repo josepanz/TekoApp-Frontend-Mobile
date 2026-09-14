@@ -70,9 +70,11 @@ Map<String, dynamic> _serviceJson({double? finalAmount = 100000}) => {
       'createdAt': '2026-08-08T10:00:00.000Z',
       if (finalAmount != null) 'finalAmount': finalAmount,
       'users': {
+        'id': 10,
         'referenceId': 'client-uuid-1',
         'firstName': 'María',
         'lastName': 'López',
+        'email': 'maria@example.com',
       },
       'professional': {
         'id': 2,

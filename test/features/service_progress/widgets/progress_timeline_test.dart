@@ -31,9 +31,11 @@ Service _service({required ServiceStatus status}) {
     isUrgent: false,
     createdAt: DateTime.utc(2026, 8, 27),
     client: const ServiceClientSummary(
+      id: 10,
       referenceId: 'client-ref-1',
       firstName: 'Ana',
       lastName: 'Gómez',
+      email: 'ana@example.com',
     ),
     professionalId: 5,
     professional: const ServiceProfessionalSummary(

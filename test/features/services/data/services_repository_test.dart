@@ -52,9 +52,11 @@ void main() {
       'category': null,
       'professional': null,
       'users': {
+        'id': 10,
         'referenceId': 'client-uuid-1',
         'firstName': 'María',
         'lastName': 'López',
+        'email': 'maria@example.com',
       },
     };
   }
