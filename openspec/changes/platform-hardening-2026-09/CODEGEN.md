@@ -660,6 +660,52 @@ verificador — comparar valores de enum es candidato a v2 (ver §11).
 **Ningún fix se aplicó en esta tanda** — por pedido explícito: reportar el drift es esta tarea,
 arreglarlo dominio por dominio es una decisión de José.
 
+## 13.1 Los 20 hallazgos cerrados (2026-09-14)
+
+Corrido contra un backend real levantado en esta sesión (`node dist/main.js`, `--openapi-url`).
+Un commit por dominio, los 5 completados a mano (ninguno migrado al generador — todos son
+6-9 campos, sin objetos/arrays anidados que justifiquen el generador, ver criterio de §12.5):
+
+- **`categories` (`Category`, 2aeec39)** — 9 campos: `description`, `sortOrder`, `status`,
+  `isVisible`, `requiresVerification`, `maxBudgetOptionsPerRequest`, `metadata`, `createdAt`,
+  `lastChangedAt`. `status` sumó un enum nuevo (`CategoryStatus`), exento en `model_mapping.dart`
+  como enum espejo (206ce37) — mismo patrón que `PaymentMethodType`.
+
+  **Sin cambio de UI, y no por omisión**: la hipótesis inicial de esta tarea era que la app
+  "probablemente" mostraba categorías ocultas/inactivas porque no podía leer `isVisible`/`status`.
+  Se verificó contra el código real (`CategoriesRepository.fetchCategories` -> `GET /categories`
+  -> `CategoriesService.findAll`, `TekoApp-Backend/src/api/categories/services/categories.service.ts:67-72`)
+  y el backend YA filtra `status: ACTIVE, isVisible: true` del lado del servidor para ese endpoint
+  — el único que los dos consumidores de Mobile (`professional_onboarding_screen.dart`,
+  `request_service_screen.dart`) usan. Filtrar de nuevo en el cliente hubiera sido código muerto
+  redundante, no una corrección real. Documentado en el docstring de `Category`.
+
+- **`locations` (`NearbyProfessional`/`ProfessionalLastLocation`, 3b451b4)** —
+  `isAvailable` (bool, distinto de `isOnline`) y `lastUpdate` (datetime nullable).
+  `isAvailable` SÍ tuvo cambio de UI: `nearby_professionals_map_screen.dart` atenúa el marcador
+  (gris en vez de rojo) y agrega una aclaración al tooltip cuando el profesional no está tomando
+  servicios nuevos — no se filtra del mapa (sigue siendo útil ver dónde está). `lastUpdate` quedó
+  sin consumidor: las actualizaciones vía socket (`locationUpdated`) no traen esa marca de tiempo,
+  solo la carga inicial por REST la tiene.
+
+- **`payments` (`PaymentMethod`, 94a573e)** — 6 campos: `userId`, `metadata`, `lastUsedAt`,
+  `expiresAt`, `createdAt`, `updatedAt`. `expiresAt` se muestra en `payment_methods_screen.dart`
+  (debajo de tipo/proveedor, formateado con `intl`). **Decisión pendiente, dejada sin resolver a
+  propósito**: no se agregó lógica para deshabilitar o filtrar un método ya vencido en el selector
+  de `pay_service_screen.dart` — no está claro en el código si el backend igual permite pagar con
+  un método vencido (y esto queda solo como aviso visual) o si lo rechaza; es una decisión de
+  negocio que le corresponde a José.
+
+- **`services` (`ServiceClientSummary`, c0d37e9)** — `id`, `email`, `phoneNumber`. Sin cambio de
+  UI: se verificó que `service.client` hoy solo se usa para `clientReferenceId` (calificar al
+  cliente en `professional_services_screen.dart`), nunca se le muestra contacto al profesional.
+  Mostrarle email/teléfono del cliente es una decisión de producto (¿contacto directo? ¿requiere
+  consentimiento?) que no está resuelta en el código — se deja anotada en el docstring del modelo,
+  no se decidió acá.
+
+`check_drift` vuelve a dar `sin drift — todos los modelos mapeados coinciden con el swagger` contra
+los 72 modelos.
+
 ## 14. CI: qué encontramos y qué haría falta
 
 `.github/workflows/ci.yml` corre en `ubuntu-latest`, hace checkout SOLO de este repo (Mobile) y
