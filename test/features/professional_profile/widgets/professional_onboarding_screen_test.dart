@@ -14,11 +14,17 @@ import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 class _MockDio extends Mock implements Dio {}
 
-const _category = Category(
+final _category = Category(
   id: 3,
   referenceId: 'cat-uuid',
   name: 'Plomería',
   slug: 'plomeria',
+  sortOrder: 0,
+  status: CategoryStatus.active,
+  isVisible: true,
+  requiresVerification: false,
+  maxBudgetOptionsPerRequest: 3,
+  createdAt: DateTime.utc(2026, 8, 8),
 );
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
