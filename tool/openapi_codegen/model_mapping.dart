@@ -457,6 +457,13 @@ final List<LocalModelExemption> localModelExemptions = [
         'enum espejo, valores inline en MaterialCatalogItemResponseDTO.qualityTier.',
   ),
 
+  // ---- categories ----
+  LocalModelExemption(
+    dartFile: 'lib/features/categories/models/category.dart',
+    className: 'CategoryStatus',
+    reason: 'enum espejo, valores inline en CategoryDetailResponseDTO.status.',
+  ),
+
   // ---- contracts ----
   LocalModelExemption(
     dartFile: 'lib/features/contracts/models/contract.dart',
