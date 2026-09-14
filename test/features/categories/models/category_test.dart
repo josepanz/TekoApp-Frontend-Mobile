@@ -36,8 +36,10 @@ void main() {
       final category = Category.fromJson(json);
 
       // Assert
-      expect(category.description,
-          'Servicios de reparación e instalaciones sanitarias');
+      expect(
+        category.description,
+        'Servicios de reparación e instalaciones sanitarias',
+      );
       expect(category.sortOrder, 0);
       expect(category.status, CategoryStatus.active);
       expect(category.isVisible, isTrue);
