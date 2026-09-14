@@ -221,6 +221,12 @@
   "paymentMethodProviderRequired": "Choose a provider",
   "paymentMethodDetailLabel": "Detail (optional, e.g. last 4 digits)",
   "paymentMethodFormSubmit": "Save",
+  "paymentMethodExpiresAt": "Expires {date}",
+  "@paymentMethodExpiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "paymentMethodGenericError": "Could not save — check the entered data",
   "paymentMethodTypeCash": "Cash",
   "paymentMethodTypeCreditCard": "Credit card",

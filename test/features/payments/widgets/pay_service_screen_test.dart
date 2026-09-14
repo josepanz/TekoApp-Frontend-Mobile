@@ -84,6 +84,7 @@ Map<String, dynamic> _serviceJson({double? finalAmount = 100000}) => {
 Map<String, dynamic> _methodJson() => {
       'id': 1,
       'referenceId': 'pm-uuid-1',
+      'userId': 1,
       'name': 'Visa terminada en 4242',
       'type': 'CREDIT_CARD',
       'provider': 'STRIPE',
@@ -91,6 +92,8 @@ Map<String, dynamic> _methodJson() => {
       'isActive': true,
       'details': <String, dynamic>{},
       'externalId': null,
+      'createdAt': '2026-08-08T10:00:00.000Z',
+      'updatedAt': '2026-08-08T10:00:00.000Z',
     };
 
 void main() {

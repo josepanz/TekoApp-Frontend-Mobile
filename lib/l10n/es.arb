@@ -285,6 +285,12 @@
   "paymentMethodProviderRequired": "Elegí un proveedor",
   "paymentMethodDetailLabel": "Detalle (opcional, ej. últimos 4 dígitos)",
   "paymentMethodFormSubmit": "Guardar",
+  "paymentMethodExpiresAt": "Vence {date}",
+  "@paymentMethodExpiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "paymentMethodGenericError": "No se pudo guardar — revisá los datos ingresados",
   "paymentMethodTypeCash": "Efectivo",
   "paymentMethodTypeCreditCard": "Tarjeta de crédito",
