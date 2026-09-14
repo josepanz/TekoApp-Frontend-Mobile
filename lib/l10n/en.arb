@@ -103,6 +103,7 @@
   "nearbyProfessionalsMapTitle": "Nearby professionals",
   "nearbyProfessionalsMapError": "Couldn't load the map — check location permissions and your connection",
   "nearbyProfessionalsMapEmpty": "No professionals online nearby right now",
+  "nearbyProfessionalsMapUnavailable": "not taking new requests",
   "serviceDetailTrackingTitle": "Professional's live location",
   "serviceDetailTrackingReconnecting": "Connection lost, reconnecting…",
   "serviceDetailTrackingConnectionError": "Couldn't restore the connection",
