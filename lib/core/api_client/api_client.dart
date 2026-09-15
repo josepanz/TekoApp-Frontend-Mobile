@@ -7,6 +7,7 @@ import '../config/env.dart';
 import 'consent_required_interceptor.dart';
 import 'envelope_interceptor.dart';
 import 'locale_header_interceptor.dart';
+import 'retry_on_transient_error_interceptor.dart';
 
 /// Único lugar que conoce la URL real del backend y arma el cliente HTTP — ningún `data/` de un
 /// dominio crea su propio `Dio` (ver `.claude/rules/flutter-architecture.md`).
@@ -18,7 +19,8 @@ import 'locale_header_interceptor.dart';
 /// cualquier otro error sin reintento. Orden de interceptors: Bearer (adjunta el `accessToken`) →
 /// `x-lang` (idioma activo, para que el backend traduzca sus propios mensajes de error) →
 /// refresh-en-401 (lo renueva si hace falta) → consentimiento-en-403 (pide aceptación y reintenta)
-/// → envelope (desenvuelve `{success,data,message,timestamp,path}`, mismo contrato que
+/// → retry-transitorio (reintenta `GET`/`HEAD` que nunca llegaron a tener respuesta, ver M-02) →
+/// envelope (desenvuelve `{success,data,message,timestamp,path}`, mismo contrato que
 /// `core/api-client/client.ts` en TekoApp-Web).
 class ApiClient {
   ApiClient({
@@ -37,6 +39,7 @@ class ApiClient {
         ConsentRequiredInterceptor(_dio, onConsentRequired),
       );
     }
+    _dio.interceptors.add(RetryOnTransientErrorInterceptor(_dio));
     _dio.interceptors.add(EnvelopeInterceptor());
   }
 
@@ -47,7 +50,11 @@ class ApiClient {
   static Dio _buildDefaultDio() {
     return Dio(
       BaseOptions(
-        baseUrl: Env.apiBaseUrl,
+        // El backend estandarizó TODAS sus rutas bajo `/v1` (`defaultVersion: '1'` en su
+        // `main.ts`). Se centraliza acá, una sola vez, en vez de escribirlo a mano en cada
+        // call-site (así quedaba antes en auth/onboarding/uploads, ver M-07 del WORKPLAN de
+        // platform-hardening-2026-09) — ningún path de `data/` debe empezar con `/v1` de nuevo.
+        baseUrl: '${Env.apiBaseUrl}/v1',
         // Render free tier (backend real de todos los ambientes hoy, ver openspec/decisions.md)
         // apaga la instancia tras inactividad y tarda en "despertar" — medido en la práctica:
         // ~63s en un cold start real (2026-09-01), sube a <1s ya despierta. Con el timeout viejo

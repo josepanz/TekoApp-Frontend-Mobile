@@ -86,23 +86,30 @@ class _PublicDocumentTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
+    final fileKey = document.fileKey;
+
     return Row(
       children: [
         Expanded(child: Text(document.professionalDocumentType.name)),
-        TextButton(
-          key: Key('view_professional_document_${document.referenceId}'),
-          onPressed: () async {
-            final url = await ref.read(
-              professionalDocumentFileUrlProvider(document.fileKey).future,
-            );
-            if (!context.mounted) return;
-            await launchUrl(
-              Uri.parse(url),
-              mode: LaunchMode.externalApplication,
-            );
-          },
-          child: Text(l10n.professionalDocumentViewButton),
-        ),
+        // `fileKey` es `null` cuando la cuenta del profesional fue anonimizada (I-01): el objeto
+        // real ya no existe en S3, así que no hay nada que resolver ni mostrar — se omite el
+        // botón en vez de ofrecer una acción que fallaría (ver M-04, migración de
+        // `professional_documents` a codegen, que expuso este campo como nullable).
+        if (fileKey != null)
+          TextButton(
+            key: Key('view_professional_document_${document.referenceId}'),
+            onPressed: () async {
+              final url = await ref.read(
+                professionalDocumentFileUrlProvider(fileKey).future,
+              );
+              if (!context.mounted) return;
+              await launchUrl(
+                Uri.parse(url),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+            child: Text(l10n.professionalDocumentViewButton),
+          ),
       ],
     );
   }

@@ -1,0 +1,861 @@
+// Tests de `tool/openapi_codegen/src/drift_checker.dart` — el motor de comparación de
+// `check_drift.dart`. Cubre cada clase de drift que puede reportar (campo faltante, campo sobrante,
+// discrepancia de tipo, discrepancia de nulabilidad en ambas direcciones, schema/modelo no
+// encontrado, exenciones, renombres) y confirma que NO da falsos positivos sobre la forma real de
+// `RatingDetailResponseDTO`/`Rating` (un modelo que ya sabemos sano, ver
+// `test/tool/openapi_codegen/model_generator_test.dart` y CODEGEN.md §7).
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../../tool/openapi_codegen/model_mapping.dart';
+import '../../../tool/openapi_codegen/src/drift_checker.dart';
+
+void main() {
+  group('categorías de campo', () {
+    test('number del schema es compatible con int y con double del modelo', () {
+      expect(
+        categoriesCompatible(FieldCategory.number, FieldCategory.number),
+        isTrue,
+      );
+      expect(dartCategoryOf('int'), FieldCategory.number);
+      expect(dartCategoryOf('double'), FieldCategory.number);
+    });
+
+    test(r'un $ref del schema es compatible con un tipo custom o un Map', () {
+      final schema = {r'$ref': '#/components/schemas/TipResponseDTO'};
+      expect(schemaCategoryOf(schema), FieldCategory.ref);
+      expect(
+        categoriesCompatible(FieldCategory.ref, FieldCategory.custom),
+        isTrue,
+      );
+      expect(
+        categoriesCompatible(FieldCategory.ref, FieldCategory.object),
+        isTrue,
+      );
+      expect(
+        categoriesCompatible(FieldCategory.ref, FieldCategory.string),
+        isFalse,
+      );
+    });
+
+    test(r'array de $ref es compatible con List<ClaseCustom>', () {
+      final schema = {
+        'type': 'array',
+        'items': {r'$ref': '#/components/schemas/ContractLineItemSnapshotDTO'},
+      };
+      expect(schemaCategoryOf(schema), FieldCategory.arrayRef);
+      expect(
+        dartCategoryOf('List<ContractLineItemSnapshot>'),
+        FieldCategory.arrayRef,
+      );
+      expect(
+        categoriesCompatible(FieldCategory.arrayRef, FieldCategory.arrayRef),
+        isTrue,
+      );
+    });
+
+    test('boolean del schema NO es compatible con String del modelo', () {
+      expect(
+        categoriesCompatible(FieldCategory.boolean, FieldCategory.string),
+        isFalse,
+      );
+    });
+  });
+
+  group('checkMapping — sin falsos positivos sobre un modelo sano', () {
+    test('Rating vs RatingDetailResponseDTO no reporta drift', () {
+      final schemas = {
+        'RatingDetailResponseDTO': {
+          'type': 'object',
+          'properties': {
+            'id': {'type': 'number'},
+            'referenceId': {'type': 'string'},
+            'userId': {'type': 'number'},
+            'type': {
+              'type': 'string',
+              'enum': ['CLIENT_TO_PROFESSIONAL', 'PROFESSIONAL_TO_CLIENT'],
+            },
+            'rating': {'type': 'number'},
+            'review': {'type': 'string'},
+            'criteria': {'type': 'object'},
+            'isActive': {'type': 'boolean'},
+            'createdAt': {'type': 'string', 'format': 'date-time'},
+          },
+          'required': [
+            'id',
+            'referenceId',
+            'type',
+            'rating',
+            'isActive',
+            'createdAt',
+          ],
+        },
+      };
+
+      const source = '''
+class Rating {
+  const Rating({
+    required this.id,
+    required this.referenceId,
+    required this.type,
+    required this.rating,
+    required this.isActive,
+    required this.createdAt,
+    this.userId,
+    this.review,
+    this.criteria,
+  });
+
+  final int id;
+  final String referenceId;
+  final int? userId;
+  final RatingType type;
+  final double rating;
+  final String? review;
+  final Map<String, dynamic>? criteria;
+  final bool isActive;
+  final DateTime createdAt;
+}
+''';
+
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'lib/features/ratings/models/rating.dart',
+          className: 'Rating',
+          schemaName: 'RatingDetailResponseDTO',
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test(
+      'LoginResult vs LoginUserResponseDTO no reporta drift (regresión del falso '
+      'positivo documentado en CODEGEN.md §12.4: el mapeo real vive en '
+      'AuthRepository.login(), no en un fromJson)',
+      () {
+        final schemas = {
+          'LoginUserResponseDTO': {
+            'type': 'object',
+            'properties': {
+              'login': {'type': 'boolean'},
+              'accessToken': {'type': 'string', 'nullable': true},
+              'refreshToken': {'type': 'string', 'nullable': true},
+              'requiredNewPassword': {'type': 'boolean', 'nullable': true},
+            },
+            'required': ['login'],
+          },
+        };
+
+        // Mismo shape que lib/features/auth/models/login_result.dart: sin fromJson, `success`/
+        // `requiresNewPassword` son los nombres Dart de `login`/`requiredNewPassword`.
+        const source = '''
+class LoginResult {
+  const LoginResult({
+    required this.success,
+    required this.requiresNewPassword,
+    this.accessToken,
+  });
+
+  final bool success;
+  final bool requiresNewPassword;
+  final String? accessToken;
+}
+''';
+
+        // Usa la entrada REAL de model_mapping.dart, no una reconstruida a mano acá — si alguien
+        // rompe este mapeo (o el archivo real deja de coincidir con este shape), este test lo
+        // detecta.
+        final mapping = modelMappings.firstWhere(
+          (m) => m.className == 'LoginResult',
+        );
+
+        final findings = checkMapping(
+          mapping: mapping,
+          schemas: schemas,
+          dartSource: source,
+        );
+
+        expect(findings, isEmpty);
+      },
+    );
+  });
+
+  group('checkMapping — detecta cada clase de drift', () {
+    Map<String, dynamic> schemaWith(
+      Map<String, dynamic> properties,
+      List<String> required,
+    ) {
+      return {
+        'FakeDTO': {
+          'type': 'object',
+          'properties': properties,
+          'required': required,
+        },
+      };
+    }
+
+    test('campo del schema ausente en el modelo (patrón B-01/M-05)', () {
+      final schemas = schemaWith({
+        'code': {'type': 'string'},
+        'discountPercentage': {'type': 'number'},
+      }, [
+        'code',
+      ]);
+      const source = '''
+class Fake {
+  const Fake({required this.code});
+  final String code;
+}
+''';
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'Fake',
+          schemaName: 'FakeDTO',
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.kind, DriftKind.missingInModel);
+      expect(findings.single.field, 'discountPercentage');
+      expect(findings.single.severity, Severity.critical);
+    });
+
+    test('campo del modelo ausente en el schema', () {
+      final schemas = schemaWith({
+        'code': {'type': 'string'},
+      }, [
+        'code',
+      ]);
+      const source = '''
+class Fake {
+  const Fake({required this.code, required this.legacyField});
+  final String code;
+  final String legacyField;
+}
+''';
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'Fake',
+          schemaName: 'FakeDTO',
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.kind, DriftKind.extraInModel);
+      expect(findings.single.field, 'legacyField');
+      expect(findings.single.severity, Severity.warn);
+    });
+
+    test('discrepancia de tipo (schema array, modelo escalar)', () {
+      final schemas = schemaWith({
+        'tags': {
+          'type': 'array',
+          'items': {'type': 'string'},
+        },
+      }, [
+        'tags',
+      ]);
+      const source = '''
+class Fake {
+  const Fake({required this.tags});
+  final String tags;
+}
+''';
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'Fake',
+          schemaName: 'FakeDTO',
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.kind, DriftKind.typeMismatch);
+    });
+
+    test(
+      'nulabilidad: schema nullable pero modelo no-nullable es CRÍTICO (caso fileKey)',
+      () {
+        final schemas = schemaWith({
+          'fileKey': {'type': 'string', 'nullable': true},
+        }, [
+          'fileKey',
+        ]);
+        const source = '''
+class Fake {
+  const Fake({required this.fileKey});
+  final String fileKey;
+}
+''';
+        final findings = checkMapping(
+          mapping: const ModelMapping(
+            dartFile: 'fake.dart',
+            className: 'Fake',
+            schemaName: 'FakeDTO',
+          ),
+          schemas: schemas,
+          dartSource: source,
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.nullabilityMismatch);
+        expect(findings.single.severity, Severity.critical);
+      },
+    );
+
+    test(
+      'nulabilidad: schema no-nullable pero modelo nullable es ADVERTENCIA (defensivo de más)',
+      () {
+        final schemas = schemaWith({
+          'code': {'type': 'string'},
+        }, [
+          'code',
+        ]);
+        const source = '''
+class Fake {
+  const Fake({this.code});
+  final String? code;
+}
+''';
+        final findings = checkMapping(
+          mapping: const ModelMapping(
+            dartFile: 'fake.dart',
+            className: 'Fake',
+            schemaName: 'FakeDTO',
+          ),
+          schemas: schemas,
+          dartSource: source,
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.nullabilityMismatch);
+        expect(findings.single.severity, Severity.warn);
+      },
+    );
+
+    test('schema no encontrado en el documento OpenAPI', () {
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'Fake',
+          schemaName: 'NoExiste',
+        ),
+        schemas: const {},
+        dartSource: 'class Fake { const Fake(); }',
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.kind, DriftKind.schemaNotFound);
+    });
+
+    test('clase no encontrada en el archivo Dart', () {
+      final schemas = schemaWith({
+        'code': {'type': 'string'},
+      }, [
+        'code',
+      ]);
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'NoExiste',
+          schemaName: 'FakeDTO',
+        ),
+        schemas: schemas,
+        dartSource: 'class Fake { const Fake(); }',
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.kind, DriftKind.modelNotFound);
+    });
+  });
+
+  group('renameFields', () {
+    test('un campo renombrado no se reporta como faltante ni como sobrante',
+        () {
+      final schemas = {
+        'ServiceDetailResponseDTO': {
+          'type': 'object',
+          'properties': {
+            'users': {
+              r'$ref': '#/components/schemas/ServiceUserSummaryResponseDTO',
+            },
+          },
+          'required': ['users'],
+        },
+      };
+      const source = '''
+class Service {
+  const Service({required this.client});
+  final ServiceClientSummary client;
+}
+''';
+      final findings = checkMapping(
+        mapping: const ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'Service',
+          schemaName: 'ServiceDetailResponseDTO',
+          renameFields: {'users': 'client'},
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, isEmpty);
+    });
+  });
+
+  group('exenciones', () {
+    test('un campo del schema exento no se reporta como faltante', () {
+      final schemas = {
+        'LoginUserResponseDTO': {
+          'type': 'object',
+          'properties': {
+            'login': {'type': 'boolean'},
+            'refreshToken': {'type': 'string', 'nullable': true},
+          },
+          'required': ['login'],
+        },
+      };
+      const source = '''
+class LoginResult {
+  const LoginResult({required this.login});
+  final bool login;
+}
+''';
+      final findings = checkMapping(
+        mapping: ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'LoginResult',
+          schemaName: 'LoginUserResponseDTO',
+          schemaFieldExemptions: [
+            FieldExemption(
+              field: 'refreshToken',
+              reason: 'nunca viaja en el body, solo cookie httpOnly.',
+            ),
+          ],
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test('un campo del modelo exento no se reporta como sobrante', () {
+      final schemas = {
+        'FakeDTO': {
+          'type': 'object',
+          'properties': {
+            'code': {'type': 'string'},
+          },
+          'required': ['code'],
+        },
+      };
+      const source = '''
+class Fake {
+  const Fake({required this.code, required this.localOnly});
+  final String code;
+  final String localOnly;
+}
+''';
+      final findings = checkMapping(
+        mapping: ModelMapping(
+          dartFile: 'fake.dart',
+          className: 'Fake',
+          schemaName: 'FakeDTO',
+          modelFieldExemptions: [
+            FieldExemption(
+              field: 'localOnly',
+              reason: 'campo derivado en el cliente, no viene del backend.',
+            ),
+          ],
+        ),
+        schemas: schemas,
+        dartSource: source,
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test('FieldExemption sin motivo real tira ArgumentError', () {
+      expect(
+        () => FieldExemption(field: 'x', reason: ''),
+        throwsArgumentError,
+      );
+      expect(
+        () => FieldExemption(field: 'x', reason: 'no'),
+        throwsArgumentError,
+      );
+    });
+
+    test('LocalModelExemption sin motivo real tira ArgumentError', () {
+      expect(
+        () => LocalModelExemption(dartFile: 'fake.dart', reason: ''),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('checkCoverage', () {
+    test('una clase sin mapear ni exenta se reporta como SIN REGISTRAR', () {
+      final findings = checkCoverage(
+        mappings: const [],
+        exemptions: const [],
+        modelFileSources: {
+          'lib/features/foo/models/foo.dart': 'class Foo { const Foo(); }',
+        },
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.kind, DriftKind.unregisteredModel);
+      expect(findings.single.className, 'Foo');
+    });
+
+    test('una exención de archivo completo cubre todas sus clases/enums', () {
+      final findings = checkCoverage(
+        mappings: const [],
+        exemptions: [
+          LocalModelExemption(
+            dartFile: 'lib/features/foo/models/foo_failure.dart',
+            reason: 'jerarquía de errores de dominio, sin schema propio.',
+          ),
+        ],
+        modelFileSources: {
+          'lib/features/foo/models/foo_failure.dart': '''
+sealed class FooFailure implements Exception {}
+class FooConflictFailure extends FooFailure {}
+''',
+        },
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test(
+        'una exención de una clase puntual no cubre las demás del mismo archivo',
+        () {
+      final findings = checkCoverage(
+        mappings: const [
+          ModelMapping(
+            dartFile: 'lib/features/foo/models/foo.dart',
+            className: 'FooMapped',
+            schemaName: 'FooDTO',
+          ),
+        ],
+        exemptions: [
+          LocalModelExemption(
+            dartFile: 'lib/features/foo/models/foo.dart',
+            className: 'FooLocalOnly',
+            reason: 'estado local de UI, sin contraparte en el backend.',
+          ),
+        ],
+        modelFileSources: {
+          'lib/features/foo/models/foo.dart': '''
+class FooMapped { const FooMapped(); }
+class FooLocalOnly { const FooLocalOnly(); }
+class FooForgotten { const FooForgotten(); }
+''',
+        },
+      );
+
+      expect(findings, hasLength(1));
+      expect(findings.single.className, 'FooForgotten');
+    });
+  });
+
+  group('checkEnumFields — comparación de VALORES de enum (v2, §11.1)', () {
+    const mapping = ModelMapping(
+      dartFile:
+          'lib/features/legal_consents/models/legal_document_version.dart',
+      className: 'LegalDocumentVersion',
+      schemaName: 'LegalDocumentVersionResponseDTO',
+      enumFields: {
+        'documentType': EnumFieldMapping(
+          dartFile:
+              'lib/features/legal_consents/models/legal_document_type.dart',
+          enumClassName: 'LegalDocumentType',
+        ),
+      },
+    );
+
+    const strictEnumSource = '''
+enum LegalDocumentType {
+  termsOfService,
+  privacyPolicy,
+  dataProcessingConsent,
+  imageUsageConsent;
+
+  static LegalDocumentType fromJson(String value) {
+    switch (value) {
+      case 'TERMS_OF_SERVICE':
+        return LegalDocumentType.termsOfService;
+      case 'PRIVACY_POLICY':
+        return LegalDocumentType.privacyPolicy;
+      case 'DATA_PROCESSING_CONSENT':
+        return LegalDocumentType.dataProcessingConsent;
+      case 'IMAGE_USAGE_CONSENT':
+        return LegalDocumentType.imageUsageConsent;
+      default:
+        throw ArgumentError('LegalDocumentType desconocido: \$value');
+    }
+  }
+}
+''';
+
+    test(
+      'caso real: 4 valores Dart contra 6 del schema reporta 2 hallazgos CRÍTICOS '
+      '(el fromJson relanza ante un valor desconocido)',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'documentType': {
+              'type': 'string',
+              'enum': [
+                'TERMS_OF_SERVICE',
+                'PRIVACY_POLICY',
+                'DATA_PROCESSING_CONSENT',
+                'IMAGE_USAGE_CONSENT',
+                'SERVICE_CONTRACT_TERMS',
+                'USER_CONTENT_LIABILITY_DISCLAIMER',
+              ],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/legal_document_type.dart':
+                strictEnumSource,
+          },
+        );
+
+        expect(findings, hasLength(2));
+        expect(
+          findings,
+          everyElement(
+            predicate<DriftFinding>(
+              (f) =>
+                  f.kind == DriftKind.enumValueMissingInModel &&
+                  f.severity == Severity.critical,
+            ),
+          ),
+        );
+        expect(
+          findings.map((f) => f.expected),
+          containsAll([
+            'SERVICE_CONTRACT_TERMS',
+            'USER_CONTENT_LIABILITY_DISCLAIMER',
+          ]),
+        );
+      },
+    );
+
+    test('no reporta nada cuando los valores coinciden exactamente', () {
+      final schema = {
+        'type': 'object',
+        'properties': {
+          'documentType': {
+            'type': 'string',
+            'enum': [
+              'TERMS_OF_SERVICE',
+              'PRIVACY_POLICY',
+              'DATA_PROCESSING_CONSENT',
+              'IMAGE_USAGE_CONSENT',
+            ],
+          },
+        },
+      };
+
+      final findings = checkEnumFields(
+        mapping: mapping,
+        schema: schema,
+        enumFileSources: {
+          'lib/features/legal_consents/models/legal_document_type.dart':
+              strictEnumSource,
+        },
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test(
+      'un catch-all silencioso (sin throw) baja la severidad a ADVERTENCIA',
+      () {
+        const lenientEnumSource = '''
+enum AiDisclosureEntityType {
+  serviceDescription,
+  other;
+
+  static AiDisclosureEntityType fromJson(String value) {
+    switch (value) {
+      case 'SERVICE_DESCRIPTION':
+        return AiDisclosureEntityType.serviceDescription;
+      default:
+        return AiDisclosureEntityType.other;
+    }
+  }
+}
+''';
+        const lenientMapping = ModelMapping(
+          dartFile: 'lib/features/ai_disclosures/models/ai_disclosure.dart',
+          className: 'AiDisclosure',
+          schemaName: 'AiDisclosureResponseDTO',
+          enumFields: {
+            'entityType': EnumFieldMapping(
+              dartFile:
+                  'lib/features/legal_consents/models/ai_disclosure_entity_type.dart',
+              enumClassName: 'AiDisclosureEntityType',
+            ),
+          },
+        );
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'entityType': {
+              'type': 'string',
+              'enum': ['SERVICE_DESCRIPTION', 'OTHER'],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: lenientMapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/ai_disclosure_entity_type.dart':
+                lenientEnumSource,
+          },
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.enumValueMissingInModel);
+        expect(findings.single.severity, Severity.warn);
+        expect(findings.single.expected, 'OTHER');
+      },
+    );
+
+    test(
+      'un literal que el Dart reconoce pero el schema ya no declara es ADVERTENCIA '
+      '(sobra, no crashea)',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'documentType': {
+              'type': 'string',
+              'enum': ['TERMS_OF_SERVICE', 'PRIVACY_POLICY'],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/legal_document_type.dart':
+                strictEnumSource,
+          },
+        );
+
+        expect(
+          findings.every(
+            (f) =>
+                f.kind == DriftKind.enumValueExtraInModel &&
+                f.severity == Severity.warn,
+          ),
+          isTrue,
+        );
+        // DATA_PROCESSING_CONSENT, IMAGE_USAGE_CONSENT
+        expect(findings, hasLength(2));
+      },
+    );
+
+    test(
+      'campo declarado en enumFields que ya no es un enum en el schema real',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            // sin `enum:` — el schema cambió.
+            'documentType': {'type': 'string'},
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/legal_document_type.dart':
+                strictEnumSource,
+          },
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.enumFieldNotEnum);
+      },
+    );
+
+    test(
+      'un enum cuyo fromJson no se pudo parsear se reporta explícito, nunca en silencio',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'documentType': {
+              'type': 'string',
+              'enum': ['TERMS_OF_SERVICE'],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            // Sin fromJson reconocible (ej. DeviceType, que solo tiene toJson).
+            'lib/features/legal_consents/models/legal_document_type.dart': '''
+enum LegalDocumentType {
+  termsOfService;
+  String toJson() => 'TERMS_OF_SERVICE';
+}
+''',
+          },
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.enumFromJsonNotParseable);
+        expect(findings.single.expected, 'LegalDocumentType');
+      },
+    );
+
+    test('un ModelMapping sin enumFields no produce ningún hallazgo', () {
+      const noEnumMapping = ModelMapping(
+        dartFile: 'lib/features/foo/models/foo.dart',
+        className: 'Foo',
+        schemaName: 'FooDTO',
+      );
+      final findings = checkEnumFields(
+        mapping: noEnumMapping,
+        schema: const {
+          'type': 'object',
+          'properties': <String, dynamic>{},
+        },
+        enumFileSources: const {},
+      );
+      expect(findings, isEmpty);
+    });
+  });
+}

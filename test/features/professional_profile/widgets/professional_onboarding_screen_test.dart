@@ -14,11 +14,17 @@ import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 class _MockDio extends Mock implements Dio {}
 
-const _category = Category(
+final _category = Category(
   id: 3,
   referenceId: 'cat-uuid',
   name: 'Plomería',
   slug: 'plomeria',
+  sortOrder: 0,
+  status: CategoryStatus.active,
+  isVisible: true,
+  requiresVerification: false,
+  maxBudgetOptionsPerRequest: 3,
+  createdAt: DateTime.utc(2026, 8, 8),
 );
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
@@ -123,15 +129,34 @@ void main() {
         data: {
           'id': 2,
           'referenceId': 'prof-uuid-1',
+          'userId': 10,
           'categoryId': 3,
           'description': 'Reparaciones e instalaciones',
           'hourlyRate': 50000,
           'fixedRate': null,
           'skills': <String>[],
-          'yearsOfExperience': null,
+          'certifications': <String>[],
+          'yearsOfExperience': 0,
           'status': 'PENDING',
           'isAvailable': false,
           'isOnline': false,
+          'verificationStatus': 'UNVERIFIED',
+          'requiredDocumentsVerified': false,
+          'totalServices': 0,
+          'averageRating': 0,
+          'totalRatings': 0,
+          'createdAt': '2026-01-01T00:00:00.000Z',
+          'user': {
+            'id': 10,
+            'email': 'profesional@example.com',
+            'firstName': 'Ana',
+            'lastName': 'Pérez',
+          },
+          'category': {
+            'id': 3,
+            'name': 'Plomería',
+            'slug': 'plomeria',
+          },
         },
       ),
     );

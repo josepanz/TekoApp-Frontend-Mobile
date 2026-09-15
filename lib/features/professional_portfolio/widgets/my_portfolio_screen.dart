@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/resolved_network_image.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
@@ -96,22 +97,11 @@ class _PortfolioItemCard extends ConsumerWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: switch (fileUrlAsync) {
-              AsyncData(:final value) => Image.network(
-                  value,
-                  width: 72,
-                  height: 72,
-                  fit: BoxFit.cover,
-                ),
-              // Placeholder estático (no un spinner animado): evita el problema clásico de
-              // `pumpAndSettle()` con animaciones indefinidas en los tests de esta pantalla — ver
-              // `teko_avatar_test.dart` para el mismo criterio de no mockear `Image.network`.
-              _ => Container(
-                  width: 72,
-                  height: 72,
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                ),
-            },
+            child: ResolvedNetworkImage(
+              urlAsync: fileUrlAsync,
+              width: 72,
+              height: 72,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

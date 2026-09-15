@@ -40,13 +40,26 @@ class _ConsentGatewayState extends ConsumerState<ConsentGateway> {
   }
 
   Future<void> _handleConsentRequired() async {
-    if (_isShowingConsentFlow || !mounted) return;
+    if (_isShowingConsentFlow || !mounted) {
+      // No podemos mostrar la pantalla de consentimiento (ya hay una abierta, o este
+      // widget ya no está montado): resolvemos "no aceptó" para no dejar el Completer
+      // del bridge colgado para siempre. `resolve` es idempotente si ya se completó.
+      ref.read(consentRequiredBridgeProvider).resolve(false);
+      return;
+    }
     _isShowingConsentFlow = true;
-    final accepted = await GoRouter.of(
-      context,
-    ).push<bool>('/legal/consentimiento');
-    _isShowingConsentFlow = false;
-    ref.read(consentRequiredBridgeProvider).resolve(accepted ?? false);
+    var accepted = false;
+    try {
+      accepted =
+          await GoRouter.of(context).push<bool>('/legal/consentimiento') ??
+              false;
+    } catch (_) {
+      // Si el push falla (p.ej. la ruta lanza), no dejamos el Completer sin resolver.
+      accepted = false;
+    } finally {
+      _isShowingConsentFlow = false;
+      ref.read(consentRequiredBridgeProvider).resolve(accepted);
+    }
   }
 
   @override

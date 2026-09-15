@@ -28,8 +28,16 @@ Map<String, dynamic> _serviceJson({
       'latitude': -25.2,
       'longitude': -57.5,
       'address': 'Av. España 1234',
+      'images': <String>[],
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
+      'users': {
+        'id': 10,
+        'referenceId': 'client-uuid-default',
+        'firstName': 'Cliente',
+        'lastName': 'Default',
+        'email': 'cliente-default@example.com',
+      },
     };
 
 Future<void> _pumpScreen(WidgetTester tester, _MockDio dio) async {
@@ -201,9 +209,11 @@ void main() {
   Map<String, dynamic> completedServiceWithClientJson() {
     final json = _serviceJson(id: 'service-uuid-1', status: 'COMPLETED');
     json['users'] = {
+      'id': 11,
       'referenceId': 'client-uuid-1',
       'firstName': 'Juan',
       'lastName': 'Pérez',
+      'email': 'juan@example.com',
     };
     return json;
   }
@@ -284,6 +294,7 @@ void main() {
           'rating': 4,
           'review': null,
           'isAnonymous': false,
+          'isReported': false,
           'isActive': true,
           'createdAt': '2026-08-08T10:00:00.000Z',
         },

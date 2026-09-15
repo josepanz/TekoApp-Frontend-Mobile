@@ -95,6 +95,7 @@ void main() {
               'longitude': -57.62,
               'distanceKm': 1.2,
               'isOnline': true,
+              'isAvailable': true,
               'averageRating': 4.5,
             },
           ],

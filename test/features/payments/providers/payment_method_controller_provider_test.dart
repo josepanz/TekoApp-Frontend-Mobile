@@ -12,6 +12,7 @@ class _MockDio extends Mock implements Dio {}
 Map<String, dynamic> _paymentMethodJson() => {
       'id': 1,
       'referenceId': 'pm-uuid-1',
+      'userId': 1,
       'name': 'Visa terminada en 4242',
       'type': 'CREDIT_CARD',
       'provider': 'STRIPE',
@@ -19,6 +20,8 @@ Map<String, dynamic> _paymentMethodJson() => {
       'isActive': true,
       'details': {'cardLast4': '4242'},
       'externalId': null,
+      'createdAt': '2026-08-08T10:00:00.000Z',
+      'updatedAt': '2026-08-08T10:00:00.000Z',
     };
 
 void main() {

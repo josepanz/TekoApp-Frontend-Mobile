@@ -1264,3 +1264,58 @@ esa branch, mismo criterio que cualquier feature nueva de backend todavía no me
 
 **Verificado**: `flutter analyze` 0 issues, `flutter test` 410/410 (12 nuevos: repositorio,
 controller de subida, widget de `MyPortfolioScreen`).
+
+## Ofuscación del binario de release — decidido e implementado 2026-09-06 (I-02)
+
+Cierra la limitación documentada en `.claude/rules/auth.md`, sección "Qué NO replicar del BFF de
+`TekoApp-Web`": sin servidor intermedio, el secreto de Basic Auth de cliente (`BASIC_AUTH_CLIENT_ID`/
+`BASIC_AUTH_CLIENT_SECRET`, ver `Env` en `lib/core/config/env.dart`) entra por `--dart-define` y
+queda embebido en el binario.
+
+**Decisión**: `flutter build apk/appbundle/ipa --release` en `.github/workflows/release.yml` ahora
+llevan `--obfuscate --split-debug-info=build/symbols/<plataforma>`, con los símbolos archivados
+como artifact del workflow (`android-debug-symbols-<version>`/`ios-debug-symbols-<version>`).
+
+**Qué NO resuelve, a propósito** (no confundir con una solución): `--obfuscate` renombra símbolos
+Dart (nombres de clases/métodos) en el snapshot AOT compilado — **no** elimina ni cifra el
+contenido de un string constante. El valor literal del secreto (embebido vía
+`String.fromEnvironment`) sigue siendo bytes extraíbles con `strings` sobre el binario, igual que
+antes. Lo que cambia es que ese string ya no aparece rodeado de nombres de clase/método legibles
+que ayuden a un atacante a ubicarlo rápido — sube el costo de encontrarlo de trivial a molesto,
+nunca lo vuelve imposible. La única forma real de eliminar el riesgo es un BFF (ver `TekoApp-Web`),
+explícitamente descartado para Mobile por alcance (`.claude/rules/auth.md`).
+
+**Por qué no `build.yml`** (a diferencia de lo que asumía el WORKPLAN original): ese workflow solo
+compila `--debug` (Android) y `--no-codesign` para simulador (iOS) — validación de compilación, sin
+firma, no genera un binario distribuible. La ofuscación es un concern de release, no de CI de
+validación; agregarla ahí no protegería nada real y solo agregaría ruido a builds de humo.
+
+No se tocó `env.dart` — el fix es enteramente a nivel de flags de build, no de código Dart.
+
+## Versionado centralizado de API (`/v1`) — implementado 2026-09-07 (I-04)
+
+El backend finalizó su corte a versionado de todas las rutas (`defaultVersion: '1'` en `src/main.ts` de TekoApp-Backend, commits `bedcca1`/`7e22526`). Antes, este repo tenía `/v1` escrito a mano solo en 3 familias de rutas (auth, onboarding, uploads — trabajo pendiente de M-07 que quedó documentado); todo el resto de endpoints se llamaba sin versión. Ahora el 100% de las rutas viajan con el prefijo, entonces centralizar en un único punto de origen evita errores de sincronización entre ambos repos.
+
+**Decisión**: el `baseUrl` se arma en UN SOLO lugar, `lib/core/api_client/api_client.dart`, dentro de `_buildDefaultDio()`: `baseUrl: '${Env.apiBaseUrl}/v1'`. Se eliminaron 15 referencias hardcodeadas de `/v1/` en: `lib/features/auth/data/auth_repository.dart` (5 rutas: public-key, nonce, login, onboarding, scope), `lib/core/auth/refresh_token_interceptor.dart` (5: 4 en el set `_excludedPaths` más la ruta POST de refresh), `lib/features/profile/data/profile_repository.dart` (2: auth/me, uploads/avatar), `lib/features/professional_documents/data/professional_documents_repository.dart` (1), `lib/features/service_progress/data/service_progress_repository.dart` (2), y `lib/features/professional_portfolio/data/professional_portfolio_repository.dart` (1).
+
+**Dato técnico crítico** (verificado contra Dio 5.11.0): el getter `RequestOptions.uri` del interceptor recibe `requestOptions.path` exactamente como el string literal pasado a `dio.get(path)` — el `baseUrl` nunca se reescribe dentro de `path`, solo se concatena al resolver `.uri`. Por eso el interceptor de refresh tuvo que perder también el `/v1`: `_excludedPaths` quedó `{'/auth/login', '/auth/nonce', '/auth/public-key', '/auth/refresh-token'}` (sin versión). Si alguien vuelve a poner `/v1` manualmente en estos paths, el matcheo del interceptor falla silenciosamente y el refresh de token se rompe sin avisar. El interceptor de consentimiento (`consent_required_interceptor.dart`) no necesitó cambios: su `_excludedPathPrefix` nunca llevó `/v1` a mano.
+
+Los mocks de 5 archivos de test se alinearon; el fixture de codegen (`tool/openapi_codegen/fixtures/swagger.local-example.json`) solo define schemas de modelos, no paths de OpenAPI — no hubo cambios ahí.
+
+**Verificado**: `flutter analyze` 0 issues, `flutter test` 448/448 en verde, diff limpio con `dart format`.
+
+## Login biométrico opt-in — implementado 2026-09-07 (I-05 + configuración nativa 2a01885)
+
+Login con Face ID / huella dactilar, activado solo tras un logout explícito. Nunca aparece en la restauración transparente de sesión (el comportamiento normal es que al abrir la app la sesión se restaura automáticamente sin fricción — el biométrico solo suma valor si el usuario cerró sesión a propósito).
+
+**Spec**: implementado según su propia especificación en `openspec/specs/authentication.md`. El flujo es: (1) usuario hace login exitoso con contraseña, (2) se presenta un diálogo opt-in "¿Usar rostro o huella la próxima vez?", (3) si acepta, se guarda la credencial (usuario + contraseña hasheada con `FlutterSecureStorage`) y se arma el `BiometricLoginService`; (4) en la siguiente reapertura de la app, si hubo logout explícito antes, el interceptor de auth lo detecta en la restauración de sesión fallida y muestra el botón "Ingresar con biometría", (5) el usuario toca el botón, se autentica con local_auth (Face ID/Touch ID/fingerprint según plataforma), y se restaura automáticamente.
+
+**Implementación**: nuevo `BiometricLoginService` en `lib/core/biometric/`, dependencia `local_auth: ^3.0.2`, almacenamiento de credenciales vía `AuthRepository` (credencial no viaja en sesión, se guarda en Secure Storage con la misma clave que el access token), diálogo opt-in en `login_screen.dart` tras login exitoso, y switch de desactivación en `profile_screen.dart` (solo desactivar, no reactivar — una vez rechazado el opt-in, no vuelve a preguntar).
+
+Timeouts explícitos: 5s para `getAvailableBiometrics()` (chequeo de capacidad del device), 60s para `authenticate()` (evita cuelgues del platform channel, mismo patrón defensivo que el fix de M-06 en `consent_required_interceptor.dart`). El flujo de opt-in está envuelto en try/catch — ninguna excepción de biometría puede bloquear un login real.
+
+**Configuración nativa** (sin ella, los tests pasan pero falla en device real): (a) `android/app/src/main/kotlin/py/com/tekoapp/mobile/MainActivity.kt` debe extender `FlutterFragmentActivity` en lugar de `FlutterActivity` — el plugin `local_auth` lo exige como paso de setup obligatorio; sin eso, `authenticate()` falla en runtime con error `no_fragment_activity`. (b) Permiso `USE_BIOMETRIC` agregado a `android/app/src/main/AndroidManifest.xml`. (c) Clave `NSFaceIDUsageDescription` en `ios/Runner/Info.plist` con el texto "Usá tu rostro o huella para volver a entrar a tu cuenta." — sin esa clave, iOS mata la app en runtime cuando se invoca Face ID (es un kill del sistema, no es un error manejable, mismo patrón de bug que B-02 con la cámara).
+
+**Lección central**: el "cuelgue infinito del platform channel de local_auth" que se encontró al implementar era precisamente el síntoma de esta falta de configuración nativa. Los timeouts se mantienen como defensa (mismo criterio que el fix de M-06), pero la causa raíz era `FlutterActivity`. Regla general: al agregar un plugin de Flutter que declare requisitos de configuración nativa, los tests unitarios NO la ejercitan — hay que leer el setup del plugin y verificar en un device real.
+
+**Verificación pendiente**: no se probó en dispositivo Android real (no había conectado via `adb devices`) ni en iOS (requiere Mac). Mismo criterio que se aplicó con B-02 en la memoria. `flutter analyze` 0 issues, `dart format` limpio, `flutter test` 476/476 (28 nuevos: `BiometricLoginService`, flows opt-in/logout/biometric-restore), pero esto NO cubre el flujo real: login → opt-in → logout → reingreso con biometría en un device. Las 5 commits asociadas son: `9cdd203` (centralización `/v1`), `fd15146` (I-05 login biométrico), `2a01885` (configuración nativa Android+iOS), `a4c758a` y `2e4cae9` (actualizaciones de seguimiento en WORKPLAN).

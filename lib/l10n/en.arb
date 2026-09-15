@@ -19,6 +19,12 @@
   "loginErrorServiceUnavailable": "The service is unavailable — try again in a few minutes",
   "loginNoAccount": "Don't have an account?",
   "loginSignUp": "Sign up",
+  "loginBiometricButton": "Sign in with fingerprint/face",
+  "loginBiometricReason": "Confirm your identity to sign in to TekoApp",
+  "loginBiometricOptInTitle": "Turn on fingerprint/face sign-in?",
+  "loginBiometricOptInBody": "Next time you'll be able to sign in without typing your password.",
+  "loginBiometricOptInAccept": "Turn on",
+  "loginBiometricOptInDecline": "Not now",
   "registerTitle": "Create account",
   "registerFirstNameLabel": "First name",
   "registerLastNameLabel": "Last name",
@@ -97,11 +103,21 @@
   "nearbyProfessionalsMapTitle": "Nearby professionals",
   "nearbyProfessionalsMapError": "Couldn't load the map — check location permissions and your connection",
   "nearbyProfessionalsMapEmpty": "No professionals online nearby right now",
+  "nearbyProfessionalsMapUnavailable": "not taking new requests",
   "serviceDetailTrackingTitle": "Professional's live location",
+  "serviceDetailTrackingReconnecting": "Connection lost, reconnecting…",
+  "serviceDetailTrackingConnectionError": "Couldn't restore the connection",
+  "serviceDetailClientContactTitle": "Client contact",
+  "serviceDetailClientContactHidden": "The client didn't share their contact info.",
   "profileLanguageLabel": "Language",
   "profileLanguageSystem": "Device language",
   "profileLanguageSpanish": "Español",
   "profileLanguageEnglish": "English",
+  "profileBiometricLabel": "Fingerprint/face sign-in",
+  "profileBiometricHint": "Turns on the next time you sign in with your password.",
+  "profileShareContactInfoLabel": "Share my contact info with the professional",
+  "profileShareContactInfoHint": "If you turn this off, the professional handling your services won't be able to see your email or phone number.",
+  "profileShareContactInfoError": "Couldn't save your preference — try again",
   "pushPermissionDialogTitle": "Turn on notifications",
   "pushPermissionDialogBody": "We'll let you know when a professional accepts your request, when you get a payment or a rating, and other important updates about your services.",
   "pushPermissionDialogAccept": "Turn on",
@@ -210,6 +226,12 @@
   "paymentMethodProviderRequired": "Choose a provider",
   "paymentMethodDetailLabel": "Detail (optional, e.g. last 4 digits)",
   "paymentMethodFormSubmit": "Save",
+  "paymentMethodExpiresAt": "Expires {date}",
+  "@paymentMethodExpiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "paymentMethodGenericError": "Could not save — check the entered data",
   "paymentMethodTypeCash": "Cash",
   "paymentMethodTypeCreditCard": "Credit card",
@@ -240,10 +262,13 @@
   "payServiceDiscountApplied": "Discount: Gs. {amount}",
   "payServiceMethodLabel": "Payment method",
   "payServiceMethodRequired": "Choose a payment method",
+  "payServiceMethodExpiredLabel": "Expired",
+  "payServiceMethodExpiredHint": "Expired methods appear disabled — they can't be used to pay.",
   "payServiceNoMethodsMessage": "You don't have any saved payment methods",
   "payServiceAddMethodLink": "Add a payment method",
   "payServiceConfirmButton": "Confirm payment",
   "payServiceError": "Could not process the payment — try again",
+  "payServiceMethodExpiredError": "The payment method you chose expired — choose another one to continue.",
   "payServiceButton": "Pay",
   "paymentDetailTitle": "Payment detail",
   "paymentDetailError": "Could not load the payment — try again",
@@ -303,6 +328,8 @@
   "legalDocumentTypePrivacyPolicy": "Privacy policy",
   "legalDocumentTypeDataProcessingConsent": "Data processing consent",
   "legalDocumentTypeImageUsageConsent": "Image usage consent",
+  "legalDocumentTypeServiceContractTerms": "Service contract terms",
+  "legalDocumentTypeUserContentLiabilityDisclaimer": "User content liability disclaimer",
   "legalConsentOpenDocumentButton": "Read the full document",
   "legalConsentAcceptCheckboxLabel": "I read and accept this document",
   "legalConsentAcceptButton": "Accept and continue",
@@ -319,6 +346,53 @@
   "privacyDataRevokeConfirmBody": "The content will stop showing according to the usage scope granted.",
   "privacyDataRevokeError": "Could not revoke the consent — try again",
   "profileLinkPrivacyAndData": "Privacy and data",
+  "accountDeletionButton": "Delete my account",
+  "accountDeletionScreenTitle": "Delete account",
+  "accountDeletionIntroTitle": "What happens if you delete your account?",
+  "accountDeletionAnonymizedIntro": "Your name, email, phone number, ID document and profile photo are permanently deleted or anonymized.",
+  "accountDeletionRetainedIntro": "For legal and accounting reasons, we keep —without your real name— your payments, your signed contracts, and the ratings you gave or received.",
+  "accountDeletionGracePeriodIntro": "You'll have a grace period to change your mind: you'll be able to cancel the request at any time before it takes effect, with a button that will show up on your home screen.",
+  "accountDeletionNoUndoWarning": "Once that period ends, the deletion is final: there is no way to recover your account.",
+  "accountDeletionConfirmCheckboxLabel": "I understand that, once the grace period ends, this action cannot be undone.",
+  "accountDeletionConfirmButton": "Delete my account",
+  "accountDeletionBlockedTitle": "You can't delete your account yet",
+  "accountDeletionBlockerActiveService": "{count, plural, one{You have {count} service in progress} other{You have {count} services in progress}}",
+  "@accountDeletionBlockerActiveService": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerPendingPayment": "{count, plural, one{You have {count} pending payment} other{You have {count} pending payments}}",
+  "@accountDeletionBlockerPendingPayment": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerUnsignedContract": "{count, plural, one{You have {count} unsigned contract} other{You have {count} unsigned contracts}}",
+  "@accountDeletionBlockerUnsignedContract": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerUnknown": "{count, plural, one{You have {count} unresolved item} other{You have {count} unresolved items}}",
+  "@accountDeletionBlockerUnknown": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerViewButton": "View",
+  "accountDeletionAlreadyRequestedMessage": "You already have a deletion request in progress.",
+  "accountDeletionNotRequestedMessage": "You don't have an active deletion request to cancel.",
+  "accountDeletionErrorGeneric": "We couldn't process your request — try again.",
+  "accountDeletionSuccessMessage": "Your deletion request has been recorded. You'll see a notice on your home screen with the exact date and a button to cancel it at any time before the grace period ends.",
+  "accountDeletionBackToProfileButton": "Back to my profile",
+  "accountDeletionBannerTitle": "Your account will be deleted on {date} — you can cancel at any time before then.",
+  "@accountDeletionBannerTitle": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "accountDeletionBannerCancelButton": "Cancel deletion",
   "aiDisclosureCheckboxLabel": "I used AI for this",
   "aiDisclosureNoteLabel": "Note (optional)",
   "aiDisclosureBadgeLabel": "AI-assisted",
@@ -387,5 +461,8 @@
   "uploadPortfolioItemError": "We couldn't upload the photo — try again",
   "publicPortfolioSectionTitle": "Past work",
   "publicPortfolioSectionEmpty": "No past work photos yet",
-  "publicPortfolioSectionError": "We couldn't load the portfolio"
+  "publicPortfolioSectionError": "We couldn't load the portfolio",
+  "asyncStateGenericError": "An unexpected error occurred.",
+  "asyncStateEmpty": "No data to display.",
+  "asyncStateRetryButton": "Retry"
 }
