@@ -9,5 +9,9 @@ String legalDocumentTypeLabel(AppLocalizations l10n, LegalDocumentType type) {
       l10n.legalDocumentTypeDataProcessingConsent,
     LegalDocumentType.imageUsageConsent =>
       l10n.legalDocumentTypeImageUsageConsent,
+    LegalDocumentType.serviceContractTerms =>
+      l10n.legalDocumentTypeServiceContractTerms,
+    LegalDocumentType.userContentLiabilityDisclaimer =>
+      l10n.legalDocumentTypeUserContentLiabilityDisclaimer,
   };
 }

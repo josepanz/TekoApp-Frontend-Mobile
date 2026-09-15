@@ -42,6 +42,7 @@ Future<void> main(List<String> args) async {
 
   final findings = <DriftFinding>[];
   final modelFileSources = <String, String>{};
+  final enumFileSources = <String, String>{};
 
   for (final mapping in modelMappings) {
     final source = _readModelFile(mapping.dartFile, findings);
@@ -49,6 +50,25 @@ Future<void> main(List<String> args) async {
     modelFileSources[mapping.dartFile] = source;
     findings.addAll(
       checkMapping(mapping: mapping, schemas: schemas, dartSource: source),
+    );
+
+    if (mapping.enumFields.isEmpty) continue;
+    final schema = schemas[mapping.schemaName] as Map<String, dynamic>?;
+    if (schema == null) {
+      continue; // ya se reportó [SCHEMA NO ENCONTRADO] arriba.
+    }
+    for (final enumMapping in mapping.enumFields.values) {
+      enumFileSources.putIfAbsent(enumMapping.dartFile, () {
+        final file = File(enumMapping.dartFile);
+        return file.existsSync() ? file.readAsStringSync() : '';
+      });
+    }
+    findings.addAll(
+      checkEnumFields(
+        mapping: mapping,
+        schema: schema,
+        enumFileSources: enumFileSources,
+      ),
     );
   }
 

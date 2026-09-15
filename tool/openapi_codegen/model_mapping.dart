@@ -53,6 +53,19 @@ class LocalModelExemption {
   final String reason;
 }
 
+/// Dónde vive el enum Dart que le corresponde a un campo `string` con `enum:` del schema — ver
+/// `ModelMapping.enumFields` y "Comparación de valores de enum" en CODEGEN.md §11.1. `dartFile` no
+/// siempre coincide con `ModelMapping.dartFile`: a veces el enum vive en su propio archivo (ej.
+/// `ContractStatus` en `contract_status.dart`, aunque `Contract` esté en `contract.dart`), a veces
+/// comparte archivo con la clase mapeada (ej. `CategoryStatus` en `category.dart`, junto a
+/// `Category`).
+class EnumFieldMapping {
+  const EnumFieldMapping({required this.dartFile, required this.enumClassName});
+
+  final String dartFile;
+  final String enumClassName;
+}
+
 /// Mapeo de UNA clase Dart a UN schema de `components.schemas`.
 class ModelMapping {
   const ModelMapping({
@@ -62,6 +75,7 @@ class ModelMapping {
     this.renameFields = const {},
     this.schemaFieldExemptions = const [],
     this.modelFieldExemptions = const [],
+    this.enumFields = const {},
   });
 
   /// Ruta relativa a la raíz del repo (`lib/features/.../models/archivo.dart`).
@@ -83,6 +97,14 @@ class ModelMapping {
 
   /// Campos del MODELO DART que a propósito no vienen de este schema.
   final List<FieldExemption> modelFieldExemptions;
+
+  /// Campos `string` del schema (clave = nombre del campo EN EL SCHEMA, no el nombre Dart
+  /// renombrado — mismo criterio que `schemaFieldExemptions`) que en realidad son un enum Dart —
+  /// declararlo acá habilita la comparación de VALORES (v2, CODEGEN.md §11.1), no solo de forma.
+  /// Un campo `enum` del schema que no se declara acá simplemente no se compara por valor (mismo
+  /// criterio "opt-in" que el resto de este archivo) — ver CODEGEN.md §11.1 para cuáles quedan
+  /// sin declarar a propósito y por qué.
+  final Map<String, EnumFieldMapping> enumFields;
 }
 
 /// Modelos mapeados a un schema real — el verificador compara cada uno campo a campo.
@@ -92,6 +114,18 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/ai_disclosures/models/ai_disclosure.dart',
     className: 'AiDisclosure',
     schemaName: 'AiDisclosureResponseDTO',
+    enumFields: {
+      'entityType': EnumFieldMapping(
+        dartFile:
+            'lib/features/legal_consents/models/ai_disclosure_entity_type.dart',
+        enumClassName: 'AiDisclosureEntityType',
+      ),
+      'source': EnumFieldMapping(
+        dartFile:
+            'lib/features/ai_disclosures/models/ai_disclosure_source.dart',
+        enumClassName: 'AiDisclosureSource',
+      ),
+    },
   ),
 
   // ---- auth ----
@@ -147,6 +181,12 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/budgets/models/budget_line_item.dart',
     className: 'BudgetLineItem',
     schemaName: 'BudgetLineItemResponseDTO',
+    enumFields: {
+      'itemType': EnumFieldMapping(
+        dartFile: 'lib/features/budgets/models/budget_line_item_type.dart',
+        enumClassName: 'BudgetLineItemType',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/budgets/models/budget_option.dart',
@@ -157,6 +197,12 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/budgets/models/material_catalog_item.dart',
     className: 'MaterialCatalogItem',
     schemaName: 'MaterialCatalogItemResponseDTO',
+    enumFields: {
+      'qualityTier': EnumFieldMapping(
+        dartFile: 'lib/features/budgets/models/material_quality_tier.dart',
+        enumClassName: 'MaterialQualityTier',
+      ),
+    },
   ),
 
   // ---- categories ----
@@ -164,6 +210,12 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/categories/models/category.dart',
     className: 'Category',
     schemaName: 'CategoryDetailResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/categories/models/category.dart',
+        enumClassName: 'CategoryStatus',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/categories/models/service_type.dart',
@@ -178,11 +230,23 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/contracts/models/contract.dart',
     className: 'Contract',
     schemaName: 'ContractResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/contracts/models/contract_status.dart',
+        enumClassName: 'ContractStatus',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/contracts/models/contract.dart',
     className: 'MyContractSummary',
     schemaName: 'MyContractSummaryResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/contracts/models/contract_status.dart',
+        enumClassName: 'ContractStatus',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/contracts/models/contract.dart',
@@ -215,6 +279,17 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/legal_consents/models/content_consent_grant.dart',
     className: 'ContentConsentGrant',
     schemaName: 'ContentConsentGrantResponseDTO',
+    enumFields: {
+      'contentType': EnumFieldMapping(
+        dartFile:
+            'lib/features/legal_consents/models/ai_disclosure_entity_type.dart',
+        enumClassName: 'AiDisclosureEntityType',
+      ),
+      'usageScope': EnumFieldMapping(
+        dartFile: 'lib/features/legal_consents/models/content_usage_scope.dart',
+        enumClassName: 'ContentUsageScope',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/legal_consents/models/data_consents_history.dart',
@@ -225,6 +300,12 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/legal_consents/models/legal_document_version.dart',
     className: 'LegalDocumentVersion',
     schemaName: 'LegalDocumentVersionResponseDTO',
+    enumFields: {
+      'documentType': EnumFieldMapping(
+        dartFile: 'lib/features/legal_consents/models/legal_document_type.dart',
+        enumClassName: 'LegalDocumentType',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/legal_consents/models/user_consent.dart',
@@ -249,16 +330,38 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/payments/models/payment.dart',
     className: 'Payment',
     schemaName: 'PaymentDetailResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/payments/models/payment_status.dart',
+        enumClassName: 'PaymentStatus',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/payments/models/payment_method.dart',
     className: 'PaymentMethod',
     schemaName: 'PaymentMethodDetailResponseDTO',
+    enumFields: {
+      'type': EnumFieldMapping(
+        dartFile: 'lib/features/payments/models/payment_method.dart',
+        enumClassName: 'PaymentMethodType',
+      ),
+      'provider': EnumFieldMapping(
+        dartFile: 'lib/features/payments/models/payment_method.dart',
+        enumClassName: 'PaymentProviderType',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/payments/models/tip.dart',
     className: 'Tip',
     schemaName: 'TipResponseDTO',
+    enumFields: {
+      'mode': EnumFieldMapping(
+        dartFile: 'lib/features/payments/models/tip_mode.dart',
+        enumClassName: 'TipMode',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/payments/models/tip.dart',
@@ -278,12 +381,26 @@ final List<ModelMapping> modelMappings = [
         'lib/features/professional_documents/models/professional_document.dart',
     className: 'ProfessionalDocument',
     schemaName: 'ProfessionalDocumentResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile:
+            'lib/features/professional_documents/models/document_review_status.dart',
+        enumClassName: 'DocumentReviewStatus',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile:
         'lib/features/professional_documents/models/professional_document_type.dart',
     className: 'ProfessionalDocumentType',
     schemaName: 'ProfessionalDocumentTypeResponseDTO',
+    enumFields: {
+      'category': EnumFieldMapping(
+        dartFile:
+            'lib/features/professional_documents/models/document_category.dart',
+        enumClassName: 'DocumentCategory',
+      ),
+    },
   ),
 
   // ---- professional_portfolio ----
@@ -291,6 +408,13 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/professional_portfolio/models/portfolio_item.dart',
     className: 'PortfolioItem',
     schemaName: 'PortfolioItemResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile:
+            'lib/features/professional_portfolio/models/portfolio_review_status.dart',
+        enumClassName: 'PortfolioReviewStatus',
+      ),
+    },
   ),
 
   // ---- professional_profile ----
@@ -311,6 +435,13 @@ final List<ModelMapping> modelMappings = [
         'lib/features/professional_profile/models/professional_profile.dart',
     className: 'ProfessionalProfile',
     schemaName: 'ProfessionalDetailResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile:
+            'lib/features/professional_profile/models/professional_status.dart',
+        enumClassName: 'ProfessionalStatus',
+      ),
+    },
   ),
 
   // ---- promotions ----
@@ -318,6 +449,16 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/promotions/models/promotion.dart',
     className: 'Promotion',
     schemaName: 'PromotionDetailResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/promotions/models/promotion_status.dart',
+        enumClassName: 'PromotionStatus',
+      ),
+      'type': EnumFieldMapping(
+        dartFile: 'lib/features/promotions/models/promotion_type.dart',
+        enumClassName: 'PromotionType',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/promotions/models/promotion_apply_result.dart',
@@ -340,6 +481,12 @@ final List<ModelMapping> modelMappings = [
     dartFile: 'lib/features/ratings/models/rating.dart',
     className: 'Rating',
     schemaName: 'RatingDetailResponseDTO',
+    enumFields: {
+      'type': EnumFieldMapping(
+        dartFile: 'lib/features/ratings/models/rating_type.dart',
+        enumClassName: 'RatingType',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/ratings/models/user_rating_stats.dart',
@@ -371,11 +518,23 @@ final List<ModelMapping> modelMappings = [
     className: 'Service',
     schemaName: 'ServiceDetailResponseDTO',
     renameFields: {'users': 'client'},
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/services/models/service_status.dart',
+        enumClassName: 'ServiceStatus',
+      ),
+    },
   ),
   const ModelMapping(
     dartFile: 'lib/features/services/models/service_request.dart',
     className: 'ServiceRequest',
     schemaName: 'ServiceRequestDetailResponseDTO',
+    enumFields: {
+      'status': EnumFieldMapping(
+        dartFile: 'lib/features/services/models/request_status.dart',
+        enumClassName: 'RequestStatus',
+      ),
+    },
   ),
 ];
 
@@ -501,11 +660,12 @@ final List<LocalModelExemption> localModelExemptions = [
   LocalModelExemption(
     dartFile: 'lib/features/legal_consents/models/legal_document_type.dart',
     reason:
-        'enum espejo, valores inline en LegalDocumentVersionResponseDTO.documentType. NOTA '
-        '2026-09-12: el swagger real ya lista 6 valores ("SERVICE_CONTRACT_TERMS", '
-        '"USER_CONTENT_LIABILITY_DISCLAIMER" agregados) contra los 4 que cubre este enum Dart — '
-        'hallazgo manual al construir este mapeo, no detectado por el verificador v1 (no compara '
-        'valores de enum, ver CODEGEN.md); queda para que José decida si migrar el enum.',
+        'enum espejo, valores inline en LegalDocumentVersionResponseDTO.documentType — sin '
+        'schema propio en swagger, por eso este archivo completo (no el campo) sigue exento acá. '
+        'Sus VALORES sí se comparan: ver enumFields en el ModelMapping de LegalDocumentVersion '
+        'más abajo (verificador v2, CODEGEN.md §11.1) — el gap real de 4 vs 6 valores que motivó '
+        'esa extensión ya se cerró (serviceContractTerms/userContentLiabilityDisclaimer '
+        'agregados).',
   ),
 
   // ---- locations ----

@@ -572,4 +572,290 @@ class FooForgotten { const FooForgotten(); }
       expect(findings.single.className, 'FooForgotten');
     });
   });
+
+  group('checkEnumFields — comparación de VALORES de enum (v2, §11.1)', () {
+    const mapping = ModelMapping(
+      dartFile:
+          'lib/features/legal_consents/models/legal_document_version.dart',
+      className: 'LegalDocumentVersion',
+      schemaName: 'LegalDocumentVersionResponseDTO',
+      enumFields: {
+        'documentType': EnumFieldMapping(
+          dartFile:
+              'lib/features/legal_consents/models/legal_document_type.dart',
+          enumClassName: 'LegalDocumentType',
+        ),
+      },
+    );
+
+    const strictEnumSource = '''
+enum LegalDocumentType {
+  termsOfService,
+  privacyPolicy,
+  dataProcessingConsent,
+  imageUsageConsent;
+
+  static LegalDocumentType fromJson(String value) {
+    switch (value) {
+      case 'TERMS_OF_SERVICE':
+        return LegalDocumentType.termsOfService;
+      case 'PRIVACY_POLICY':
+        return LegalDocumentType.privacyPolicy;
+      case 'DATA_PROCESSING_CONSENT':
+        return LegalDocumentType.dataProcessingConsent;
+      case 'IMAGE_USAGE_CONSENT':
+        return LegalDocumentType.imageUsageConsent;
+      default:
+        throw ArgumentError('LegalDocumentType desconocido: \$value');
+    }
+  }
+}
+''';
+
+    test(
+      'caso real: 4 valores Dart contra 6 del schema reporta 2 hallazgos CRÍTICOS '
+      '(el fromJson relanza ante un valor desconocido)',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'documentType': {
+              'type': 'string',
+              'enum': [
+                'TERMS_OF_SERVICE',
+                'PRIVACY_POLICY',
+                'DATA_PROCESSING_CONSENT',
+                'IMAGE_USAGE_CONSENT',
+                'SERVICE_CONTRACT_TERMS',
+                'USER_CONTENT_LIABILITY_DISCLAIMER',
+              ],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/legal_document_type.dart':
+                strictEnumSource,
+          },
+        );
+
+        expect(findings, hasLength(2));
+        expect(
+          findings,
+          everyElement(
+            predicate<DriftFinding>(
+              (f) =>
+                  f.kind == DriftKind.enumValueMissingInModel &&
+                  f.severity == Severity.critical,
+            ),
+          ),
+        );
+        expect(
+          findings.map((f) => f.expected),
+          containsAll([
+            'SERVICE_CONTRACT_TERMS',
+            'USER_CONTENT_LIABILITY_DISCLAIMER',
+          ]),
+        );
+      },
+    );
+
+    test('no reporta nada cuando los valores coinciden exactamente', () {
+      final schema = {
+        'type': 'object',
+        'properties': {
+          'documentType': {
+            'type': 'string',
+            'enum': [
+              'TERMS_OF_SERVICE',
+              'PRIVACY_POLICY',
+              'DATA_PROCESSING_CONSENT',
+              'IMAGE_USAGE_CONSENT',
+            ],
+          },
+        },
+      };
+
+      final findings = checkEnumFields(
+        mapping: mapping,
+        schema: schema,
+        enumFileSources: {
+          'lib/features/legal_consents/models/legal_document_type.dart':
+              strictEnumSource,
+        },
+      );
+
+      expect(findings, isEmpty);
+    });
+
+    test(
+      'un catch-all silencioso (sin throw) baja la severidad a ADVERTENCIA',
+      () {
+        const lenientEnumSource = '''
+enum AiDisclosureEntityType {
+  serviceDescription,
+  other;
+
+  static AiDisclosureEntityType fromJson(String value) {
+    switch (value) {
+      case 'SERVICE_DESCRIPTION':
+        return AiDisclosureEntityType.serviceDescription;
+      default:
+        return AiDisclosureEntityType.other;
+    }
+  }
+}
+''';
+        const lenientMapping = ModelMapping(
+          dartFile: 'lib/features/ai_disclosures/models/ai_disclosure.dart',
+          className: 'AiDisclosure',
+          schemaName: 'AiDisclosureResponseDTO',
+          enumFields: {
+            'entityType': EnumFieldMapping(
+              dartFile:
+                  'lib/features/legal_consents/models/ai_disclosure_entity_type.dart',
+              enumClassName: 'AiDisclosureEntityType',
+            ),
+          },
+        );
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'entityType': {
+              'type': 'string',
+              'enum': ['SERVICE_DESCRIPTION', 'OTHER'],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: lenientMapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/ai_disclosure_entity_type.dart':
+                lenientEnumSource,
+          },
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.enumValueMissingInModel);
+        expect(findings.single.severity, Severity.warn);
+        expect(findings.single.expected, 'OTHER');
+      },
+    );
+
+    test(
+      'un literal que el Dart reconoce pero el schema ya no declara es ADVERTENCIA '
+      '(sobra, no crashea)',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'documentType': {
+              'type': 'string',
+              'enum': ['TERMS_OF_SERVICE', 'PRIVACY_POLICY'],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/legal_document_type.dart':
+                strictEnumSource,
+          },
+        );
+
+        expect(
+          findings.every(
+            (f) =>
+                f.kind == DriftKind.enumValueExtraInModel &&
+                f.severity == Severity.warn,
+          ),
+          isTrue,
+        );
+        // DATA_PROCESSING_CONSENT, IMAGE_USAGE_CONSENT
+        expect(findings, hasLength(2));
+      },
+    );
+
+    test(
+      'campo declarado en enumFields que ya no es un enum en el schema real',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            // sin `enum:` — el schema cambió.
+            'documentType': {'type': 'string'},
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            'lib/features/legal_consents/models/legal_document_type.dart':
+                strictEnumSource,
+          },
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.enumFieldNotEnum);
+      },
+    );
+
+    test(
+      'un enum cuyo fromJson no se pudo parsear se reporta explícito, nunca en silencio',
+      () {
+        final schema = {
+          'type': 'object',
+          'properties': {
+            'documentType': {
+              'type': 'string',
+              'enum': ['TERMS_OF_SERVICE'],
+            },
+          },
+        };
+
+        final findings = checkEnumFields(
+          mapping: mapping,
+          schema: schema,
+          enumFileSources: {
+            // Sin fromJson reconocible (ej. DeviceType, que solo tiene toJson).
+            'lib/features/legal_consents/models/legal_document_type.dart': '''
+enum LegalDocumentType {
+  termsOfService;
+  String toJson() => 'TERMS_OF_SERVICE';
+}
+''',
+          },
+        );
+
+        expect(findings, hasLength(1));
+        expect(findings.single.kind, DriftKind.enumFromJsonNotParseable);
+        expect(findings.single.expected, 'LegalDocumentType');
+      },
+    );
+
+    test('un ModelMapping sin enumFields no produce ningún hallazgo', () {
+      const noEnumMapping = ModelMapping(
+        dartFile: 'lib/features/foo/models/foo.dart',
+        className: 'Foo',
+        schemaName: 'FooDTO',
+      );
+      final findings = checkEnumFields(
+        mapping: noEnumMapping,
+        schema: const {
+          'type': 'object',
+          'properties': <String, dynamic>{},
+        },
+        enumFileSources: const {},
+      );
+      expect(findings, isEmpty);
+    });
+  });
 }

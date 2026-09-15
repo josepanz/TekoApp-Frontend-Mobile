@@ -374,21 +374,7 @@ donde más importa: **nulabilidad** (el caso `fileKey`: si el schema dice que un
 
 **Limitaciones conocidas de esta v1** (documentadas a propósito, no descubiertas después):
 
-- **No compara valores de enum** (`'ACTIVE' | 'INACTIVE' | ...`) — solo que el campo "tiene forma
-  de string/enum" en ambos lados. **Un reporte limpio (`check_drift` sin hallazgos) NO significa
-  que los enums estén sincronizados** — es una limitación real de esta v1, no un detalle menor:
-  un enum Dart puede quedarse corto contra los valores reales del schema sin que nada lo marque.
-  Se encontró un caso real así al construir el mapeo inicial (a mano, no por una corrida del
-  verificador): `LegalDocumentType` (Dart) cubre 4 valores,
-  `LegalDocumentVersionResponseDTO.documentType` (schema real) ya tiene 6 — ver la exención de
-  `legal_document_type.dart` en `model_mapping.dart` para el detalle, y §13 para el hallazgo
-  completo. Comparar valores de enum es un candidato claro para una v2 (necesitaría, además del
-  mapeo campo->schema que ya existe, declarar qué enum Dart le corresponde a qué campo — parecido
-  a `--enum-fields` del generador — y parsear los valores que ese enum ya reconoce desde su
-  `fromJson`, que en este repo se escribe con al menos tres formas de `switch` distintas: función
-  `factory` con `switch` expression, método `static` con `switch` statement clásico, y variantes
-  con/sin `default`). No se agregó en esta tanda porque el parseo adicional que hace falta no es
-  acotado — mismo criterio que ya usa este documento para no ampliar alcance sin que José lo pida.
+- ~~No compara valores de enum~~ — cerrado en v2, ver §11.1 inmediatamente abajo.
 - No entiende un `fromJson` que "aplana" un objeto anidado a campos de nivel superior (ver
   `ServiceProfessionalSummary`, que lee `json['user']['firstName']` en vez de
   `json['firstName']`) — ese caso queda como exención local con motivo explícito, no como un
@@ -399,6 +385,73 @@ donde más importa: **nulabilidad** (el caso `fileKey`: si el schema dice que un
   el síntoma es que el verificador reporta campos de menos/de más que no son drift real; la
   solución es reformatear (`dart format`) o, si el shape es genuinamente distinto, extender
   `dart_model_parser.dart`.
+
+## 11.1 v2 (2026-09-15): comparación de VALORES de enum
+
+Cierra la limitación de arriba — el caso real que la motivó (documentado en la v1 de este
+archivo): `LegalDocumentType` (Dart) cubría 4 valores, `LegalDocumentVersionResponseDTO.documentType`
+(schema real) ya tenía 6 (`SERVICE_CONTRACT_TERMS`/`USER_CONTENT_LIABILITY_DISCLAIMER`
+agregados en fases del backend posteriores a cuando se escribió el enum Dart). Un reporte limpio
+de la v1 nunca lo habría marcado — el campo "tenía forma de string" en los dos lados, que era todo
+lo que la v1 comparaba.
+
+**Diseño**: dos piezas nuevas, sumadas a las 4 de §11:
+
+- **`tool/openapi_codegen/src/dart_enum_parser.dart`** (`parseEnumFromJson`): dado el código fuente
+  de un archivo y el nombre de un enum, ubica su `fromJson` (con conteo de llaves, no línea a
+  línea — tolera que `dart format` parta un caso largo en 2 líneas, ver el caso real
+  `ContractStatus.pendingProfessionalSignature`) y extrae TODOS los literales
+  `'MAYÚSCULA_CON_GUIONES'` que aparecen en su cuerpo. Deliberadamente NO distingue la sintaxis
+  exacta del switch (arrow de una expression vs `case`/`return` de un statement clásico) — ver su
+  docstring para el motivo: un literal enteramente en mayúsculas dentro de un `fromJson(String
+  value)` de un enum siempre es un valor reconocido en este repo, nunca coincide por casualidad
+  con un mensaje de error (que acá siempre se escribe en minúscula/mixta). También detecta si el
+  catch-all (`_ => throw ...` / `default: throw ...`) relanza ante un valor desconocido
+  (`throwsOnUnknown`) — determina la severidad del hallazgo (ver tabla abajo).
+- **`ModelMapping.enumFields`** (`model_mapping.dart`): `Map<String campo del schema,
+  EnumFieldMapping>` — declara qué enum Dart (y en qué archivo) le corresponde a un campo `string`
+  con `enum:` del schema. Mismo criterio "opt-in" que el resto de `model_mapping.dart`: un campo
+  enum del schema que no se declara acá simplemente no se compara por valor (no genera ningún
+  hallazgo, ni positivo ni negativo).
+
+**Nuevos tipos de hallazgo** (`drift_checker.dart`, función `checkEnumFields`):
+
+| Marca | Qué significa | Severidad |
+|---|---|---|
+| `[VALOR DE ENUM FALTANTE EN MODELO]` | El schema declara un valor que el `fromJson` del enum Dart no reconoce. | CRÍTICA si el `fromJson` relanza ante un valor desconocido (crashea la próxima vez que llegue); ADVERTENCIA si tiene un catch-all que absorbe en silencio (no crashea, solo se mezcla con otro miembro sin que nada lo note). |
+| `[VALOR DE ENUM SOBRA EN MODELO]` | El enum Dart reconoce un literal que el schema ya no declara. | Siempre ADVERTENCIA — no crashea, el valor solo queda inalcanzable. |
+| `[CAMPO NO ES ENUM EN EL SCHEMA]` | `enumFields` declara un campo que en el schema real ya no es un `string` con `enum:` (o dejó de existir). | ADVERTENCIA — el mapeo quedó desactualizado, hay que corregirlo o borrarlo. |
+| `[ENUM SIN PARSEAR]` | `parseEnumFromJson` no pudo leer el `fromJson` de ese enum con ninguna forma reconocida. | ADVERTENCIA — señal EXPLÍCITA de "este campo no se comparó", nunca se asume en silencio que no hay drift. |
+
+**Cobertura real alcanzada**: se catalogaron los 23 enums de `lib/features/*/models/` que tienen
+un `fromJson` que parsea un `String` (ver el catálogo completo armado al construir esto) — las
+únicas 2 formas reales que aparecen son exactamente las que `parseEnumFromJson` cubre (`factory
+Enum.fromJson` con switch expression, `static Enum fromJson` con switch statement clásico); NINGÚN
+enum del repo usa una forma distinta. De esos 23, se declararon **22 bindings campo→enum** en
+`enumFields` a través de 19 `ModelMapping` — el resto, sin `enumFields`, queda sin comparar por
+valor A PROPÓSITO, no por una limitación del parser:
+
+- **`DeviceType`** (`notifications/models/device_type.dart`) — no tiene `fromJson`, solo `toJson`
+  (nunca se lee de una respuesta HTTP en esta fase). No hay nada que parsear.
+- **`DeletionBlockerType`** y **`ContractViewerRole`** — enums locales sin ningún schema
+  correspondiente (ya exentos en `localModelExemptions` con ese motivo, ver §12.6). No hay un
+  `enum:` del lado del schema contra el cual comparar.
+
+En otras palabras: **para este repo, hoy, `parseEnumFromJson` no tiene ningún caso real sin
+cubrir** — las 3 exclusiones de arriba son por falta de contraparte (schema o `fromJson`), no
+porque el parser sea frágil ante alguna de las formas de `switch` que este repo usa. Si en el
+futuro aparece una forma nueva que `parseEnumFromJson` no reconozca, el síntoma es
+`[ENUM SIN PARSEAR]` en el reporte — explícito, nunca un reporte limpio que esconda cobertura
+parcial.
+
+Corrida contra el swagger real (2026-09-15): encontró exactamente el caso documentado
+(`LegalDocumentType`, 2 hallazgos críticos) más 2 advertencias nuevas no vistas antes
+(`AiDisclosureEntityType.entityType`/`contentType` no reconocían `OTHER` explícitamente — llegaban
+ahí solo vía su catch-all silencioso). Los 3 se cerraron: `LegalDocumentType` sumó
+`serviceContractTerms`/`userContentLiabilityDisclaimer` (sin consumidor en la UI todavía, ninguno
+de los dos gatea nada en el backend tampoco — ver `openspec/decisions.md` de `TekoApp-Backend`),
+`AiDisclosureEntityType.fromJson` sumó un `case 'OTHER':` explícito. `check_drift` vuelve a dar
+`sin drift` contra los 72 modelos.
 
 ## 12. Cómo contribuir con modelos
 

@@ -430,6 +430,8 @@
   "legalDocumentTypePrivacyPolicy": "Política de privacidad",
   "legalDocumentTypeDataProcessingConsent": "Consentimiento de tratamiento de datos",
   "legalDocumentTypeImageUsageConsent": "Consentimiento de uso de imágenes",
+  "legalDocumentTypeServiceContractTerms": "Términos del contrato de servicio",
+  "legalDocumentTypeUserContentLiabilityDisclaimer": "Deslinde de responsabilidad por contenido",
   "legalConsentOpenDocumentButton": "Leer el documento completo",
   "legalConsentAcceptCheckboxLabel": "Leí y acepto este documento",
   "legalConsentAcceptButton": "Aceptar y continuar",

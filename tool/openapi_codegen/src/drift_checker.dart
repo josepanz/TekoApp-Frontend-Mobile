@@ -10,6 +10,7 @@
 // directo, sin I/O de archivo/red.
 
 import '../model_mapping.dart';
+import 'dart_enum_parser.dart';
 import 'dart_model_parser.dart';
 import 'schema_utils.dart';
 
@@ -165,6 +166,30 @@ enum DriftKind {
   /// Un archivo bajo `lib/features/*/models/` declara una clase/enum que no está ni mapeada a un
   /// schema ni exenta con motivo — cierra la brecha de "un modelo nuevo se olvidó de registrar".
   unregisteredModel,
+
+  /// v2 (§11.1): el schema declara un valor de enum (`enum: [...]`) que el `fromJson` del enum
+  /// Dart mapeado vía `ModelMapping.enumFields` no reconoce — el caso real que motivó esto,
+  /// `LegalDocumentType` (4 valores Dart contra 6 del schema). Severidad depende de si el
+  /// `fromJson` de ese enum relanza (`DartEnumFromJson.throwsOnUnknown`) ante un valor
+  /// desconocido: crítica si relanza (crashea en runtime la próxima vez que llegue ese valor),
+  /// advertencia si tiene un catch-all que absorbe en silencio (no crashea, solo se mezcla con
+  /// otro miembro sin que nada lo note).
+  enumValueMissingInModel,
+
+  /// El enum Dart reconoce un literal que el schema ya no declara en su `enum:` — el backend pudo
+  /// haber eliminado ese valor, o el enum Dart nunca coincidió. No crashea (el valor simplemente
+  /// queda inalcanzable), siempre advertencia.
+  enumValueExtraInModel,
+
+  /// `ModelMapping.enumFields` declara un campo que en el schema real YA NO es un `string` con
+  /// `enum:` (o dejó de existir) — el mapeo quedó desactualizado, hay que corregirlo o borrarlo.
+  enumFieldNotEnum,
+
+  /// `ModelMapping.enumFields` apunta a un enum Dart cuyo `fromJson` no matchea ninguna de las
+  /// formas que reconoce `dart_enum_parser.dart` (ver su docstring) — el valor no se pudo
+  /// comparar, NO significa "sin drift". Señal explícita para que nadie asuma cobertura sobre ese
+  /// campo con un reporte limpio.
+  enumFromJsonNotParseable,
 }
 
 enum Severity { critical, warn }
@@ -211,6 +236,19 @@ class DriftFinding {
       case DriftKind.unregisteredModel:
         return '[SIN REGISTRAR] $className en $expected — ni mapeado a un schema ni exento '
             'con motivo en model_mapping.dart.';
+      case DriftKind.enumValueMissingInModel:
+        return '[VALOR DE ENUM FALTANTE EN MODELO] $where — el schema declara el valor '
+            '"$expected" y el enum Dart no lo reconoce en su fromJson.';
+      case DriftKind.enumValueExtraInModel:
+        return '[VALOR DE ENUM SOBRA EN MODELO] $where — el enum Dart reconoce "$found" pero '
+            'el schema ya no lo declara.';
+      case DriftKind.enumFieldNotEnum:
+        return '[CAMPO NO ES ENUM EN EL SCHEMA] $where — enumFields lo declara como enum pero '
+            'el schema real ya no lo tiene como string con `enum:` (o el campo dejó de existir).';
+      case DriftKind.enumFromJsonNotParseable:
+        return '[ENUM SIN PARSEAR] $where — no se pudo leer el fromJson de "$expected" con '
+            'ninguna de las formas que reconoce dart_enum_parser.dart. Este campo NO se comparó '
+            '— no asumir que no tiene drift de valores.';
     }
   }
 }
@@ -359,6 +397,93 @@ List<DriftFinding> checkMapping({
         found: field.toString(),
       ),
     );
+  }
+
+  return findings;
+}
+
+/// Compara los VALORES de cada enum que `mapping.enumFields` declara contra el `enum:` real del
+/// schema — ver "Comparación de valores de enum" en CODEGEN.md §11.1. `schema` es el schema YA
+/// resuelto de `mapping.schemaName` (el caller ya lo validó existente antes de llamar acá, mismo
+/// que recibe `checkMapping`). `enumFileSources` es archivo -> código fuente, PRE-LEÍDO por el
+/// caller para cada `EnumFieldMapping.dartFile` distinto que aparezca en `mapping.enumFields` (un
+/// enum puede vivir en un archivo distinto al de la clase mapeada, ej. `ContractStatus` vive en su
+/// propio archivo aunque `Contract` esté en `contract.dart`).
+List<DriftFinding> checkEnumFields({
+  required ModelMapping mapping,
+  required Map<String, dynamic> schema,
+  required Map<String, String> enumFileSources,
+}) {
+  if (mapping.enumFields.isEmpty) return const [];
+
+  final properties =
+      (schema['properties'] as Map<String, dynamic>?) ?? const {};
+  final findings = <DriftFinding>[];
+
+  for (final entry in mapping.enumFields.entries) {
+    final schemaFieldName = entry.key;
+    final enumMapping = entry.value;
+    final propSchema = properties[schemaFieldName] as Map<String, dynamic>?;
+    final schemaEnumValues = propSchema == null
+        ? null
+        : (propSchema['enum'] as List?)?.cast<String>();
+
+    if (propSchema == null || schemaEnumValues == null) {
+      findings.add(
+        DriftFinding(
+          className: mapping.className,
+          schemaName: mapping.schemaName,
+          field: schemaFieldName,
+          kind: DriftKind.enumFieldNotEnum,
+          severity: Severity.warn,
+        ),
+      );
+      continue;
+    }
+
+    final enumSource = enumFileSources[enumMapping.dartFile];
+    final parsed = enumSource == null
+        ? null
+        : parseEnumFromJson(enumSource, enumMapping.enumClassName);
+    if (parsed == null) {
+      findings.add(
+        DriftFinding(
+          className: mapping.className,
+          schemaName: mapping.schemaName,
+          field: schemaFieldName,
+          kind: DriftKind.enumFromJsonNotParseable,
+          severity: Severity.warn,
+          expected: enumMapping.enumClassName,
+        ),
+      );
+      continue;
+    }
+
+    final schemaSet = schemaEnumValues.toSet();
+    for (final missing in schemaSet.difference(parsed.recognizedValues)) {
+      findings.add(
+        DriftFinding(
+          className: mapping.className,
+          schemaName: mapping.schemaName,
+          field: schemaFieldName,
+          kind: DriftKind.enumValueMissingInModel,
+          severity: parsed.throwsOnUnknown ? Severity.critical : Severity.warn,
+          expected: missing,
+        ),
+      );
+    }
+    for (final extra in parsed.recognizedValues.difference(schemaSet)) {
+      findings.add(
+        DriftFinding(
+          className: mapping.className,
+          schemaName: mapping.schemaName,
+          field: schemaFieldName,
+          kind: DriftKind.enumValueExtraInModel,
+          severity: Severity.warn,
+          found: extra,
+        ),
+      );
+    }
   }
 
   return findings;
