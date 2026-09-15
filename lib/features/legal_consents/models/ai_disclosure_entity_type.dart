@@ -22,7 +22,14 @@ enum AiDisclosureEntityType {
         return AiDisclosureEntityType.professionalDescription;
       case 'IMAGE':
         return AiDisclosureEntityType.image;
+      case 'OTHER':
+        return AiDisclosureEntityType.other;
       default:
+        // M-04 §11.1: catch-all defensivo que absorbe en silencio (no relanza) un valor futuro
+        // que el schema agregue y este enum todavía no cubra explícitamente — mismo criterio ya
+        // documentado en `AiDisclosureSource`. Con `OTHER` ahora como case explícito (arriba), el
+        // verificador de drift solo reporta ADVERTENCIA (no crítico) si el schema agrega otro
+        // valor más — nunca CRASHEA, a diferencia de `LegalDocumentType`, que si relanza.
         return AiDisclosureEntityType.other;
     }
   }

@@ -91,6 +91,11 @@ dependencies:
   # Gradle 8+.
   open_filex: ^4.7.0
 
+  # Login biométrico opt-in (huella/rostro) — ver openspec/specs/biometric-login.md (I-05). Repite
+  # el login normal con una contraseña guardada localmente tras un logout explícito, en vez de un
+  # segundo factor contra el backend.
+  local_auth: ^3.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

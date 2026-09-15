@@ -11,6 +11,9 @@
          actualización), Android 8+ requiere este permiso pedido en runtime además de declarado
          acá. Ver openspec/specs/app-version-update.md. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- Login biométrico opt-in (huella/rostro), ver I-05 y
+         openspec/specs/biometric-login.md — requerido por local_auth. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <application
         android:label="tekoapp_mobile"
         android:name="${applicationName}"

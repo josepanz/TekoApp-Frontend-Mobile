@@ -11,7 +11,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/teko_avatar.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_input.dart';
+import '../../auth/providers/biometric_opt_in_controller_provider.dart';
 import '../models/profile_failure.dart';
+import '../providers/share_contact_info_controller_provider.dart';
 import '../providers/update_profile_controller_provider.dart';
 import '../providers/upload_avatar_controller_provider.dart';
 
@@ -57,6 +59,96 @@ class _LanguageSelector extends ConsumerWidget {
           onChanged: (code) => ref
               .read(localeControllerProvider.notifier)
               .setLocale(code == null ? null : Locale(code)),
+        ),
+      ],
+    );
+  }
+}
+
+/// Estado del opt-in de login biométrico (ver `openspec/specs/biometric-login.md`) — solo se
+/// puede DESACTIVAR desde acá. Activarlo requiere la contraseña en texto plano, que esta pantalla
+/// no tiene; se ofrece en su lugar como un diálogo justo después de un login exitoso
+/// (`login_screen.dart`, `_handleLoginSuccess`).
+class _BiometricLoginToggle extends ConsumerWidget {
+  const _BiometricLoginToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final enabled =
+        ref.watch(biometricOptInControllerProvider).valueOrNull ?? false;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.profileBiometricLabel),
+              if (!enabled)
+                Text(
+                  l10n.profileBiometricHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+            ],
+          ),
+        ),
+        Switch(
+          key: const Key('profile_biometric_switch'),
+          value: enabled,
+          onChanged: enabled
+              ? (_) =>
+                  ref.read(biometricOptInControllerProvider.notifier).disable()
+              : null,
+        ),
+      ],
+    );
+  }
+}
+
+/// Checkbox "compartir mi contacto" (ver `share_contact_info_controller_provider.dart`) — se
+/// guarda al toque, mismo patrón que `_BiometricLoginToggle` en esta misma pantalla (no forma
+/// parte del formulario de nombre/apellido/teléfono, que se guarda recién con el botón
+/// "Guardar").
+class _ShareContactInfoToggle extends ConsumerWidget {
+  const _ShareContactInfoToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(shareContactInfoControllerProvider);
+    final shares = state.valueOrNull ?? true;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Checkbox(
+          key: const Key('profile_share_contact_info_checkbox'),
+          value: shares,
+          onChanged: state.isLoading
+              ? null
+              : (value) => ref
+                  .read(shareContactInfoControllerProvider.notifier)
+                  .setSharesContactInfo(value ?? true),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.profileShareContactInfoLabel),
+              Text(
+                l10n.profileShareContactInfoHint,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              if (state.hasError) ...[
+                const SizedBox(height: 4),
+                Text(
+                  l10n.profileShareContactInfoError,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );
@@ -265,6 +357,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 24),
               const _LanguageSelector(),
               const SizedBox(height: 12),
+              const _BiometricLoginToggle(),
+              const SizedBox(height: 12),
+              const _ShareContactInfoToggle(),
+              const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_privacy_and_data_button'),
                 label: l10n.profileLinkPrivacyAndData,
@@ -277,6 +373,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 label: l10n.logout,
                 variant: TekoButtonVariant.outline,
                 onPressed: () => ref.read(sessionProvider.notifier).logout(),
+              ),
+              // Separación deliberada del logout — nunca el mismo estilo/proximidad, para que no
+              // se toquen por error (ver openspec/specs/account-deletion.md).
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 12),
+              TekoButton(
+                key: const Key('profile_delete_account_button'),
+                label: l10n.accountDeletionButton,
+                variant: TekoButtonVariant.destructive,
+                onPressed: () => context.push('/perfil/eliminar-cuenta'),
               ),
             ],
           ),

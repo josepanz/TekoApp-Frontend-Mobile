@@ -42,7 +42,7 @@ class TekoPrimitives {
   static const accent200 = Color(0xFF9DE3E1);
   static const accent300 = Color(0xFF6FD5D2);
   static const accent400 = Color(0xFF4CCAC7);
-  static const accent500 = Color(0xFF19BEBB); // ancla de marca (~#17BEBB)
+  static const accent500 = Color(0xFF17BEBB); // ancla exacta de marca (#17BEBB)
   static const accent600 = Color(0xFF009B99);
   static const accent700 = Color(0xFF007A79);
   static const accent800 = Color(0xFF005E5D);

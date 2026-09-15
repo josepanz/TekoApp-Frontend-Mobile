@@ -34,10 +34,12 @@ Map<String, dynamic> _methodJson({
   int id = 1,
   String referenceId = 'pm-uuid-1',
   bool isDefault = false,
+  String? expiresAt,
 }) =>
     {
       'id': id,
       'referenceId': referenceId,
+      'userId': 1,
       'name': 'Visa terminada en 4242',
       'type': 'CREDIT_CARD',
       'provider': 'STRIPE',
@@ -45,6 +47,9 @@ Map<String, dynamic> _methodJson({
       'isActive': true,
       'details': {'cardLast4': '4242'},
       'externalId': null,
+      'expiresAt': expiresAt,
+      'createdAt': '2026-08-08T10:00:00.000Z',
+      'updatedAt': '2026-08-08T10:00:00.000Z',
     };
 
 void main() {
@@ -76,6 +81,46 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'muestra el vencimiento cuando expiresAt viene presente (campo agregado en M-04)',
+    (tester) async {
+      // Arrange
+      when(() => dio.get<List<dynamic>>('/payments/methods')).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/payments/methods'),
+          data: [_methodJson(expiresAt: '2028-05-01T00:00:00.000Z')],
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.textContaining('Vence'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'no muestra ninguna fecha de vencimiento cuando expiresAt es null',
+    (tester) async {
+      // Arrange
+      when(() => dio.get<List<dynamic>>('/payments/methods')).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/payments/methods'),
+          data: [_methodJson()],
+        ),
+      );
+
+      // Act
+      await _pumpScreen(tester, dio);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.textContaining('Vence'), findsNothing);
+    },
+  );
 
   testWidgets('muestra el badge de predeterminado en el método correcto', (
     tester,

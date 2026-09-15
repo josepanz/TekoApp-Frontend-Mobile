@@ -10,15 +10,36 @@ import 'package:tekoapp_mobile/features/ratings/providers/professional_rating_st
 import 'package:tekoapp_mobile/features/ratings/widgets/professional_rating_stats_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
-const _profile = ProfessionalProfile(
+final _profile = ProfessionalProfile(
   id: 5,
   referenceId: 'prof-uuid-1',
+  userId: 10,
   categoryId: 3,
   description: 'Plomero',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.approved,
   isAvailable: true,
   isOnline: true,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 Future<void> _pumpScreen(

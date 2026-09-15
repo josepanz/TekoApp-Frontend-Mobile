@@ -16,11 +16,17 @@ import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
 class _MockDio extends Mock implements Dio {}
 
-const _category = Category(
+final _category = Category(
   id: 3,
   referenceId: 'cat-uuid',
   name: 'Plomería',
   slug: 'plomeria',
+  sortOrder: 0,
+  status: CategoryStatus.active,
+  isVisible: true,
+  requiresVerification: false,
+  maxBudgetOptionsPerRequest: 3,
+  createdAt: DateTime.utc(2026, 8, 8),
 );
 const _serviceType = ServiceType(id: 4, name: 'Instalación');
 
@@ -150,8 +156,16 @@ void main() {
           'latitude': -25.2,
           'longitude': -57.5,
           'address': 'Calle 1',
+          'images': <String>[],
           'isUrgent': false,
           'createdAt': '2026-08-08T10:00:00.000Z',
+          'users': {
+            'id': 10,
+            'referenceId': 'client-uuid-1',
+            'firstName': 'Ana',
+            'lastName': 'Gómez',
+            'email': 'ana@example.com',
+          },
         },
       ),
     );

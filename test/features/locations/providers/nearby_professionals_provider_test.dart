@@ -17,6 +17,10 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   bool connected = false;
 
   @override
+  Stream<LocationsSocketConnectionState> get connectionState =>
+      const Stream.empty();
+
+  @override
   void connect(String accessToken) => connected = true;
 
   @override
@@ -46,6 +50,7 @@ const _professional = NearbyProfessional(
   longitude: -57.62,
   distanceKm: 1.2,
   isOnline: true,
+  isAvailable: true,
   averageRating: 4.5,
 );
 

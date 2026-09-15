@@ -53,6 +53,7 @@ class _LegalConsentScreenState extends ConsumerState<LegalConsentScreen> {
         data: pending.valueOrNull,
         isEmpty: pending.valueOrNull?.isEmpty ?? false,
         emptyMessage: l10n.legalConsentNoPendingDocuments,
+        onRetry: () => ref.invalidate(pendingConsentsProvider),
         builder: (context, documents) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
