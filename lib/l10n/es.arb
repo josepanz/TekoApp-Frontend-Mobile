@@ -13,6 +13,8 @@
       }
     }
   },
+  "homeRecruitProfessionalQuestion": "¿Querés trabajar con nosotros?",
+  "homeRecruitProfessionalCta": "Postulate como profesional",
   "loginTitle": "Iniciar sesión",
   "loginEmailLabel": "Email",
   "loginPasswordLabel": "Contraseña",
@@ -36,6 +38,12 @@
   "loginErrorServiceUnavailable": "El servicio no está disponible — intentá de nuevo en unos minutos",
   "loginNoAccount": "¿No tenés cuenta?",
   "loginSignUp": "Registrate",
+  "loginBiometricButton": "Ingresar con huella/rostro",
+  "loginBiometricReason": "Confirmá tu identidad para ingresar a TekoApp",
+  "loginBiometricOptInTitle": "¿Activar ingreso con huella/rostro?",
+  "loginBiometricOptInBody": "La próxima vez vas a poder ingresar sin escribir tu contraseña.",
+  "loginBiometricOptInAccept": "Activar",
+  "loginBiometricOptInDecline": "Ahora no",
   "registerTitle": "Crear cuenta",
   "registerFirstNameLabel": "Nombre",
   "registerLastNameLabel": "Apellido",
@@ -121,11 +129,21 @@
   "nearbyProfessionalsMapTitle": "Profesionales cercanos",
   "nearbyProfessionalsMapError": "No pudimos cargar el mapa — revisá permisos de ubicación y tu conexión",
   "nearbyProfessionalsMapEmpty": "No hay profesionales conectados cerca tuyo por ahora",
+  "nearbyProfessionalsMapUnavailable": "no está tomando pedidos nuevos",
   "serviceDetailTrackingTitle": "Ubicación del profesional en vivo",
+  "serviceDetailTrackingReconnecting": "Se perdió la conexión, reintentando…",
+  "serviceDetailTrackingConnectionError": "No se pudo restablecer la conexión",
+  "serviceDetailClientContactTitle": "Contacto del cliente",
+  "serviceDetailClientContactHidden": "El cliente no compartió sus datos de contacto.",
   "profileLanguageLabel": "Idioma",
   "profileLanguageSystem": "Idioma del dispositivo",
   "profileLanguageSpanish": "Español",
   "profileLanguageEnglish": "English",
+  "profileBiometricLabel": "Ingreso con huella/rostro",
+  "profileBiometricHint": "Se activa la próxima vez que inicies sesión con tu contraseña.",
+  "profileShareContactInfoLabel": "Compartir mi contacto con el profesional",
+  "profileShareContactInfoHint": "Si lo desactivás, el profesional que atienda tus servicios no va a poder ver tu email ni tu teléfono.",
+  "profileShareContactInfoError": "No se pudo guardar tu preferencia — intentá de nuevo",
   "pushPermissionDialogTitle": "Activar notificaciones",
   "pushPermissionDialogBody": "Te avisamos cuando un profesional acepte tu pedido, cuando recibas un pago o una calificación, y otras novedades importantes de tus servicios.",
   "pushPermissionDialogAccept": "Activar",
@@ -272,6 +290,12 @@
   "paymentMethodProviderRequired": "Elegí un proveedor",
   "paymentMethodDetailLabel": "Detalle (opcional, ej. últimos 4 dígitos)",
   "paymentMethodFormSubmit": "Guardar",
+  "paymentMethodExpiresAt": "Vence {date}",
+  "@paymentMethodExpiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "paymentMethodGenericError": "No se pudo guardar — revisá los datos ingresados",
   "paymentMethodTypeCash": "Efectivo",
   "paymentMethodTypeCreditCard": "Tarjeta de crédito",
@@ -309,10 +333,13 @@
   },
   "payServiceMethodLabel": "Método de pago",
   "payServiceMethodRequired": "Elegí un método de pago",
+  "payServiceMethodExpiredLabel": "Vencido",
+  "payServiceMethodExpiredHint": "Los métodos vencidos aparecen deshabilitados — no se pueden usar para pagar.",
   "payServiceNoMethodsMessage": "No tenés métodos de pago guardados",
   "payServiceAddMethodLink": "Agregar un método de pago",
   "payServiceConfirmButton": "Confirmar pago",
   "payServiceError": "No se pudo procesar el pago — intentá de nuevo",
+  "payServiceMethodExpiredError": "El método de pago que elegiste venció — elegí otro para continuar.",
   "payServiceButton": "Pagar",
   "paymentDetailTitle": "Detalle del pago",
   "paymentDetailError": "No se pudo cargar el pago — intentá de nuevo",
@@ -403,6 +430,8 @@
   "legalDocumentTypePrivacyPolicy": "Política de privacidad",
   "legalDocumentTypeDataProcessingConsent": "Consentimiento de tratamiento de datos",
   "legalDocumentTypeImageUsageConsent": "Consentimiento de uso de imágenes",
+  "legalDocumentTypeServiceContractTerms": "Términos del contrato de servicio",
+  "legalDocumentTypeUserContentLiabilityDisclaimer": "Deslinde de responsabilidad por contenido",
   "legalConsentOpenDocumentButton": "Leer el documento completo",
   "legalConsentAcceptCheckboxLabel": "Leí y acepto este documento",
   "legalConsentAcceptButton": "Aceptar y continuar",
@@ -419,6 +448,53 @@
   "privacyDataRevokeConfirmBody": "El contenido dejará de mostrarse según el alcance de uso otorgado.",
   "privacyDataRevokeError": "No se pudo revocar el consentimiento — intentá de nuevo",
   "profileLinkPrivacyAndData": "Privacidad y datos",
+  "accountDeletionButton": "Eliminar mi cuenta",
+  "accountDeletionScreenTitle": "Eliminar cuenta",
+  "accountDeletionIntroTitle": "¿Qué pasa si eliminás tu cuenta?",
+  "accountDeletionAnonymizedIntro": "Tu nombre, tu email, tu teléfono, tu documento y tu foto de perfil se eliminan o se anonimizan de forma permanente.",
+  "accountDeletionRetainedIntro": "Por obligación legal y contable, conservamos —sin tu nombre real— tus pagos, tus contratos firmados y las calificaciones que diste o recibiste.",
+  "accountDeletionGracePeriodIntro": "Vas a tener un período de gracia para arrepentirte: vas a poder cancelar la solicitud en cualquier momento antes de que se cumpla el plazo, con un botón que va a aparecer en tu pantalla de inicio.",
+  "accountDeletionNoUndoWarning": "Pasado ese plazo, la eliminación es definitiva: no hay forma de recuperar tu cuenta.",
+  "accountDeletionConfirmCheckboxLabel": "Entiendo que, pasado el período de gracia, esta acción no se puede deshacer.",
+  "accountDeletionConfirmButton": "Eliminar mi cuenta",
+  "accountDeletionBlockedTitle": "Todavía no podés eliminar tu cuenta",
+  "accountDeletionBlockerActiveService": "{count, plural, one{Tenés {count} servicio en curso} other{Tenés {count} servicios en curso}}",
+  "@accountDeletionBlockerActiveService": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerPendingPayment": "{count, plural, one{Tenés {count} pago pendiente} other{Tenés {count} pagos pendientes}}",
+  "@accountDeletionBlockerPendingPayment": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerUnsignedContract": "{count, plural, one{Tenés {count} contrato sin firmar} other{Tenés {count} contratos sin firmar}}",
+  "@accountDeletionBlockerUnsignedContract": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerUnknown": "{count, plural, one{Tenés {count} pendiente sin resolver} other{Tenés {count} pendientes sin resolver}}",
+  "@accountDeletionBlockerUnknown": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "accountDeletionBlockerViewButton": "Ver",
+  "accountDeletionAlreadyRequestedMessage": "Ya tenés una solicitud de eliminación en curso.",
+  "accountDeletionNotRequestedMessage": "No tenés ninguna solicitud de eliminación activa para cancelar.",
+  "accountDeletionErrorGeneric": "No pudimos procesar tu solicitud — intentá de nuevo.",
+  "accountDeletionSuccessMessage": "Registramos tu solicitud de eliminación. Vas a ver un aviso en tu pantalla de inicio con la fecha exacta y un botón para cancelarla en cualquier momento antes de que se cumpla el período de gracia.",
+  "accountDeletionBackToProfileButton": "Volver a mi perfil",
+  "accountDeletionBannerTitle": "Tu cuenta se eliminará el {date} — podés cancelar en cualquier momento antes de esa fecha.",
+  "@accountDeletionBannerTitle": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "accountDeletionBannerCancelButton": "Cancelar eliminación",
   "aiDisclosureCheckboxLabel": "Usé IA para esto",
   "aiDisclosureNoteLabel": "Nota (opcional)",
   "aiDisclosureBadgeLabel": "Asistido por IA",
@@ -467,5 +543,28 @@
   "professionalDocumentsSectionEmpty": "Todavía no tiene documentos verificados",
   "professionalDocumentsSectionError": "No pudimos cargar los documentos",
   "professionalVerifiedBadge": "Antecedentes verificados",
-  "professionalDocumentViewButton": "Ver"
+  "professionalDocumentViewButton": "Ver",
+  "myPortfolioScreenTitle": "Mi portafolio",
+  "myPortfolioError": "No pudimos cargar tu portafolio",
+  "myPortfolioEmpty": "Todavía no subiste ninguna foto de trabajos anteriores",
+  "portfolioUploadButton": "Subir foto",
+  "portfolioStatusPending": "Pendiente",
+  "portfolioStatusApproved": "Aprobado",
+  "portfolioStatusRejected": "Rechazado",
+  "portfolioVisibleLabel": "Visible",
+  "portfolioDeleteButton": "Eliminar",
+  "portfolioDeleteConfirmTitle": "¿Eliminar esta foto?",
+  "portfolioDeleteConfirmBody": "Esta acción no se puede deshacer.",
+  "portfolioCaptionHint": "Descripción breve (opcional)",
+  "uploadPortfolioItemTakePhoto": "Tomar foto",
+  "uploadPortfolioItemChooseFromGallery": "Elegir de galería",
+  "uploadPortfolioItemCancelButton": "Cancelar",
+  "uploadPortfolioItemSubmitButton": "Subir foto",
+  "uploadPortfolioItemError": "No pudimos subir la foto — intentá de nuevo",
+  "publicPortfolioSectionTitle": "Trabajos anteriores",
+  "publicPortfolioSectionEmpty": "Todavía no tiene fotos de trabajos anteriores",
+  "publicPortfolioSectionError": "No pudimos cargar el portafolio",
+  "asyncStateGenericError": "Ocurrió un error inesperado.",
+  "asyncStateEmpty": "No hay datos para mostrar.",
+  "asyncStateRetryButton": "Reintentar"
 }

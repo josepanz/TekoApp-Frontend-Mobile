@@ -1,10 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/app.dart';
+import 'package:tekoapp_mobile/core/api_client/api_client.dart';
+import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
+import 'package:tekoapp_mobile/core/auth/biometric_device_supported_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/auth/user_summary.dart';
@@ -15,9 +19,13 @@ import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
 import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
 import 'package:tekoapp_mobile/features/notifications/providers/push_registration_controller.dart';
+import 'package:tekoapp_mobile/features/profile/providers/profile_repository_provider.dart';
+import 'package:tekoapp_mobile/features/profile/providers/share_contact_info_controller_provider.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockDio extends Mock implements Dio {}
 
 /// Ver `test/app_redirect_test.dart` — mismo motivo para fijar `sessionProvider` en vez de dejar
 /// que resuelva solo.
@@ -44,6 +52,31 @@ class _FixedLocaleController extends LocaleController {
   }
 }
 
+/// Mismo motivo que `_FixedLocaleController` — el `build()` real llama a
+/// `SharedPreferences.getInstance()`, que nunca resuelve bajo este harness de test de la app
+/// completa (sin canal de plataforma registrado), dejando el provider en `AsyncLoading` para
+/// siempre. Se fija el valor inicial y se salta el cacheo local en `setSharesContactInfo` — estos
+/// tests solo necesitan ejercitar el llamado real a `PUT /auth/me`.
+class _FixedShareContactInfoController extends ShareContactInfoController {
+  _FixedShareContactInfoController(this._fixed);
+  bool _fixed;
+
+  @override
+  Future<bool> build() async => _fixed;
+
+  @override
+  Future<void> setSharesContactInfo(bool value) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(profileRepositoryProvider)
+          .updateMe(shareContactInfo: value);
+      _fixed = value;
+      return value;
+    });
+  }
+}
+
 /// `PushNotificationGateway` (montado por `TekoApp`) llama a `firebase_messaging` real en
 /// `initState` — sin proyecto Firebase inicializado en `flutter test`, eso rompe cualquier test
 /// que pumpee `TekoApp`. Mismo criterio que los fakes de arriba.
@@ -62,6 +95,11 @@ final _pushMessagingTestOverrides = <Override>[
   pushRegistrationControllerProvider.overrideWith(
     () => _NoopPushRegistrationController(),
   ),
+  // El test de logout termina de nuevo en `login_screen.dart`, que llama a
+  // `BiometricLoginService` — el plugin real `local_auth` no tiene implementación de plataforma
+  // bajo `flutter test`, y el canal se queda esperando una respuesta que nunca llega (no lanza,
+  // así que ni un `try/catch` lo atrapa). Ver el mismo override en `login_screen_test.dart`.
+  biometricDeviceSupportedProvider.overrideWith((ref) async => false),
 ];
 
 void main() {
@@ -71,6 +109,9 @@ void main() {
       // Arrange
       final repository = _MockAuthRepository();
       when(() => repository.clearSession()).thenAnswer((_) async {});
+      when(
+        () => repository.hasBiometricCredentials(),
+      ).thenAnswer((_) async => false);
       const user = UserSummary(
         referenceId: 'ref-1',
         email: 'a@b.com',
@@ -244,6 +285,317 @@ void main() {
       // Assert
       expect(find.text('My profile'), findsOneWidget);
       expect(find.text('Sign out'), findsOneWidget);
+    },
+  );
+
+  group('switch de login biométrico', () {
+    testWidgets(
+      'aparece activado si ya hay credenciales guardadas, y desactivarlo las borra',
+      (tester) async {
+        // Arrange
+        final repository = _MockAuthRepository();
+        when(
+          () => repository.hasBiometricCredentials(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => repository.clearBiometricCredentials(),
+        ).thenAnswer((_) async {});
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              authRepositoryProvider.overrideWithValue(repository),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Assert — arranca activado
+        final switchKey = find.byKey(const Key('profile_biometric_switch'));
+        await tester.ensureVisible(switchKey);
+        expect(tester.widget<Switch>(switchKey).value, isTrue);
+
+        // Act — lo desactiva
+        await tester.tap(switchKey);
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(() => repository.clearBiometricCredentials()).called(1);
+        expect(tester.widget<Switch>(switchKey).value, isFalse);
+      },
+    );
+
+    testWidgets(
+      'aparece desactivado y sin poder tocarse si no hay credenciales guardadas',
+      (tester) async {
+        // Arrange
+        final repository = _MockAuthRepository();
+        when(
+          () => repository.hasBiometricCredentials(),
+        ).thenAnswer((_) async => false);
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              authRepositoryProvider.overrideWithValue(repository),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Assert — no se puede activar desde acá (ver docstring de `_BiometricLoginToggle`).
+        final switchKey = find.byKey(const Key('profile_biometric_switch'));
+        await tester.ensureVisible(switchKey);
+        final switchWidget = tester.widget<Switch>(switchKey);
+        expect(switchWidget.value, isFalse);
+        expect(switchWidget.onChanged, isNull);
+        verifyNever(() => repository.clearBiometricCredentials());
+      },
+    );
+  });
+
+  group('checkbox de compartir contacto', () {
+    testWidgets(
+      'arranca marcado, se guarda al desmarcarlo y manda shareContactInfo:false',
+      (tester) async {
+        // Arrange
+        final dio = _MockDio();
+        when(() => dio.interceptors).thenReturn(Interceptors());
+        // `myProfessionalProfileProvider` (montado globalmente por `TekoApp`) consulta esto —
+        // 404 = "sin perfil profesional", estado de negocio normal (ver
+        // `ProfessionalProfileRepository.fetchMe`), no una falla del test.
+        when(() => dio.get<Map<String, dynamic>>('/professionals/me'))
+            .thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/professionals/me'),
+              statusCode: 404,
+            ),
+          ),
+        );
+        when(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/auth/me'),
+            data: <String, dynamic>{},
+          ),
+        );
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
+              shareContactInfoControllerProvider.overrideWith(
+                () => _FixedShareContactInfoController(true),
+              ),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Assert — arranca marcado (sin nada guardado localmente todavía, default true).
+        final checkboxKey =
+            find.byKey(const Key('profile_share_contact_info_checkbox'));
+        await tester.ensureVisible(checkboxKey);
+        expect(tester.widget<Checkbox>(checkboxKey).value, isTrue);
+
+        // Act — se invoca el callback directo en vez de `tester.tap` porque el checkbox vive
+        // dentro de un `SingleChildScrollView` largo y el tap-target real del ícono es chico;
+        // llamar `onChanged` directo es el mismo patrón que ya usa Flutter para widgets con poca
+        // superficie tocable, sin depender de coordenadas de hit-test tras el scroll.
+        tester.widget<Checkbox>(checkboxKey).onChanged!(false);
+        await tester.pumpAndSettle();
+
+        // Assert
+        final captured = verify(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: captureAny(named: 'data'),
+          ),
+        ).captured.single as Map<String, dynamic>;
+        expect(captured, {'shareContactInfo': false});
+        expect(tester.widget<Checkbox>(checkboxKey).value, isFalse);
+      },
+    );
+
+    testWidgets(
+      'muestra un error si el backend rechaza el cambio',
+      (tester) async {
+        // Arrange
+        final dio = _MockDio();
+        when(() => dio.interceptors).thenReturn(Interceptors());
+        when(() => dio.get<Map<String, dynamic>>('/professionals/me'))
+            .thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/professionals/me'),
+              statusCode: 404,
+            ),
+          ),
+        );
+        when(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: any(named: 'data'),
+          ),
+        ).thenThrow(
+          DioException(requestOptions: RequestOptions(path: '/auth/me')),
+        );
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
+              shareContactInfoControllerProvider.overrideWith(
+                () => _FixedShareContactInfoController(true),
+              ),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Act
+        final checkboxKey =
+            find.byKey(const Key('profile_share_contact_info_checkbox'));
+        await tester.ensureVisible(checkboxKey);
+        tester.widget<Checkbox>(checkboxKey).onChanged!(false);
+        await tester.pumpAndSettle();
+
+        // Assert
+        final errorShown = find
+                .text('No se pudo guardar tu preferencia — intentá de nuevo')
+                .evaluate()
+                .isNotEmpty ||
+            find
+                .text("Couldn't save your preference — try again")
+                .evaluate()
+                .isNotEmpty;
+        expect(errorShown, isTrue);
+      },
+    );
+  });
+
+  testWidgets(
+    'el botón de eliminar cuenta navega a la pantalla de borrado, separado del logout',
+    (tester) async {
+      // Arrange
+      const user = UserSummary(
+        referenceId: 'ref-1',
+        email: 'a@b.com',
+        firstName: 'Ana',
+        lastName: 'Pérez',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            networkSmokeCheckProvider.overrideWith((ref) async => const []),
+            localeControllerProvider.overrideWith(
+              () => _FixedLocaleController(null),
+            ),
+            ..._pushMessagingTestOverrides,
+            sessionProvider.overrideWith(
+              () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+            ),
+          ],
+          child: const TekoApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+      router.go('/perfil');
+      await tester.pumpAndSettle();
+
+      // Act
+      await tester.ensureVisible(
+        find.byKey(const Key('profile_delete_account_button')),
+      );
+      await tester.tap(find.byKey(const Key('profile_delete_account_button')));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(
+        find.byKey(const Key('account_deletion_confirm_button')),
+        findsOneWidget,
+      );
     },
   );
 }

@@ -1,0 +1,72 @@
+{
+  "openapi": "3.0.0",
+  "info": { "title": "TekoApp-Backend (recorte, professional-documents)", "version": "1.0.0" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ProfessionalDocumentTypeResponseDTO": {
+        "type": "object",
+        "properties": {
+          "referenceId": { "type": "string" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["BACKGROUND_CHECK", "QUALIFICATION", "PORTFOLIO"]
+          },
+          "countryId": { "type": "number" },
+          "professionalCategoryId": { "type": "number" },
+          "isRequired": { "type": "boolean" },
+          "validityDays": {
+            "type": "number",
+            "description": "null = no vence"
+          },
+          "requiresStaffReview": { "type": "boolean" },
+          "isVisibleToClient": { "type": "boolean" },
+          "sortOrder": { "type": "number" },
+          "isActive": { "type": "boolean" }
+        },
+        "required": [
+          "referenceId",
+          "code",
+          "name",
+          "category",
+          "isRequired",
+          "requiresStaffReview",
+          "isVisibleToClient",
+          "sortOrder",
+          "isActive"
+        ]
+      },
+      "ProfessionalDocumentResponseDTO": {
+        "type": "object",
+        "properties": {
+          "referenceId": { "type": "string" },
+          "professionalDocumentType": {
+            "$ref": "#/components/schemas/ProfessionalDocumentTypeResponseDTO"
+          },
+          "fileKey": {
+            "type": "string",
+            "description": "null si la cuenta del profesional fue anonimizada (I-01)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "EXPIRED"]
+          },
+          "issuedAt": { "type": "string", "format": "date-time" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "reviewedAt": { "type": "string", "format": "date-time" },
+          "rejectionReason": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "referenceId",
+          "professionalDocumentType",
+          "status",
+          "createdAt"
+        ]
+      }
+    }
+  }
+}

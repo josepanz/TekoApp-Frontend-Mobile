@@ -42,6 +42,7 @@ void main() {
       'longitude': -57.5759,
       'address': 'Av. España 1234, Asunción',
       'additionalNotes': null,
+      'images': <String>[],
       'isUrgent': false,
       'startedAt': null,
       'completedAt': null,
@@ -50,6 +51,13 @@ void main() {
       'createdAt': '2026-08-08T10:00:00.000Z',
       'category': null,
       'professional': null,
+      'users': {
+        'id': 10,
+        'referenceId': 'client-uuid-1',
+        'firstName': 'María',
+        'lastName': 'López',
+        'email': 'maria@example.com',
+      },
     };
   }
 

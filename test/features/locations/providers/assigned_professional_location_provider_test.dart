@@ -16,6 +16,10 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   void Function(ProfessionalLocationUpdate)? _listener;
 
   @override
+  Stream<LocationsSocketConnectionState> get connectionState =>
+      const Stream.empty();
+
+  @override
   void connect(String accessToken) {}
 
   @override

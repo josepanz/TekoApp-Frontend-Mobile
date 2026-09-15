@@ -27,6 +27,7 @@ void main() {
     String path, {
     required int statusCode,
     String? backendMessage,
+    String? errorCode,
   }) {
     return DioException(
       requestOptions: RequestOptions(path: path),
@@ -37,7 +38,11 @@ void main() {
             ? null
             : {
                 'success': false,
-                'error': {'code': statusCode, 'message': backendMessage},
+                'error': {
+                  'code': statusCode,
+                  'message': backendMessage,
+                  if (errorCode != null) 'errorCode': errorCode,
+                },
               },
       ),
     );
@@ -46,6 +51,7 @@ void main() {
   Map<String, dynamic> paymentMethodJson({String id = 'pm-uuid-1'}) => {
         'id': 1,
         'referenceId': id,
+        'userId': 1,
         'name': 'Visa terminada en 4242',
         'type': 'CREDIT_CARD',
         'provider': 'STRIPE',
@@ -53,6 +59,8 @@ void main() {
         'isActive': true,
         'details': {'cardLast4': '4242'},
         'externalId': null,
+        'createdAt': '2026-08-08T10:00:00.000Z',
+        'updatedAt': '2026-08-08T10:00:00.000Z',
       };
 
   Map<String, dynamic> paymentJson({String id = 'pay-uuid-1'}) => {
@@ -70,6 +78,8 @@ void main() {
         'paymentMethod': 'CREDIT_CARD',
         'paymentProvider': 'STRIPE',
         'transactionId': 'txn-1',
+        'platformFee': 0.0,
+        'isRecurring': false,
         'createdAt': '2026-08-08T10:00:00.000Z',
       };
 
@@ -446,6 +456,46 @@ void main() {
         throwsA(isA<PaymentConflictFailure>()),
       );
     });
+
+    test(
+      'un 400 con errorCode PAYMENT_METHOD_EXPIRED se clasifica como '
+      'PaymentMethodExpiredFailure, no como PaymentValidationFailure genérica',
+      () async {
+        // Arrange
+        when(
+          () => dio.post<Map<String, dynamic>>(
+            '/payments',
+            data: any(named: 'data'),
+          ),
+        ).thenThrow(
+          errorResponse(
+            '/payments',
+            statusCode: 400,
+            backendMessage: 'El medio de pago seleccionado está vencido',
+            errorCode: 'PAYMENT_METHOD_EXPIRED',
+          ),
+        );
+
+        // Act
+        try {
+          await repository.createPayment(
+            professionalReferenceId: 'prof-uuid-1',
+            serviceId: 'svc-uuid-1',
+            amount: 100000,
+            currencyCode: 'PYG',
+            paymentMethod: PaymentMethodType.creditCard,
+            paymentProvider: PaymentProviderType.stripe,
+          );
+          fail('debía lanzar PaymentMethodExpiredFailure');
+        } on PaymentMethodExpiredFailure catch (failure) {
+          // Assert
+          expect(
+            failure.backendMessage,
+            'El medio de pago seleccionado está vencido',
+          );
+        }
+      },
+    );
   });
 
   group('fetchTipConfig', () {

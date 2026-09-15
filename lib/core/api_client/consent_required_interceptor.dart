@@ -9,10 +9,21 @@ import 'package:dio/dio.dart';
 /// `errorCode` (no el status 403 solo) es lo que distingue este caso de cualquier otro 403 — ver
 /// `TekoApp-Backend/openspec/decisions.md`, amendment 2026-08-25.
 class ConsentRequiredInterceptor extends Interceptor {
-  ConsentRequiredInterceptor(this._dio, this._onConsentRequired);
+  ConsentRequiredInterceptor(
+    this._dio,
+    this._onConsentRequired, {
+    this.consentTimeout = const Duration(seconds: 60),
+  });
 
   final Dio _dio;
   final Future<bool> Function() _onConsentRequired;
+
+  /// Cota máxima para esperar la resolución del flujo de consentimiento (ver M-06).
+  /// 60s: suficiente para que una persona lea y acepte la pantalla de consentimiento,
+  /// acotado para que un flujo que nunca resuelve (bridge sin listener, `push` que no
+  /// vuelve, base de datos sin versiones de documento legal) no cuelgue la app para
+  /// siempre. Al vencer, se trata como "no aceptó" y se propaga el 403 original.
+  final Duration consentTimeout;
 
   static const _excludedPathPrefix = '/legal/consents';
 
@@ -26,7 +37,10 @@ class ConsentRequiredInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    final accepted = await _onConsentRequired();
+    final accepted = await _onConsentRequired().timeout(
+      consentTimeout,
+      onTimeout: () => false,
+    );
     if (!accepted) {
       return handler.next(err);
     }

@@ -61,8 +61,16 @@ Map<String, dynamic> _serviceJson({int userId = 1}) => {
       'latitude': -25.2,
       'longitude': -57.5,
       'address': 'Av. España 1234',
+      'images': <String>[],
       'isUrgent': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
+      'users': {
+        'id': 10,
+        'referenceId': 'client-uuid-1',
+        'firstName': 'María',
+        'lastName': 'López',
+        'email': 'maria@example.com',
+      },
     };
 
 Map<String, dynamic> _paymentJson({
@@ -84,6 +92,8 @@ Map<String, dynamic> _paymentJson({
       'paymentMethod': 'CREDIT_CARD',
       'paymentProvider': 'STRIPE',
       'transactionId': 'txn-1',
+      'platformFee': 0.0,
+      'isRecurring': false,
       'createdAt': '2026-08-08T10:00:00.000Z',
       'tip': tip,
     };

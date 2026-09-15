@@ -76,10 +76,18 @@ class NearbyProfessionalsMapScreen extends ConsumerWidget {
                         professional.longitude,
                       ),
                       child: Tooltip(
-                        message: professional.description,
-                        child: const Icon(
+                        message: professional.isAvailable
+                            ? professional.description
+                            : '${professional.description}'
+                                ' (${l10n.nearbyProfessionalsMapUnavailable})',
+                        child: Icon(
                           Icons.location_pin,
-                          color: Colors.red,
+                          // Atenuado cuando no está disponible para tomar servicios nuevos — sigue
+                          // visible en el mapa (no se filtra: puede seguir siendo útil ver dónde
+                          // está), pero se distingue del resto (ver isAvailable, M-04).
+                          color: professional.isAvailable
+                              ? Colors.red
+                              : Colors.grey,
                           size: 36,
                         ),
                       ),
