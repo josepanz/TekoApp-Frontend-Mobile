@@ -11,6 +11,7 @@ class NearbyProfessional {
     required this.longitude,
     required this.distanceKm,
     required this.isOnline,
+    required this.isAvailable,
     required this.averageRating,
   });
 
@@ -23,6 +24,11 @@ class NearbyProfessional {
   final double longitude;
   final double distanceKm;
   final bool isOnline;
+
+  /// Distinto de `isOnline` (conectado en tiempo real): indica si el profesional está
+  /// tomando servicios nuevos ahora mismo. Ver `nearby_professionals_map_screen.dart`, donde el
+  /// marcador se atenúa cuando es `false`.
+  final bool isAvailable;
   final double averageRating;
 
   factory NearbyProfessional.fromJson(Map<String, dynamic> json) {
@@ -36,6 +42,7 @@ class NearbyProfessional {
       longitude: (json['longitude'] as num).toDouble(),
       distanceKm: (json['distanceKm'] as num).toDouble(),
       isOnline: json['isOnline'] as bool,
+      isAvailable: json['isAvailable'] as bool,
       averageRating: (json['averageRating'] as num).toDouble(),
     );
   }
@@ -54,6 +61,7 @@ class NearbyProfessional {
       longitude: longitude,
       distanceKm: distanceKm,
       isOnline: isOnline,
+      isAvailable: isAvailable,
       averageRating: averageRating,
     );
   }

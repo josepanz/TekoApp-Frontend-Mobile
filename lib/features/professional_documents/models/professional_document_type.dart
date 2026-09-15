@@ -1,7 +1,21 @@
 import 'document_category.dart';
 
+part 'professional_document_type.g.dart';
+
 /// `ProfessionalDocumentTypeResponseDTO` — una entrada del catálogo parametrizable (antecedente,
 /// título, certificado, portafolio).
+///
+/// `fromJson` generado por `dart run tool/openapi_codegen/generate_model.dart` (M-04, ver
+/// `openspec/changes/platform-hardening-2026-09/CODEGEN.md`) — regenerar con:
+/// ```
+/// dart run tool/openapi_codegen/generate_model.dart \
+///   --schema ProfessionalDocumentTypeResponseDTO --class ProfessionalDocumentType \
+///   --openapi-url <backend>/tekoapp-backend/api/swagger-json \
+///   --out lib/features/professional_documents/models/professional_document_type.g.dart \
+///   --part professional_document_type.dart \
+///   --int-fields sortOrder,countryId,professionalCategoryId,validityDays \
+///   --enum-fields category:DocumentCategory
+/// ```
 class ProfessionalDocumentType {
   const ProfessionalDocumentType({
     required this.referenceId,
@@ -14,6 +28,8 @@ class ProfessionalDocumentType {
     required this.sortOrder,
     required this.isActive,
     this.description,
+    this.countryId,
+    this.professionalCategoryId,
     this.validityDays,
   });
 
@@ -22,6 +38,15 @@ class ProfessionalDocumentType {
   final String name;
   final String? description;
   final DocumentCategory category;
+
+  /// El backend lo devuelve siempre (`ProfessionalDocumentTypeResponseDTO.countryId`), pero el
+  /// modelo a mano lo descartaba en silencio hasta esta migración a codegen (ver M-04) — sin
+  /// consumidor todavía en la UI, se expone igual que hizo B-01/M-05 con hallazgos similares.
+  final int? countryId;
+
+  /// Mismo hallazgo que `countryId` — el catálogo puede estar acotado a una categoría de
+  /// profesional específica; se descartaba en silencio.
+  final int? professionalCategoryId;
   final bool isRequired;
 
   /// `null` = no vence.
@@ -31,19 +56,6 @@ class ProfessionalDocumentType {
   final int sortOrder;
   final bool isActive;
 
-  factory ProfessionalDocumentType.fromJson(Map<String, dynamic> json) {
-    return ProfessionalDocumentType(
-      referenceId: json['referenceId'] as String,
-      code: json['code'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      category: DocumentCategory.fromJson(json['category'] as String),
-      isRequired: json['isRequired'] as bool,
-      validityDays: json['validityDays'] as int?,
-      requiresStaffReview: json['requiresStaffReview'] as bool,
-      isVisibleToClient: json['isVisibleToClient'] as bool,
-      sortOrder: json['sortOrder'] as int,
-      isActive: json['isActive'] as bool,
-    );
-  }
+  factory ProfessionalDocumentType.fromJson(Map<String, dynamic> json) =>
+      _$ProfessionalDocumentTypeFromJson(json);
 }

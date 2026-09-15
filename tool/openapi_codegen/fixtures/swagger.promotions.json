@@ -1,0 +1,64 @@
+{
+  "openapi": "3.0.0",
+  "info": { "title": "TekoApp-Backend (recorte, promotions)", "version": "1.0.0" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "PromotionDetailResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["PERCENTAGE", "FIXED_AMOUNT", "FREE_SERVICE"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "INACTIVE", "EXPIRED", "DEPLETED"]
+          },
+          "discountPercentage": { "type": "number" },
+          "discountAmount": { "type": "number" },
+          "minimumAmount": { "type": "number" },
+          "maximumDiscount": { "type": "number" },
+          "maxUsage": {
+            "type": "number",
+            "description": "-1 = ilimitado"
+          },
+          "maxUsagePerUser": { "type": "number" },
+          "currentUsage": { "type": "number" },
+          "validFrom": { "type": "string", "format": "date-time" },
+          "validUntil": { "type": "string", "format": "date-time" },
+          "allowedUserTypes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "specificUserIds": {
+            "type": "array",
+            "items": { "type": "number" }
+          },
+          "createdById": { "type": "number" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "lastChangedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "type",
+          "status",
+          "maxUsage",
+          "maxUsagePerUser",
+          "currentUsage",
+          "validFrom",
+          "validUntil",
+          "allowedUserTypes",
+          "specificUserIds",
+          "createdAt"
+        ]
+      }
+    }
+  }
+}

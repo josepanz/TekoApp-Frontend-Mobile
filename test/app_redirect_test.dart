@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
 import 'package:flutter/widgets.dart';
+import 'package:tekoapp_mobile/core/auth/biometric_device_supported_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_state.dart';
 import 'package:tekoapp_mobile/core/auth/user_summary.dart';
@@ -28,15 +29,36 @@ const _authenticatedUser = UserSummary(
   lastName: 'Pérez',
 );
 
-const _professionalProfile = ProfessionalProfile(
+final _professionalProfile = ProfessionalProfile(
   id: 2,
   referenceId: 'prof-uuid-1',
+  userId: 10,
   categoryId: 3,
   description: 'Plomero',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.pending,
   isAvailable: false,
   isOnline: false,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 /// `sessionProvider` real llama a `flutter_secure_storage` al construirse — sin mock de
@@ -84,6 +106,11 @@ List<Override> _overridesWithSession(SessionState session) => [
       networkSmokeCheckProvider.overrideWith((ref) async => const []),
       sessionProvider.overrideWith(() => _FixedSessionNotifier(session)),
       localeControllerProvider.overrideWith(() => _FixedLocaleController(null)),
+      // `login_screen.dart` (montada sin sesión) llama a `BiometricLoginService`, que usa el
+      // plugin real `local_auth` — sin implementación de plataforma bajo `flutter test`, el
+      // canal se queda esperando una respuesta que nunca llega (no lanza, así que ni un
+      // `try/catch` lo atrapa). Ver el mismo override en `login_screen_test.dart`.
+      biometricDeviceSupportedProvider.overrideWith((ref) async => false),
       onForegroundMessageProvider.overrideWithValue(() => const Stream.empty()),
       onMessageOpenedAppProvider.overrideWithValue(() => const Stream.empty()),
       initialPushMessageReaderProvider.overrideWithValue(() async => null),

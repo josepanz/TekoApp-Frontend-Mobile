@@ -23,6 +23,14 @@ class ConsentRequiredBridge {
     }
     final completer = Completer<bool>();
     _pending = completer;
+    // Un StreamController.broadcast no bufferea: si no hay nadie escuchando en este
+    // instante, el evento se pierde y el completer quedaría colgado para siempre. Sin
+    // listener, no hay quien muestre la pantalla de consentimiento: resolvemos "no
+    // aceptó" de una y dejamos que el caller vea el error real.
+    if (!_controller.hasListener) {
+      completer.complete(false);
+      return completer.future;
+    }
     _controller.add(null);
     return completer.future;
   }

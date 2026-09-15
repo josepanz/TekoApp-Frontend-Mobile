@@ -14,6 +14,7 @@ import 'package:tekoapp_mobile/app.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
+import 'package:tekoapp_mobile/core/auth/biometric_device_supported_provider.dart';
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
 import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
@@ -190,6 +191,13 @@ void main() {
         overrides: [
           apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
           networkSmokeCheckProvider.overrideWith((ref) async => const []),
+          // `login_screen.dart` puede ofrecer el opt-in de login biométrico tras un login
+          // exitoso (ver `openspec/specs/biometric-login.md`) — eso implica llamar al plugin
+          // real `local_auth`, que no tiene implementación de plataforma bajo `flutter test` (a
+          // diferencia de `flutter_secure_storage`, mockeado más abajo): sin este override, el
+          // canal se queda esperando una respuesta que nunca llega. Este e2e no verifica el
+          // opt-in biométrico, así que se fija en "no soportado" para no depender de ese plugin.
+          biometricDeviceSupportedProvider.overrideWith((ref) async => false),
           ..._pushMessagingTestOverrides,
         ],
         child: const TekoApp(),

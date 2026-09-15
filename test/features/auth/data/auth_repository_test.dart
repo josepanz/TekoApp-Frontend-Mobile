@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client.dart';
+import 'package:tekoapp_mobile/core/auth/token_storage_keys.dart';
 import 'package:tekoapp_mobile/features/auth/data/auth_repository.dart';
 import 'package:tekoapp_mobile/features/auth/models/login_failure.dart';
 import 'package:tekoapp_mobile/features/auth/models/register_failure.dart';
@@ -431,6 +432,121 @@ void main() {
       ).called(1);
       verify(() => cookieJar.deleteAll()).called(1);
     });
+  });
+
+  group('credenciales de login biométrico', () {
+    test('guarda email y contraseña bajo sus claves propias', () async {
+      // Arrange
+      when(
+        () => secureStorage.write(
+          key: TokenStorageKeys.biometricEmail,
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => secureStorage.write(
+          key: TokenStorageKeys.biometricPassword,
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
+
+      // Act
+      await repository.saveBiometricCredentials(
+        email: 'a@b.com',
+        password: 'pass',
+      );
+
+      // Assert
+      verify(
+        () => secureStorage.write(
+          key: TokenStorageKeys.biometricEmail,
+          value: 'a@b.com',
+        ),
+      ).called(1);
+      verify(
+        () => secureStorage.write(
+          key: TokenStorageKeys.biometricPassword,
+          value: 'pass',
+        ),
+      ).called(1);
+    });
+
+    test('borra las dos claves al desactivar el opt-in', () async {
+      // Arrange
+      when(
+        () => secureStorage.delete(key: TokenStorageKeys.biometricEmail),
+      ).thenAnswer((_) async {});
+      when(
+        () => secureStorage.delete(key: TokenStorageKeys.biometricPassword),
+      ).thenAnswer((_) async {});
+
+      // Act
+      await repository.clearBiometricCredentials();
+
+      // Assert
+      verify(
+        () => secureStorage.delete(key: TokenStorageKeys.biometricEmail),
+      ).called(1);
+      verify(
+        () => secureStorage.delete(key: TokenStorageKeys.biometricPassword),
+      ).called(1);
+    });
+
+    test('hasBiometricCredentials es true si hay un email guardado', () async {
+      // Arrange
+      when(
+        () => secureStorage.read(key: TokenStorageKeys.biometricEmail),
+      ).thenAnswer((_) async => 'a@b.com');
+
+      // Act & Assert
+      expect(await repository.hasBiometricCredentials(), isTrue);
+    });
+
+    test('hasBiometricCredentials es false sin credenciales guardadas',
+        () async {
+      // Arrange
+      when(
+        () => secureStorage.read(key: TokenStorageKeys.biometricEmail),
+      ).thenAnswer((_) async => null);
+
+      // Act & Assert
+      expect(await repository.hasBiometricCredentials(), isFalse);
+    });
+
+    test('readBiometricCredentials devuelve el par email/password guardado',
+        () async {
+      // Arrange
+      when(
+        () => secureStorage.read(key: TokenStorageKeys.biometricEmail),
+      ).thenAnswer((_) async => 'a@b.com');
+      when(
+        () => secureStorage.read(key: TokenStorageKeys.biometricPassword),
+      ).thenAnswer((_) async => 'pass');
+
+      // Act
+      final result = await repository.readBiometricCredentials();
+
+      // Assert
+      expect(result, isNotNull);
+      expect(result!.email, 'a@b.com');
+      expect(result.password, 'pass');
+    });
+
+    test(
+      'readBiometricCredentials es null si falta cualquiera de las dos claves',
+      () async {
+        // Arrange
+        when(
+          () => secureStorage.read(key: TokenStorageKeys.biometricEmail),
+        ).thenAnswer((_) async => 'a@b.com');
+        when(
+          () => secureStorage.read(key: TokenStorageKeys.biometricPassword),
+        ).thenAnswer((_) async => null);
+
+        // Act & Assert
+        expect(await repository.readBiometricCredentials(), isNull);
+      },
+    );
   });
 
   group('fetchScope', () {

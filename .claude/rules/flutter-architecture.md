@@ -53,3 +53,33 @@ UI. Ver `openspec/project.md`.
 Un usuario puede operar como cliente o profesional con la misma cuenta (ver `openspec/project.md`)
 — replicar el selector de modo de `TekoApp-Web`, no separar en flujos de navegación
 completamente distintos que dupliquen pantallas.
+
+## Prefijo `/v1` centralizado en `ApiClient`
+
+El prefijo de versionado `/v1` vive en UN SOLO lugar: `lib/core/api_client/api_client.dart`,
+en el método `_buildDefaultDio()` como parte del `baseUrl`:
+`baseUrl: '${Env.apiBaseUrl}/v1'`.
+
+Está **prohibido** escribir `/v1` a mano en rutas individuales de ningún repositorio de feature
+(`lib/features/<dominio>/data/`). La razón técnica: en Dio 5.x, el getter `RequestOptions.uri`
+de un interceptor recibe `requestOptions.path` exactamente como el string pasado a
+`dio.get(path)` — el `baseUrl` nunca se reescribe dentro de `path`, solo se concatena al
+resolver `.uri`. Por eso los interceptores que usan `_excludedPaths` (como el de refresh token)
+comparan contra `requestOptions.path` SIN el prefijo `/v1`. Si alguien vuelve a escribir `/v1`
+manualmente en `_excludedPaths`, el matcheo falla silenciosamente y funcionalidades como el
+refresh automático de token se rompen sin avisar. Verificar: `openspec/decisions.md`, sección
+"Versionado centralizado de API".
+
+## Setup nativo de plugins de Flutter — verificación en device
+
+Cuando se agrega una dependencia de Flutter que declara requisitos de configuración nativa
+(AndroidManifest, Info.plist, MainActivity, etc.), los tests unitarios NO la ejercitan. Hay que:
+
+1. **Leer los requisitos de setup** del plugin (en su README o docs de pub.dev).
+2. **Verificar en un device real** (Android `adb devices`, iOS Simulator o device Mac).
+
+Caso concreto: `local_auth` exige `FlutterFragmentActivity` en `MainActivity.kt` y
+`NSFaceIDUsageDescription` en `Info.plist`. Sin eso, `flutter test` da 476 tests en verde pero
+`authenticate()` falla en runtime. Los mockeos de tests no evocan la configuración nativa —
+es imposible detectar esta clase de bug sin un device. Documentación completa:
+`openspec/decisions.md`, sección "Login biométrico opt-in".

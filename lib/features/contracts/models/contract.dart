@@ -1,5 +1,9 @@
 import 'contract_status.dart';
 
+part 'contract.g.dart';
+part 'contract_content_snapshot.g.dart';
+part 'my_contract_summary.g.dart';
+
 /// Ítem congelado dentro del `contentSnapshot` — nunca se relee `BudgetLineItems` en vivo.
 class ContractLineItemSnapshot {
   const ContractLineItemSnapshot({
@@ -84,23 +88,20 @@ class ContractContentSnapshot {
   final ContractBudgetOptionSnapshot budgetOption;
   final List<ContractLineItemSnapshot> lineItems;
 
-  factory ContractContentSnapshot.fromJson(Map<String, dynamic> json) {
-    return ContractContentSnapshot(
-      service: ContractServiceSnapshot.fromJson(
-        json['service'] as Map<String, dynamic>,
-      ),
-      budgetOption: ContractBudgetOptionSnapshot.fromJson(
-        json['budgetOption'] as Map<String, dynamic>,
-      ),
-      lineItems: (json['lineItems'] as List<dynamic>)
-          .map(
-            (item) => ContractLineItemSnapshot.fromJson(
-              item as Map<String, dynamic>,
-            ),
-          )
-          .toList(),
-    );
-  }
+  /// `fromJson` generado por `dart run tool/openapi_codegen/generate_model.dart` (M-04, ver
+  /// `openspec/changes/platform-hardening-2026-09/CODEGEN.md`) — regenerar con:
+  /// ```
+  /// dart run tool/openapi_codegen/generate_model.dart \
+  ///   --schema ContractContentSnapshotDTO --class ContractContentSnapshot \
+  ///   --openapi-url <backend>/tekoapp-backend/api/swagger-json \
+  ///   --out lib/features/contracts/models/contract_content_snapshot.g.dart \
+  ///   --part contract.dart \
+  ///   --ref-fields service:ContractServiceSnapshot,budgetOption:ContractBudgetOptionSnapshot,lineItems:ContractLineItemSnapshot
+  /// ```
+  /// `lineItems` es el primer array de objetos anidados que migra a codegen — ver la extensión
+  /// del generador que esto motivó en el mismo commit que agregó soporte para arrays de `$ref`.
+  factory ContractContentSnapshot.fromJson(Map<String, dynamic> json) =>
+      _$ContractContentSnapshotFromJson(json);
 }
 
 class LegalTermsVersionSummary {
@@ -172,28 +173,19 @@ class Contract {
         _ => false,
       };
 
-  factory Contract.fromJson(Map<String, dynamic> json) {
-    return Contract(
-      referenceId: json['referenceId'] as String,
-      status: ContractStatus.fromJson(json['status'] as String),
-      viewerRole: ContractViewerRole.fromJson(json['viewerRole'] as String),
-      contentSnapshot: ContractContentSnapshot.fromJson(
-        json['contentSnapshot'] as Map<String, dynamic>,
-      ),
-      legalTermsVersion: json['legalTermsVersion'] != null
-          ? LegalTermsVersionSummary.fromJson(
-              json['legalTermsVersion'] as Map<String, dynamic>,
-            )
-          : null,
-      clientSignedAt: json['clientSignedAt'] != null
-          ? DateTime.parse(json['clientSignedAt'] as String)
-          : null,
-      professionalSignedAt: json['professionalSignedAt'] != null
-          ? DateTime.parse(json['professionalSignedAt'] as String)
-          : null,
-      pdfAvailable: json['pdfAvailable'] as bool,
-    );
-  }
+  /// `fromJson` generado por `dart run tool/openapi_codegen/generate_model.dart` (M-04, ver
+  /// `openspec/changes/platform-hardening-2026-09/CODEGEN.md`) — regenerar con:
+  /// ```
+  /// dart run tool/openapi_codegen/generate_model.dart \
+  ///   --schema ContractResponseDTO --class Contract \
+  ///   --openapi-url <backend>/tekoapp-backend/api/swagger-json \
+  ///   --out lib/features/contracts/models/contract.g.dart \
+  ///   --part contract.dart \
+  ///   --enum-fields status:ContractStatus,viewerRole:ContractViewerRole \
+  ///   --ref-fields contentSnapshot:ContractContentSnapshot,legalTermsVersion:LegalTermsVersionSummary
+  /// ```
+  factory Contract.fromJson(Map<String, dynamic> json) =>
+      _$ContractFromJson(json);
 }
 
 /// Fila de `GET /contracts` (listado propio) — resumen liviano, sin el snapshot completo.
@@ -212,13 +204,16 @@ class MyContractSummary {
   final DateTime createdAt;
   final bool pdfAvailable;
 
-  factory MyContractSummary.fromJson(Map<String, dynamic> json) {
-    return MyContractSummary(
-      referenceId: json['referenceId'] as String,
-      status: ContractStatus.fromJson(json['status'] as String),
-      serviceTitle: json['serviceTitle'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      pdfAvailable: json['pdfAvailable'] as bool,
-    );
-  }
+  /// `fromJson` generado por `dart run tool/openapi_codegen/generate_model.dart` (M-04, ver
+  /// `openspec/changes/platform-hardening-2026-09/CODEGEN.md`) — regenerar con:
+  /// ```
+  /// dart run tool/openapi_codegen/generate_model.dart \
+  ///   --schema MyContractSummaryResponseDTO --class MyContractSummary \
+  ///   --openapi-url <backend>/tekoapp-backend/api/swagger-json \
+  ///   --out lib/features/contracts/models/my_contract_summary.g.dart \
+  ///   --part contract.dart \
+  ///   --enum-fields status:ContractStatus
+  /// ```
+  factory MyContractSummary.fromJson(Map<String, dynamic> json) =>
+      _$MyContractSummaryFromJson(json);
 }

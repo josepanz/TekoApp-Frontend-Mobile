@@ -28,12 +28,16 @@ class ProfileRepository {
   };
 
   /// Campos `null` se omiten del body — el backend solo actualiza lo que se manda
-  /// (`UpdateMeRequestDTO`, todos los campos opcionales).
+  /// (`UpdateMeRequestDTO`, todos los campos opcionales). `shareContactInfo` es la excepción: es
+  /// un booleano donde `false` es un valor real que hay que mandar (a diferencia del resto, acá
+  /// no hay forma de decir "no toques este campo" con `null`, así que solo se omite del body si el
+  /// caller no lo pasó, ver `ShareContactInfoController`).
   Future<void> updateMe({
     String? firstName,
     String? lastName,
     String? phoneNumber,
     String? avatarKey,
+    bool? shareContactInfo,
   }) async {
     try {
       await _apiClient.raw.put<Map<String, dynamic>>(
@@ -43,6 +47,7 @@ class ProfileRepository {
           if (lastName != null) 'lastName': lastName,
           if (phoneNumber != null) 'phoneNumber': phoneNumber,
           if (avatarKey != null) 'avatarKey': avatarKey,
+          if (shareContactInfo != null) 'shareContactInfo': shareContactInfo,
         },
       );
     } on DioException catch (error) {

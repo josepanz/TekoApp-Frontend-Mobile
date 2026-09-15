@@ -58,6 +58,13 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
   double get _serviceAmount =>
       widget.service.finalAmount ?? widget.service.totalAmount ?? 0;
 
+  /// Mismo criterio que `PaymentsService.assertPaymentMethodNotExpired` del backend
+  /// (`method.expiresAt <= now`) — un método sin `expiresAt` nunca vence.
+  bool _isExpired(PaymentMethod method) {
+    final expiresAt = method.expiresAt;
+    return expiresAt != null && !expiresAt.isAfter(DateTime.now());
+  }
+
   @override
   void dispose() {
     _promoCodeController.dispose();
@@ -112,12 +119,20 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
     }
     final message = switch (state.error) {
       PromotionRejected(:final message) => message ?? l10n.payServiceError,
+      PaymentMethodExpiredFailure(:final backendMessage) =>
+        backendMessage ?? l10n.payServiceMethodExpiredError,
       PaymentValidationFailure(:final backendMessage) =>
         backendMessage ?? l10n.payServiceError,
       PaymentConflictFailure(:final backendMessage) =>
         backendMessage ?? l10n.payServiceError,
       _ => l10n.payServiceError,
     };
+    if (state.error is PaymentMethodExpiredFailure) {
+      // Venció entre que se pintó el selector y se confirmó el pago (el backend es la fuente de
+      // verdad) — se limpia la selección para forzar elegir otro método; el próximo build ya lo
+      // muestra deshabilitado en el dropdown con la fecha actual.
+      setState(() => _selectedMethod = null);
+    }
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
@@ -191,15 +206,33 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
             DropdownButtonFormField<PaymentMethod>(
               key: const Key('pay_service_method_field'),
               initialValue: _selectedMethod,
-              decoration:
-                  InputDecoration(labelText: l10n.payServiceMethodLabel),
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: l10n.payServiceMethodLabel,
+                helperText: methods.any(_isExpired)
+                    ? l10n.payServiceMethodExpiredHint
+                    : null,
+                helperMaxLines: 2,
+              ),
               items: [
                 for (final method in methods)
                   DropdownMenuItem(
+                    key: Key('pay_service_method_option_${method.referenceId}'),
                     value: method,
+                    enabled: !_isExpired(method),
                     child: Text(
-                      '${method.name} · '
-                      '${paymentMethodTypeLabel(l10n, method.type)}',
+                      _isExpired(method)
+                          ? '${method.name} · '
+                              '${paymentMethodTypeLabel(l10n, method.type)} · '
+                              '${l10n.payServiceMethodExpiredLabel}'
+                          : '${method.name} · '
+                              '${paymentMethodTypeLabel(l10n, method.type)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: _isExpired(method)
+                          ? TextStyle(
+                              color: Theme.of(context).disabledColor,
+                            )
+                          : null,
                     ),
                   ),
               ],

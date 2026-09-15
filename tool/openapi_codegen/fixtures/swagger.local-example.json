@@ -1,0 +1,49 @@
+{
+  "_comment": "Fixture local que representa un recorte real de /swagger-json del backend (componentes de RatingDetailResponseDTO, extraído a mano de TekoApp-Backend/src/api/ratings/dtos/response/rating-detail.response.dto.ts el 2026-09-06). Sirve para probar el generador sin depender de un backend corriendo — ver CODEGEN.md, sección 'Cómo se probó esta PoC'. En uso real, --openapi-url reemplaza este archivo por un fetch a BACKEND_API_URL/swagger-json, igual que TekoApp-Frontend-Web/scripts/generate-api-types.mjs.",
+  "openapi": "3.0.0",
+  "components": {
+    "schemas": {
+      "RatingDetailResponseDTO": {
+        "type": "object",
+        "required": [
+          "id",
+          "referenceId",
+          "userId",
+          "professionalId",
+          "serviceId",
+          "type",
+          "rating",
+          "review",
+          "criteria",
+          "isAnonymous",
+          "isReported",
+          "reportReason",
+          "isActive",
+          "createdAt",
+          "createdBy"
+        ],
+        "properties": {
+          "id": { "type": "number", "example": 42 },
+          "referenceId": { "type": "string", "example": "a63b5212-db5e-4ef5-9614-726614174000" },
+          "userId": { "type": "number", "nullable": true, "example": 1 },
+          "professionalId": { "type": "number", "nullable": true, "example": 1 },
+          "serviceId": { "type": "string", "nullable": true },
+          "type": {
+            "type": "string",
+            "enum": ["CLIENT_TO_PROFESSIONAL", "PROFESSIONAL_TO_CLIENT"],
+            "example": "CLIENT_TO_PROFESSIONAL"
+          },
+          "rating": { "type": "number", "example": 4.5 },
+          "review": { "type": "string", "nullable": true, "example": "Excelente trabajo" },
+          "criteria": { "type": "object", "nullable": true },
+          "isAnonymous": { "type": "boolean", "example": false },
+          "isReported": { "type": "boolean", "example": false },
+          "reportReason": { "type": "string", "nullable": true },
+          "isActive": { "type": "boolean", "example": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "createdBy": { "type": "string", "nullable": true }
+        }
+      }
+    }
+  }
+}

@@ -33,6 +33,12 @@ void main() {
             'icon': 'wrench-outline',
             'color': '#2ecc71',
             'parentCategoryId': null,
+            'sortOrder': 0,
+            'status': 'ACTIVE',
+            'isVisible': true,
+            'requiresVerification': false,
+            'maxBudgetOptionsPerRequest': 3,
+            'createdAt': '2026-08-08T10:00:00.000Z',
           },
         ]),
       );

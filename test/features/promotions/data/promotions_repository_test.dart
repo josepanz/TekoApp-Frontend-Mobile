@@ -24,6 +24,32 @@ void main() {
     return Response(requestOptions: RequestOptions(path: path), data: data);
   }
 
+  // Fixture completo de `PromotionDetailResponseDTO` (ver M-04, migración de `promotions` a
+  // codegen) — antes de esa migración alcanzaba con `{code, name}`; el `fromJson` generado exige
+  // el resto de los campos `required` reales del backend o lanza en vez de ignorar en silencio.
+  Map<String, dynamic> promotionJson() => {
+        'id': 'promo-uuid-1',
+        'code': 'PROMO2025',
+        'name': 'Descuento de verano',
+        'description': '20% de descuento en todos los servicios',
+        'type': 'PERCENTAGE',
+        'status': 'ACTIVE',
+        'discountPercentage': 20.0,
+        'discountAmount': null,
+        'minimumAmount': 30000,
+        'maximumDiscount': 100000,
+        'maxUsage': 100,
+        'maxUsagePerUser': 1,
+        'currentUsage': 42,
+        'validFrom': '2025-01-01T00:00:00.000Z',
+        'validUntil': '2025-12-31T23:59:59.000Z',
+        'allowedUserTypes': ['cliente', 'profesional'],
+        'specificUserIds': <int>[],
+        'createdById': null,
+        'createdAt': '2025-01-01T00:00:00.000Z',
+        'lastChangedAt': null,
+      };
+
   group('validate', () {
     test('mapea una promoción válida con su descuento', () async {
       // Arrange
@@ -36,7 +62,7 @@ void main() {
         (_) async => okResponse('/promotions/validate', {
           'isValid': true,
           'discountAmount': 30000,
-          'promotion': {'code': 'PROMO2025', 'name': 'Descuento de verano'},
+          'promotion': promotionJson(),
         }),
       );
 
@@ -118,7 +144,7 @@ void main() {
           'success': true,
           'discountAmount': 30000,
           'finalAmount': 120000,
-          'promotion': {'code': 'PROMO2025', 'name': 'Descuento de verano'},
+          'promotion': promotionJson(),
         }),
       );
 
