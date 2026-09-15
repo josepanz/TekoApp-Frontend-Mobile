@@ -100,6 +100,32 @@ void main() {
         );
       },
     );
+
+    test(
+      'manda shareContactInfo:false cuando se pasa explícitamente — a diferencia del '
+      'resto de los campos, false es un valor real, no "no tocar este campo"',
+      () async {
+        // Arrange
+        when(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer((_) async => jsonResponse('/auth/me', {}));
+
+        // Act
+        await repository.updateMe(shareContactInfo: false);
+
+        // Assert
+        final captured = verify(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: captureAny(named: 'data'),
+          ),
+        ).captured.single as Map<String, dynamic>;
+        expect(captured, {'shareContactInfo': false});
+      },
+    );
   });
 
   group('uploadAvatar', () {

@@ -13,6 +13,7 @@ import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_input.dart';
 import '../../auth/providers/biometric_opt_in_controller_provider.dart';
 import '../models/profile_failure.dart';
+import '../providers/share_contact_info_controller_provider.dart';
 import '../providers/update_profile_controller_provider.dart';
 import '../providers/upload_avatar_controller_provider.dart';
 
@@ -99,6 +100,55 @@ class _BiometricLoginToggle extends ConsumerWidget {
               ? (_) =>
                   ref.read(biometricOptInControllerProvider.notifier).disable()
               : null,
+        ),
+      ],
+    );
+  }
+}
+
+/// Checkbox "compartir mi contacto" (ver `share_contact_info_controller_provider.dart`) — se
+/// guarda al toque, mismo patrón que `_BiometricLoginToggle` en esta misma pantalla (no forma
+/// parte del formulario de nombre/apellido/teléfono, que se guarda recién con el botón
+/// "Guardar").
+class _ShareContactInfoToggle extends ConsumerWidget {
+  const _ShareContactInfoToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(shareContactInfoControllerProvider);
+    final shares = state.valueOrNull ?? true;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Checkbox(
+          key: const Key('profile_share_contact_info_checkbox'),
+          value: shares,
+          onChanged: state.isLoading
+              ? null
+              : (value) => ref
+                  .read(shareContactInfoControllerProvider.notifier)
+                  .setSharesContactInfo(value ?? true),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.profileShareContactInfoLabel),
+              Text(
+                l10n.profileShareContactInfoHint,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              if (state.hasError) ...[
+                const SizedBox(height: 4),
+                Text(
+                  l10n.profileShareContactInfoError,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );
@@ -308,6 +358,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const _LanguageSelector(),
               const SizedBox(height: 12),
               const _BiometricLoginToggle(),
+              const SizedBox(height: 12),
+              const _ShareContactInfoToggle(),
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_privacy_and_data_button'),

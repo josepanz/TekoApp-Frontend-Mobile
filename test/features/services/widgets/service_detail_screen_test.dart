@@ -103,6 +103,41 @@ void main() {
     when(() => dio.interceptors).thenReturn(Interceptors());
   });
 
+  /// Ver `test/features/professional_profile/data/professional_profile_repository_test.dart`
+  /// para el mismo fixture — `referenceId` coincide con `professional.referenceId` de
+  /// `inProgressServiceJson()`/`completedServiceJson()` (`prof-uuid-1`), así
+  /// `ClientContactSection` reconoce a quien mira la pantalla como el profesional asignado.
+  Map<String, dynamic> myProfessionalProfileJson() {
+    return {
+      'id': 2,
+      'referenceId': 'prof-uuid-1',
+      'userId': 20,
+      'categoryId': 3,
+      'description': 'Plomero con 5 años de experiencia',
+      'hourlyRate': 50000,
+      'fixedRate': null,
+      'skills': ['soldadura'],
+      'certifications': <String>[],
+      'yearsOfExperience': 5,
+      'status': 'APPROVED',
+      'isAvailable': true,
+      'isOnline': true,
+      'verificationStatus': 'VERIFIED',
+      'requiredDocumentsVerified': true,
+      'totalServices': 10,
+      'averageRating': 4.5,
+      'totalRatings': 8,
+      'createdAt': '2026-01-01T00:00:00.000Z',
+      'user': {
+        'id': 20,
+        'email': 'ana@example.com',
+        'firstName': 'Ana',
+        'lastName': 'Pérez',
+      },
+      'category': {'id': 3, 'name': 'Plomería', 'slug': 'plomeria'},
+    };
+  }
+
   testWidgets('muestra el detalle con el profesional asignado', (
     tester,
   ) async {
@@ -366,6 +401,151 @@ void main() {
       );
     },
   );
+
+  group('contacto del cliente para el profesional asignado (Tarea 8)', () {
+    Map<String, dynamic> serviceWithClientContactJson({
+      String? clientEmail = 'maria@example.com',
+      String? clientPhoneNumber = '+595981111111',
+    }) {
+      final json = inProgressServiceJson();
+      json['users'] = {
+        'id': 10,
+        'referenceId': 'client-uuid-1',
+        'firstName': 'María',
+        'lastName': 'López',
+        if (clientEmail != null) 'email': clientEmail,
+        if (clientPhoneNumber != null) 'phoneNumber': clientPhoneNumber,
+      };
+      return json;
+    }
+
+    void stubLocationNotFound() {
+      when(
+        () => dio.get<Map<String, dynamic>>('/locations/professional/2'),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/locations/professional/2'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/locations/professional/2'),
+            statusCode: 404,
+          ),
+        ),
+      );
+    }
+
+    testWidgets(
+      'muestra el email y el teléfono del cliente cuando el profesional asignado mira la '
+      'pantalla y el cliente comparte su contacto',
+      (tester) async {
+        // Arrange
+        when(
+          () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+            data: serviceWithClientContactJson(),
+          ),
+        );
+        stubLocationNotFound();
+        when(
+          () => dio.get<Map<String, dynamic>>('/professionals/me'),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            data: myProfessionalProfileJson(),
+          ),
+        );
+
+        // Act
+        await _pumpScreen(tester, dio);
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.text('Contacto del cliente'), findsOneWidget);
+        expect(find.text('maria@example.com'), findsOneWidget);
+        expect(find.text('+595981111111'), findsOneWidget);
+        expect(
+          find.text('El cliente no compartió sus datos de contacto.'),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'muestra un aviso, sin un hueco vacío, cuando el cliente no comparte su contacto',
+      (tester) async {
+        // Arrange — el backend enmascara el contacto ELIMINANDO las claves del JSON (no las manda
+        // en `null`), ver `services-response.helper.ts#maskContactIfNotShared`.
+        when(
+          () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+            data: serviceWithClientContactJson(
+              clientEmail: null,
+              clientPhoneNumber: null,
+            ),
+          ),
+        );
+        stubLocationNotFound();
+        when(
+          () => dio.get<Map<String, dynamic>>('/professionals/me'),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            data: myProfessionalProfileJson(),
+          ),
+        );
+
+        // Act
+        await _pumpScreen(tester, dio);
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.text('Contacto del cliente'), findsOneWidget);
+        expect(
+          find.text('El cliente no compartió sus datos de contacto.'),
+          findsOneWidget,
+        );
+        expect(find.text('maria@example.com'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'no muestra la sección de contacto del cliente a quien NO es el profesional asignado',
+      (tester) async {
+        // Arrange — 404 en /professionals/me: quien mira la pantalla no tiene perfil profesional
+        // (es el cliente viendo su propio servicio).
+        when(
+          () => dio.get<Map<String, dynamic>>('/services/service-uuid-1'),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/services/service-uuid-1'),
+            data: serviceWithClientContactJson(),
+          ),
+        );
+        stubLocationNotFound();
+        when(
+          () => dio.get<Map<String, dynamic>>('/professionals/me'),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/professionals/me'),
+              statusCode: 404,
+            ),
+          ),
+        );
+
+        // Act
+        await _pumpScreen(tester, dio);
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.text('Contacto del cliente'), findsNothing);
+      },
+    );
+  });
 
   testWidgets('muestra un error cuando falla la carga', (tester) async {
     // Arrange

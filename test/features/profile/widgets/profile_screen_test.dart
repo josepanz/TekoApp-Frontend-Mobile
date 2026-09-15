@@ -1,9 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tekoapp_mobile/app.dart';
+import 'package:tekoapp_mobile/core/api_client/api_client.dart';
+import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/core/api_client/network_smoke_check_provider.dart';
 import 'package:tekoapp_mobile/core/auth/biometric_device_supported_provider.dart';
 import 'package:tekoapp_mobile/core/auth/session_provider.dart';
@@ -16,9 +19,13 @@ import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/features/home/widgets/home_screen.dart';
 import 'package:tekoapp_mobile/features/notifications/providers/push_messaging_provider.dart';
 import 'package:tekoapp_mobile/features/notifications/providers/push_registration_controller.dart';
+import 'package:tekoapp_mobile/features/profile/providers/profile_repository_provider.dart';
+import 'package:tekoapp_mobile/features/profile/providers/share_contact_info_controller_provider.dart';
 import 'package:tekoapp_mobile/features/profile/widgets/profile_screen.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockDio extends Mock implements Dio {}
 
 /// Ver `test/app_redirect_test.dart` — mismo motivo para fijar `sessionProvider` en vez de dejar
 /// que resuelva solo.
@@ -42,6 +49,31 @@ class _FixedLocaleController extends LocaleController {
   Future<void> setLocale(Locale? locale) async {
     _fixed = locale;
     state = AsyncData(locale);
+  }
+}
+
+/// Mismo motivo que `_FixedLocaleController` — el `build()` real llama a
+/// `SharedPreferences.getInstance()`, que nunca resuelve bajo este harness de test de la app
+/// completa (sin canal de plataforma registrado), dejando el provider en `AsyncLoading` para
+/// siempre. Se fija el valor inicial y se salta el cacheo local en `setSharesContactInfo` — estos
+/// tests solo necesitan ejercitar el llamado real a `PUT /auth/me`.
+class _FixedShareContactInfoController extends ShareContactInfoController {
+  _FixedShareContactInfoController(this._fixed);
+  bool _fixed;
+
+  @override
+  Future<bool> build() async => _fixed;
+
+  @override
+  Future<void> setSharesContactInfo(bool value) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(profileRepositoryProvider)
+          .updateMe(shareContactInfo: value);
+      _fixed = value;
+      return value;
+    });
   }
 }
 
@@ -354,6 +386,169 @@ void main() {
         expect(switchWidget.value, isFalse);
         expect(switchWidget.onChanged, isNull);
         verifyNever(() => repository.clearBiometricCredentials());
+      },
+    );
+  });
+
+  group('checkbox de compartir contacto', () {
+    testWidgets(
+      'arranca marcado, se guarda al desmarcarlo y manda shareContactInfo:false',
+      (tester) async {
+        // Arrange
+        final dio = _MockDio();
+        when(() => dio.interceptors).thenReturn(Interceptors());
+        // `myProfessionalProfileProvider` (montado globalmente por `TekoApp`) consulta esto —
+        // 404 = "sin perfil profesional", estado de negocio normal (ver
+        // `ProfessionalProfileRepository.fetchMe`), no una falla del test.
+        when(() => dio.get<Map<String, dynamic>>('/professionals/me'))
+            .thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/professionals/me'),
+              statusCode: 404,
+            ),
+          ),
+        );
+        when(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/auth/me'),
+            data: <String, dynamic>{},
+          ),
+        );
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
+              shareContactInfoControllerProvider.overrideWith(
+                () => _FixedShareContactInfoController(true),
+              ),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Assert — arranca marcado (sin nada guardado localmente todavía, default true).
+        final checkboxKey =
+            find.byKey(const Key('profile_share_contact_info_checkbox'));
+        await tester.ensureVisible(checkboxKey);
+        expect(tester.widget<Checkbox>(checkboxKey).value, isTrue);
+
+        // Act — se invoca el callback directo en vez de `tester.tap` porque el checkbox vive
+        // dentro de un `SingleChildScrollView` largo y el tap-target real del ícono es chico;
+        // llamar `onChanged` directo es el mismo patrón que ya usa Flutter para widgets con poca
+        // superficie tocable, sin depender de coordenadas de hit-test tras el scroll.
+        tester.widget<Checkbox>(checkboxKey).onChanged!(false);
+        await tester.pumpAndSettle();
+
+        // Assert
+        final captured = verify(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: captureAny(named: 'data'),
+          ),
+        ).captured.single as Map<String, dynamic>;
+        expect(captured, {'shareContactInfo': false});
+        expect(tester.widget<Checkbox>(checkboxKey).value, isFalse);
+      },
+    );
+
+    testWidgets(
+      'muestra un error si el backend rechaza el cambio',
+      (tester) async {
+        // Arrange
+        final dio = _MockDio();
+        when(() => dio.interceptors).thenReturn(Interceptors());
+        when(() => dio.get<Map<String, dynamic>>('/professionals/me'))
+            .thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/professionals/me'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/professionals/me'),
+              statusCode: 404,
+            ),
+          ),
+        );
+        when(
+          () => dio.put<Map<String, dynamic>>(
+            '/auth/me',
+            data: any(named: 'data'),
+          ),
+        ).thenThrow(
+          DioException(requestOptions: RequestOptions(path: '/auth/me')),
+        );
+        const user = UserSummary(
+          referenceId: 'ref-1',
+          email: 'a@b.com',
+          firstName: 'Ana',
+          lastName: 'Pérez',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              networkSmokeCheckProvider.overrideWith((ref) async => const []),
+              localeControllerProvider.overrideWith(
+                () => _FixedLocaleController(null),
+              ),
+              ..._pushMessagingTestOverrides,
+              apiClientProvider.overrideWithValue(ApiClient(dio: dio)),
+              shareContactInfoControllerProvider.overrideWith(
+                () => _FixedShareContactInfoController(true),
+              ),
+              sessionProvider.overrideWith(
+                () => _FixedSessionNotifier(const SessionAuthenticated(user)),
+              ),
+            ],
+            child: const TekoApp(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+        router.go('/perfil');
+        await tester.pumpAndSettle();
+
+        // Act
+        final checkboxKey =
+            find.byKey(const Key('profile_share_contact_info_checkbox'));
+        await tester.ensureVisible(checkboxKey);
+        tester.widget<Checkbox>(checkboxKey).onChanged!(false);
+        await tester.pumpAndSettle();
+
+        // Assert
+        final errorShown = find
+                .text('No se pudo guardar tu preferencia — intentá de nuevo')
+                .evaluate()
+                .isNotEmpty ||
+            find
+                .text("Couldn't save your preference — try again")
+                .evaluate()
+                .isNotEmpty;
+        expect(errorShown, isTrue);
       },
     );
   });

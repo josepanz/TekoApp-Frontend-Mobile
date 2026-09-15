@@ -27,6 +27,7 @@ import '../models/service_request.dart';
 import '../models/service_status.dart';
 import '../providers/service_detail_provider.dart';
 import '../providers/service_requests_provider.dart';
+import 'client_contact_section.dart';
 import 'service_status_badge.dart';
 
 /// Detalle de un `Service` por su `id` (UUID) — ver `openspec/changes/0003-services-marketplace-core.md`.
@@ -104,6 +105,8 @@ class _ServiceDetailBody extends StatelessWidget {
             ),
           ],
           if (service.professional != null) ...[
+            const SizedBox(height: 24),
+            ClientContactSection(service: service),
             const SizedBox(height: 24),
             ProgressTimeline(service: service),
             const SizedBox(height: 24),
