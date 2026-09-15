@@ -24,6 +24,18 @@ class PaymentConflictFailure extends PaymentFailure {
   final String? backendMessage;
 }
 
+/// 400 con `errorCode: 'PAYMENT_METHOD_EXPIRED'` — el backend rechaza `POST /payments` cuando el
+/// método elegido ya venció (`PaymentMethod.expiresAt` en el pasado al momento de confirmar), aun
+/// si la UI lo mostraba habilitado cuando se pintó la pantalla (puede vencer entre que se carga el
+/// selector y se confirma el pago). Se distingue de `PaymentValidationFailure` genérica para que
+/// la UI pueda mostrar un mensaje específico en vez de uno genérico de validación — mismo criterio
+/// que `LegalConsentsLegalHoldFailure` (`errorCode: 'LEGAL_HOLD_ACTIVE'`).
+class PaymentMethodExpiredFailure extends PaymentFailure {
+  const PaymentMethodExpiredFailure(this.backendMessage);
+
+  final String? backendMessage;
+}
+
 /// 5xx o sin conexión.
 class PaymentServiceUnavailableFailure extends PaymentFailure {
   const PaymentServiceUnavailableFailure();

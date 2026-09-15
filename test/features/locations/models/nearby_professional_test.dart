@@ -15,6 +15,7 @@ void main() {
         'longitude': -57.5759,
         'distanceKm': 2.34,
         'isOnline': true,
+        'isAvailable': true,
         'averageRating': 4.5,
       };
 
@@ -27,6 +28,31 @@ void main() {
       expect(professional.latitude, -25.2637);
       expect(professional.longitude, -57.5759);
       expect(professional.distanceKm, 2.34);
+      expect(professional.isAvailable, isTrue);
+    });
+
+    test('parsea isAvailable en false — distinto de isOnline', () {
+      // Arrange
+      final json = {
+        'id': 1,
+        'referenceId': 'prof-ref-1',
+        'categoryId': 3,
+        'description': 'Plomero',
+        'hourlyRate': 50000,
+        'latitude': -25.2637,
+        'longitude': -57.5759,
+        'distanceKm': 2.34,
+        'isOnline': true,
+        'isAvailable': false,
+        'averageRating': 4.5,
+      };
+
+      // Act
+      final professional = NearbyProfessional.fromJson(json);
+
+      // Assert
+      expect(professional.isOnline, isTrue);
+      expect(professional.isAvailable, isFalse);
     });
   });
 
@@ -43,6 +69,7 @@ void main() {
         longitude: -57.5759,
         distanceKm: 2.34,
         isOnline: true,
+        isAvailable: true,
         averageRating: 4.5,
       );
 
@@ -57,6 +84,7 @@ void main() {
       expect(moved.longitude, -57.6);
       expect(moved.id, professional.id);
       expect(moved.description, professional.description);
+      expect(moved.isAvailable, professional.isAvailable);
     });
   });
 }

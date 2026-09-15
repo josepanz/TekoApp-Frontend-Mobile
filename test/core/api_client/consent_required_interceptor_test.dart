@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -185,6 +187,33 @@ void main() {
 
       // Assert
       verify(() => handler.next(retryError)).called(1);
+    },
+  );
+
+  test(
+    'si el flujo de consentimiento nunca resuelve, no se cuelga: falla por timeout (M-06)',
+    () async {
+      // Arrange — el bridge nunca completa su Completer (bridge sin listener, push
+      // que falla en silencio, etc.). Antes del fix, esto colgaba `onError` para
+      // siempre; ahora el interceptor debe darse por vencido tras `consentTimeout`.
+      final error = errorWith(
+        path: '/professional-documents',
+        statusCode: 403,
+        errorCode: 'CONSENT_REQUIRED',
+      );
+      final interceptor = ConsentRequiredInterceptor(
+        dio,
+        () => Completer<bool>().future,
+        consentTimeout: const Duration(milliseconds: 20),
+      );
+
+      // Act
+      interceptor.onError(error, handler);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      // Assert
+      verify(() => handler.next(error)).called(1);
+      verifyNever(() => dio.fetch<dynamic>(any()));
     },
   );
 }

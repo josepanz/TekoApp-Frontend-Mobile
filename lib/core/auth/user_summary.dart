@@ -13,6 +13,7 @@ class UserSummary {
     required this.lastName,
     this.phoneNumber,
     this.avatarUrl,
+    this.deletionScheduledAt,
   });
 
   final String referenceId;
@@ -25,6 +26,12 @@ class UserSummary {
   /// esto más allá de la sesión/pantalla actual, ver `.claude/rules/auth.md`.
   final String? avatarUrl;
 
+  /// No-`null` mientras la cuenta tiene una solicitud de borrado activa (`PENDING_DELETION`, ver
+  /// `openspec/specs/account-deletion.md`) — dispara el banner de ventana de gracia en
+  /// `HomeScreen`. `null` en cualquier otro estado. Mismo campo que ya trae `GET /auth/scope`, no
+  /// una llamada nueva.
+  final DateTime? deletionScheduledAt;
+
   /// Recibe el objeto `user` de `UserScopeResponseDTO`, no la respuesta completa (que también
   /// trae `roles`/`permissions` como hermanos de `user`).
   factory UserSummary.fromJson(Map<String, dynamic> json) {
@@ -35,6 +42,9 @@ class UserSummary {
       lastName: json['lastName'] as String,
       phoneNumber: json['phoneNumber'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
+      deletionScheduledAt: json['deletionScheduledAt'] != null
+          ? DateTime.parse(json['deletionScheduledAt'] as String)
+          : null,
     );
   }
 }

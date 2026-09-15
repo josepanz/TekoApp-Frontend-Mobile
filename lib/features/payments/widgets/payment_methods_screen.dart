@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
@@ -113,6 +114,16 @@ class PaymentMethodsScreen extends ConsumerWidget {
                     '${paymentMethodTypeLabel(l10n, method.type)} · '
                     '${paymentProviderLabel(l10n, method.provider)}',
                   ),
+                  if (method.expiresAt != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.paymentMethodExpiresAt(
+                        DateFormat.yMd(l10n.localeName)
+                            .format(method.expiresAt!),
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Row(
                     children: [

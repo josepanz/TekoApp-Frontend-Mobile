@@ -17,6 +17,8 @@ Map<String, dynamic> _basePaymentJson({Map<String, dynamic>? refundDetails}) {
     'paymentMethod': 'CREDIT_CARD',
     'paymentProvider': 'STRIPE',
     'transactionId': 'txn-1',
+    'platformFee': 0.0,
+    'isRecurring': false,
     'createdAt': '2026-08-08T10:00:00.000Z',
     if (refundDetails != null) 'refundDetails': refundDetails,
   };
@@ -55,5 +57,70 @@ void main() {
       // Act & Assert
       expect(payment.amountAvailableForRefund, 0.0);
     });
+  });
+
+  group('Payment.fromJson — campos de detalle agregados en M-05', () {
+    test('parsea todos los campos cuando el backend los devuelve presentes',
+        () {
+      // Arrange
+      final json = {
+        ..._basePaymentJson(),
+        'externalTransactionId': 'pi_stripe_123',
+        'paymentDetails': {'brand': 'visa'},
+        'metadata': {'origen': 'app-mobile'},
+        'processedAt': '2026-08-08T10:05:00.000Z',
+        'paidAt': '2026-08-08T10:05:01.000Z',
+        'failedAt': null,
+        'failureReason': null,
+        'professionalNetAmount': 88700.0,
+        'recurringInterval': 'MONTHLY',
+        'nextPaymentDate': '2026-09-08T10:00:00.000Z',
+        'lastChangedAt': '2026-08-08T10:05:01.000Z',
+      };
+
+      // Act
+      final payment = Payment.fromJson(json);
+
+      // Assert
+      expect(payment.externalTransactionId, 'pi_stripe_123');
+      expect(payment.paymentDetails, {'brand': 'visa'});
+      expect(payment.metadata, {'origen': 'app-mobile'});
+      expect(payment.processedAt, DateTime.parse('2026-08-08T10:05:00.000Z'));
+      expect(payment.paidAt, DateTime.parse('2026-08-08T10:05:01.000Z'));
+      expect(payment.failedAt, isNull);
+      expect(payment.professionalNetAmount, 88700.0);
+      expect(payment.recurringInterval, 'MONTHLY');
+      expect(
+        payment.nextPaymentDate,
+        DateTime.parse('2026-09-08T10:00:00.000Z'),
+      );
+      expect(
+        payment.lastChangedAt,
+        DateTime.parse('2026-08-08T10:05:01.000Z'),
+      );
+      expect(payment.platformFee, 0.0);
+      expect(payment.isRecurring, isFalse);
+    });
+
+    test(
+      'los campos nullable ausentes del JSON (no solo null explícito) parsean a null',
+      () {
+        // Act — _basePaymentJson() no incluye ninguno de estos campos.
+        final payment = Payment.fromJson(_basePaymentJson());
+
+        // Assert
+        expect(payment.externalTransactionId, isNull);
+        expect(payment.paymentDetails, isNull);
+        expect(payment.metadata, isNull);
+        expect(payment.processedAt, isNull);
+        expect(payment.paidAt, isNull);
+        expect(payment.failedAt, isNull);
+        expect(payment.failureReason, isNull);
+        expect(payment.professionalNetAmount, isNull);
+        expect(payment.recurringInterval, isNull);
+        expect(payment.nextPaymentDate, isNull);
+        expect(payment.lastChangedAt, isNull);
+      },
+    );
   });
 }

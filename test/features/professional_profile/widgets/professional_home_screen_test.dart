@@ -15,15 +15,36 @@ import 'package:tekoapp_mobile/features/services/providers/available_services_pr
 import 'package:tekoapp_mobile/features/services/widgets/available_services_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
-const _profile = ProfessionalProfile(
+final _profile = ProfessionalProfile(
   id: 2,
   referenceId: 'prof-uuid-1',
+  userId: 10,
   categoryId: 3,
   description: 'Plomero',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.pending,
   isAvailable: false,
   isOnline: false,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 Future<void> _pumpScreen(
@@ -81,7 +102,7 @@ void main() {
     'muestra el listado de servicios disponibles cuando ya existe un perfil',
     (tester) async {
       // Arrange & Act
-      await _pumpScreen(tester, profileState: const AsyncData(_profile));
+      await _pumpScreen(tester, profileState: AsyncData(_profile));
 
       // Assert
       expect(find.byType(AvailableServicesScreen), findsOneWidget);
@@ -92,7 +113,7 @@ void main() {
     'muestra el switch de "en línea" reflejando isOnline del perfil',
     (tester) async {
       // Arrange & Act
-      await _pumpScreen(tester, profileState: const AsyncData(_profile));
+      await _pumpScreen(tester, profileState: AsyncData(_profile));
 
       // Assert
       final switchWidget = tester.widget<SwitchListTile>(
@@ -125,7 +146,7 @@ void main() {
     'el botón "volver a modo cliente" resetea el modo y navega a home',
     (tester) async {
       // Arrange
-      await _pumpScreen(tester, profileState: const AsyncData(_profile));
+      await _pumpScreen(tester, profileState: AsyncData(_profile));
       final container = ProviderScope.containerOf(
         tester.element(find.byType(ProfessionalHomeScreen)),
       );

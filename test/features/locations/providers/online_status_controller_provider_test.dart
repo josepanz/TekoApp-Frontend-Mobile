@@ -23,6 +23,10 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   final emitted = <Map<String, double>>[];
 
   @override
+  Stream<LocationsSocketConnectionState> get connectionState =>
+      const Stream.empty();
+
+  @override
   void connect(String accessToken) {
     connected = true;
     tokenUsed = accessToken;
@@ -43,15 +47,36 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   void onLocationUpdated(void Function(ProfessionalLocationUpdate) listener) {}
 }
 
-const _profile = ProfessionalProfile(
+final _profile = ProfessionalProfile(
   id: 1,
   referenceId: 'prof-ref-1',
+  userId: 10,
   categoryId: 3,
   description: 'desc',
   hourlyRate: 50000,
+  skills: const [],
+  certifications: const [],
+  yearsOfExperience: 5,
   status: ProfessionalStatus.approved,
   isAvailable: true,
   isOnline: false,
+  verificationStatus: 'VERIFIED',
+  requiredDocumentsVerified: true,
+  totalServices: 10,
+  averageRating: 4.5,
+  totalRatings: 8,
+  createdAt: DateTime.utc(2026, 1, 1),
+  user: const ProfessionalUserSummary(
+    id: 10,
+    email: 'profesional@example.com',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+  ),
+  category: const ProfessionalCategorySummary(
+    id: 3,
+    name: 'Plomería',
+    slug: 'plomeria',
+  ),
 );
 
 void main() {

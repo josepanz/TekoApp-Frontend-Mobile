@@ -28,6 +28,7 @@ class PrivacyAndDataScreen extends ConsumerWidget {
         isLoading: history.isLoading,
         hasError: history.hasError,
         data: history.valueOrNull,
+        onRetry: () => ref.invalidate(dataConsentsHistoryProvider),
         builder: (context, data) => ListView(
           padding: const EdgeInsets.all(16),
           children: [

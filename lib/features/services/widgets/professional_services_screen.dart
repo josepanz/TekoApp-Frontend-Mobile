@@ -118,8 +118,7 @@ class _ProfessionalServicesScreenState
                               : _complete(service.referenceId),
                     ),
                   ],
-                  if (service.status == ServiceStatus.completed &&
-                      service.client != null) ...[
+                  if (service.status == ServiceStatus.completed) ...[
                     const SizedBox(height: 12),
                     _RateClientButton(service: service),
                   ],
@@ -146,7 +145,7 @@ class _RateClientButton extends ConsumerWidget {
     final (stars, comment) = result;
 
     await ref.read(rateControllerProvider.notifier).rateClient(
-          clientReferenceId: service.client!.referenceId,
+          clientReferenceId: service.client.referenceId,
           serviceId: service.referenceId,
           rating: stars,
           comment: comment,
