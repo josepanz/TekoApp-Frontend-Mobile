@@ -36,17 +36,17 @@ class ServiceCategorySummary {
 /// profesional pueda calificar al cliente (`referenceId` es lo que pide
 /// `CreateProfessionalToClientRatingRequestDTO.clientId`).
 ///
-/// `id`/`email`/`phoneNumber` (M-04, verificador de drift) NO se muestran en ninguna pantalla
-/// todavía — se exponen en el modelo, pero mostrarle el email/teléfono del cliente al profesional
-/// es una decisión de producto (¿contacto directo antes/durante el servicio? ¿algún consentimiento
-/// de por medio?) que no se decidió acá. Ver reporte de esta tarea.
+/// `id`/`email`/`phoneNumber` se muestran en la pantalla del servicio del profesional cuando el
+/// cliente comparte sus datos de contacto (`Users.shareContactInfo`) — el backend enmascara
+/// `email`/`phoneNumber` a `null` cuando el cliente eligió no compartirlos, por eso ambos campos
+/// son nullable acá (`email` pasó a ser nullable con ese cambio, ver CODEGEN.md §13.2).
 class ServiceClientSummary {
   const ServiceClientSummary({
     required this.id,
     required this.referenceId,
     required this.firstName,
     required this.lastName,
-    required this.email,
+    this.email,
     this.phoneNumber,
   });
 
@@ -54,7 +54,7 @@ class ServiceClientSummary {
   final String referenceId;
   final String firstName;
   final String lastName;
-  final String email;
+  final String? email;
   final String? phoneNumber;
 
   factory ServiceClientSummary.fromJson(Map<String, dynamic> json) {
@@ -63,7 +63,7 @@ class ServiceClientSummary {
       referenceId: json['referenceId'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
-      email: json['email'] as String,
+      email: json['email'] as String?,
       phoneNumber: json['phoneNumber'] as String?,
     );
   }

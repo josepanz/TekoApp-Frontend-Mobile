@@ -706,6 +706,37 @@ Un commit por dominio, los 5 completados a mano (ninguno migrado al generador �
 `check_drift` vuelve a dar `sin drift — todos los modelos mapeados coinciden con el swagger` contra
 los 72 modelos.
 
+## 13.2 Drift cerrado tras el cierre de 10 tareas del backend (2026-09-15)
+
+El backend cerró 10 tareas que tocaban DTOs que Mobile ya mapea (nombres en `ratings`,
+consentimiento de contacto en el resumen del cliente, preferencias de notificación nuevas).
+`check_drift` contra un backend real (`node dist/main.js`, `--openapi-url`) dio **3 hallazgos (3
+críticos)** en 2 dominios:
+
+- **`ratings` (`Rating`)** — `RatingDetailResponseDTO` sumó `userName`/`professionalName`
+  (`string?`), que el modelo generado no leía. Regenerado `rating.g.dart` con el mismo comando de
+  §7 (`--int-fields id,userId,professionalId --enum-fields type:RatingType`) contra el backend
+  real. Ambos campos nullable (mismo criterio que `userId`/`professionalId`: `null` cuando
+  `isAnonymous=true`), sin consumidor en la UI todavía.
+- **`services` (`ServiceClientSummary`)** — `ServiceUserSummaryResponseDTO.email` pasó de
+  requerido a nullable: es la contraparte del nuevo `Users.shareContactInfo` (ver tarea de
+  consentimiento de contacto de esta misma sesión) — el backend enmascara `email` a `null` cuando
+  el cliente no comparte sus datos. `ServiceClientSummary.email` cambió de `String` a `String?`
+  (`phoneNumber` ya era nullable desde antes, así que no generó hallazgo propio aunque el mismo
+  mecanismo de enmascarado lo cubre).
+
+Las preferencias de notificación nuevas que mencionó la consigna no generaron hallazgo de
+`check_drift` — y es esperable, no un hueco del verificador: el backend agregó una familia de
+schemas nueva (`NotificationPreferencesResponseDTO`, `NotificationPreferenceItemResponseDTO`,
+`UpdateNotificationPreferenceRequestDTO`) para la que **no existe ningún modelo Dart todavía**, ni
+mapeado ni exento. `check_drift` solo compara campo a campo un modelo que ya está registrado, y
+solo reporta `[SIN REGISTRAR]` para un archivo `.dart` que exista bajo `lib/features/*/models/`
+sin registrar — un schema nuevo del lado del backend sin ningún archivo Dart del lado de Mobile no
+dispara ninguno de los dos casos. Consumir esa preferencia de notificaciones es una feature nueva
+(pantalla + repositorio + modelo), no un fix de drift — queda fuera de las 4 tareas de esta sesión.
+
+`check_drift` vuelve a dar `sin drift` tras estos dos fixes.
+
 ## 14. CI: qué encontramos y qué haría falta
 
 `.github/workflows/ci.yml` corre en `ubuntu-latest`, hace checkout SOLO de este repo (Mobile) y

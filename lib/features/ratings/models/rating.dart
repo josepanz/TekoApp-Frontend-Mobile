@@ -30,6 +30,8 @@ class Rating {
     required this.isActive,
     required this.createdAt,
     required this.createdBy,
+    this.userName,
+    this.professionalName,
   });
 
   /// Int interno secuencial — solo para ordenamiento, nunca para navegar/consultar/rutear.
@@ -61,6 +63,14 @@ class Rating {
 
   /// `userId` de quien creó el registro (auditoría) — sin consumidor en la UI todavía.
   final String? createdBy;
+
+  /// Nombre del cliente que calificó — `null` cuando `isAnonymous=true` (mismo criterio que
+  /// [userId]). Sin consumidor en la UI todavía.
+  final String? userName;
+
+  /// Nombre del profesional calificado — `null` cuando `isAnonymous=true` (mismo criterio que
+  /// [professionalId]). Sin consumidor en la UI todavía.
+  final String? professionalName;
 
   factory Rating.fromJson(Map<String, dynamic> json) => _$RatingFromJson(json);
 }
