@@ -196,7 +196,11 @@ class PaymentsRepository {
 
   PaymentFailure _classify(DioException error) {
     final statusCode = error.response?.statusCode;
+    final errorCode = _extractErrorCode(error);
     final backendMessage = _extractBackendMessage(error);
+    if (errorCode == 'PAYMENT_METHOD_EXPIRED') {
+      return PaymentMethodExpiredFailure(backendMessage);
+    }
     if (statusCode == 409) {
       return PaymentConflictFailure(backendMessage);
     }
@@ -206,16 +210,26 @@ class PaymentsRepository {
     return const PaymentServiceUnavailableFailure();
   }
 
-  /// El envelope de error del backend es `{success:false, error:{code,message,...}}` —
+  /// El envelope de error del backend es `{success:false, error:{code,message,errorCode?,...}}` —
   /// `EnvelopeInterceptor` solo desenvuelve respuestas exitosas, así que esto llega crudo (ver
   /// `openspec/decisions.md`).
   String? _extractBackendMessage(DioException error) {
+    final errorField = _errorField(error);
+    return errorField == null ? null : errorField['message'] as String?;
+  }
+
+  /// `errorCode` — identificador estable para distinguir errores puntuales
+  /// (`PAYMENT_METHOD_EXPIRED`) de cualquier otro 400 genérico. Mismo patrón que
+  /// `LegalConsentsRepository._extractErrorCode`.
+  String? _extractErrorCode(DioException error) {
+    final errorField = _errorField(error);
+    return errorField == null ? null : errorField['errorCode'] as String?;
+  }
+
+  Map<String, dynamic>? _errorField(DioException error) {
     final data = error.response?.data;
-    if (data is Map<String, dynamic>) {
-      final errorField = data['error'];
-      if (errorField is Map<String, dynamic>) {
-        return errorField['message'] as String?;
-      }
+    if (data is Map<String, dynamic> && data['error'] is Map<String, dynamic>) {
+      return data['error'] as Map<String, dynamic>;
     }
     return null;
   }
