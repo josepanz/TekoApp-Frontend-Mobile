@@ -33,14 +33,17 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
-          IconButton(
-            key: const Key('home_professional_mode_button'),
-            icon: const Icon(Icons.swap_horiz),
-            tooltip: l10n.professionalHomeTitle,
-            onPressed: () {
-              ref.read(appModeProvider.notifier).state = AppMode.professional;
-              context.push('/profesional');
-            },
+          Semantics(
+            identifier: 'home.home.professional_mode_button',
+            child: IconButton(
+              key: const Key('home_professional_mode_button'),
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: l10n.professionalHomeTitle,
+              onPressed: () {
+                ref.read(appModeProvider.notifier).state = AppMode.professional;
+                context.push('/profesional');
+              },
+            ),
           ),
         ],
       ),
@@ -140,6 +143,7 @@ class _RecruitProfessionalCta extends ConsumerWidget {
       padding: const EdgeInsets.only(top: 20),
       child: Semantics(
         button: true,
+        identifier: 'home.home.recruit_professional_cta',
         label:
             '${l10n.homeRecruitProfessionalQuestion} ${l10n.homeRecruitProfessionalCta}',
         child: InkWell(
@@ -198,6 +202,7 @@ class _RequestServiceCta extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
+      identifier: 'home.home.request_service_cta',
       child: Material(
         color: colorScheme.tertiary,
         borderRadius: BorderRadius.circular(12),
@@ -206,7 +211,7 @@ class _RequestServiceCta extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: onPressed,
           child: Container(
-            constraints: const BoxConstraints(minHeight: 44),
+            constraints: const BoxConstraints(minHeight: 48),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Row(
               children: [
@@ -254,6 +259,7 @@ class _QuickAccessTile extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
+      identifier: 'home.home.${quickAccessKey.replaceFirst('home_', '')}',
       child: InkWell(
         key: Key(quickAccessKey),
         borderRadius: BorderRadius.circular(12),

@@ -156,13 +156,16 @@ class _BudgetOptionCardState extends State<_BudgetOptionCard> {
               l10n.budgetOptionEstimatedHours(option.estimatedHours!.round()),
             ),
           const SizedBox(height: 8),
-          TextButton(
-            key: Key('budget_option_toggle_details_${option.referenceId}'),
-            onPressed: () => setState(() => _expanded = !_expanded),
-            child: Text(
-              _expanded
-                  ? l10n.budgetOptionHideDetails
-                  : l10n.budgetOptionShowDetails,
+          Semantics(
+            identifier: 'budgets.comparison.toggle_details_button',
+            child: TextButton(
+              key: Key('budget_option_toggle_details_${option.referenceId}'),
+              onPressed: () => setState(() => _expanded = !_expanded),
+              child: Text(
+                _expanded
+                    ? l10n.budgetOptionHideDetails
+                    : l10n.budgetOptionShowDetails,
+              ),
             ),
           ),
           if (_expanded)
@@ -171,6 +174,7 @@ class _BudgetOptionCardState extends State<_BudgetOptionCard> {
           if (!option.isSelected)
             TekoButton(
               key: Key('budget_option_select_${option.referenceId}'),
+              semanticsIdentifier: 'budgets.comparison.option_select_button',
               label: l10n.budgetOptionSelectButton,
               loading: widget.loading,
               onPressed: widget.loading ? null : widget.onSelect,

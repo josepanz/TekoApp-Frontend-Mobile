@@ -128,6 +128,7 @@ class _ServiceDetailBody extends StatelessWidget {
             const SizedBox(height: 24),
             TekoButton(
               key: Key('pay_service_button_${service.referenceId}'),
+              semanticsIdentifier: 'services.detail.pay_button',
               label: l10n.payServiceButton,
               onPressed: () =>
                   context.push('/pagos/pagar/${service.referenceId}'),
@@ -289,6 +290,8 @@ class _ServiceRequestsSection extends ConsumerWidget {
                     ),
                     TekoButton(
                       key: Key('view_budgets_${request.referenceId}'),
+                      semanticsIdentifier:
+                          'services.detail.view_budgets_button',
                       label: l10n.serviceRequestViewBudgets,
                       onPressed: () => context.push(
                         '/mis-servicios/$serviceId/solicitudes/${request.referenceId}/presupuestos',
@@ -356,6 +359,7 @@ class _RateProfessionalButton extends ConsumerWidget {
     final rateState = ref.watch(rateControllerProvider);
     return TekoButton(
       key: Key('rate_professional_button_${service.referenceId}'),
+      semanticsIdentifier: 'services.detail.rate_button',
       label: l10n.rateProfessionalButton,
       variant: TekoButtonVariant.outline,
       loading: rateState.isLoading,

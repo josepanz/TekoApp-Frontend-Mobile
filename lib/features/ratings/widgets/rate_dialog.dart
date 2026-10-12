@@ -25,20 +25,30 @@ Future<(double rating, String? comment)?> showRateDialog(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   for (var star = 1; star <= 5; star++)
-                    IconButton(
-                      key: Key('rate_star_$star'),
-                      tooltip: l10n.ratingStarLabel(star),
-                      icon: Icon(
-                        star <= selectedStars ? Icons.star : Icons.star_border,
+                    Semantics(
+                      identifier: 'ratings.rate.star_$star',
+                      child: IconButton(
+                        key: Key('rate_star_$star'),
+                        tooltip: l10n.ratingStarLabel(star),
+                        isSelected: star <= selectedStars,
+                        icon: Icon(
+                          star <= selectedStars
+                              ? Icons.star
+                              : Icons.star_border,
+                        ),
+                        onPressed: () => setState(() => selectedStars = star),
                       ),
-                      onPressed: () => setState(() => selectedStars = star),
                     ),
                 ],
               ),
-              TextField(
-                key: const Key('rate_comment_field'),
-                controller: commentController,
-                decoration: InputDecoration(labelText: l10n.ratingCommentLabel),
+              Semantics(
+                identifier: 'ratings.rate.comment_field',
+                child: TextField(
+                  key: const Key('rate_comment_field'),
+                  controller: commentController,
+                  decoration:
+                      InputDecoration(labelText: l10n.ratingCommentLabel),
+                ),
               ),
               if (selectedStars == 0)
                 Padding(
@@ -53,23 +63,29 @@ Future<(double rating, String? comment)?> showRateDialog(
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.ratingCancelButton),
+            Semantics(
+              identifier: 'ratings.rate.cancel_button',
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.ratingCancelButton),
+              ),
             ),
-            TextButton(
-              key: const Key('rate_dialog_submit_button'),
-              onPressed: selectedStars == 0
-                  ? null
-                  : () {
-                      final comment = commentController.text.trim();
-                      final result = (
-                        selectedStars.toDouble(),
-                        comment.isEmpty ? null : comment,
-                      );
-                      Navigator.of(context).pop(result);
-                    },
-              child: Text(l10n.ratingSubmitButton),
+            Semantics(
+              identifier: 'ratings.rate.submit_button',
+              child: TextButton(
+                key: const Key('rate_dialog_submit_button'),
+                onPressed: selectedStars == 0
+                    ? null
+                    : () {
+                        final comment = commentController.text.trim();
+                        final result = (
+                          selectedStars.toDouble(),
+                          comment.isEmpty ? null : comment,
+                        );
+                        Navigator.of(context).pop(result);
+                      },
+                child: Text(l10n.ratingSubmitButton),
+              ),
             ),
           ],
         );

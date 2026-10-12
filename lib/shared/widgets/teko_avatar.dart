@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+
 enum TekoAvatarSize { sm, md, lg }
 
 /// Avatar circular — equivalente a `TekoApp-Web/src/components/ui/avatar.tsx`. Recibe siempre la
@@ -12,12 +14,20 @@ class TekoAvatar extends StatelessWidget {
     this.avatarUrl,
     this.size = TekoAvatarSize.md,
     this.semanticLabel,
+    this.decorative = false,
+    this.semanticsIdentifier,
   });
 
   final String name;
   final String? avatarUrl;
   final TekoAvatarSize size;
   final String? semanticLabel;
+
+  /// Si es `true` el avatar se excluye del árbol semántico (ej. junto a un nombre ya anunciado).
+  final bool decorative;
+
+  /// Identificador estable para selectores E2E.
+  final String? semanticsIdentifier;
 
   double get _diameter => switch (size) {
         TekoAvatarSize.sm => 32,
@@ -36,25 +46,30 @@ class TekoAvatar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final diameter = _diameter;
 
+    final avatar = ClipOval(
+      child: SizedBox(
+        width: diameter,
+        height: diameter,
+        child: avatarUrl != null
+            ? Image.network(
+                avatarUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _fallback(colorScheme, diameter),
+              )
+            : _fallback(colorScheme, diameter),
+      ),
+    );
+    if (decorative) return ExcludeSemantics(child: avatar);
+    final l10n = AppLocalizations.of(context);
     return Semantics(
-      label: semanticLabel ?? 'Avatar de $name',
+      label:
+          semanticLabel ?? l10n?.avatarSemanticLabel(name) ?? 'Avatar de $name',
+      identifier: semanticsIdentifier,
       image: true,
       container: true,
       excludeSemantics: true,
-      child: ClipOval(
-        child: SizedBox(
-          width: diameter,
-          height: diameter,
-          child: avatarUrl != null
-              ? Image.network(
-                  avatarUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _fallback(colorScheme, diameter),
-                )
-              : _fallback(colorScheme, diameter),
-        ),
-      ),
+      child: avatar,
     );
   }
 

@@ -293,7 +293,9 @@
   "paymentMethodExpiresAt": "Vence {date}",
   "@paymentMethodExpiresAt": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "paymentMethodGenericError": "No se pudo guardar — revisá los datos ingresados",
@@ -403,7 +405,9 @@
   "ratingStarLabel": "{count, plural, one{{count} estrella} other{{count} estrellas}}",
   "@ratingStarLabel": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "myRatingStatsTitle": "Mis calificaciones",
@@ -417,7 +421,9 @@
   "professionalRatingStatsTotalLabel": "{count, plural, one{{count} calificación} other{{count} calificaciones}}",
   "@professionalRatingStatsTotalLabel": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "professionalRatingStatsDistributionLabel": "Distribución",
@@ -461,25 +467,33 @@
   "accountDeletionBlockerActiveService": "{count, plural, one{Tenés {count} servicio en curso} other{Tenés {count} servicios en curso}}",
   "@accountDeletionBlockerActiveService": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerPendingPayment": "{count, plural, one{Tenés {count} pago pendiente} other{Tenés {count} pagos pendientes}}",
   "@accountDeletionBlockerPendingPayment": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerUnsignedContract": "{count, plural, one{Tenés {count} contrato sin firmar} other{Tenés {count} contratos sin firmar}}",
   "@accountDeletionBlockerUnsignedContract": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerUnknown": "{count, plural, one{Tenés {count} pendiente sin resolver} other{Tenés {count} pendientes sin resolver}}",
   "@accountDeletionBlockerUnknown": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerViewButton": "Ver",
@@ -491,7 +505,9 @@
   "accountDeletionBannerTitle": "Tu cuenta se eliminará el {date} — podés cancelar en cualquier momento antes de esa fecha.",
   "@accountDeletionBannerTitle": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "accountDeletionBannerCancelButton": "Cancelar eliminación",
@@ -533,7 +549,9 @@
   "uploadDocumentIssuedAtSelected": "Emitido: {date}",
   "@uploadDocumentIssuedAtSelected": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "uploadDocumentCancelButton": "Cancelar",
@@ -566,5 +584,19 @@
   "publicPortfolioSectionError": "No pudimos cargar el portafolio",
   "asyncStateGenericError": "Ocurrió un error inesperado.",
   "asyncStateEmpty": "No hay datos para mostrar.",
-  "asyncStateRetryButton": "Reintentar"
+  "asyncStateRetryButton": "Reintentar",
+  "avatarSemanticLabel": "Avatar de {name}",
+  "@avatarSemanticLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetRemoveOptionTooltip": "Quitar opción",
+  "budgetRemoveLineItemTooltip": "Quitar ítem",
+  "portfolioPhotoSemanticLabel": "Foto del portafolio",
+  "serviceProgressPhotoSemanticLabel": "Foto del avance del servicio",
+  "passwordShowTooltip": "Mostrar contraseña",
+  "passwordHideTooltip": "Ocultar contraseña"
 }

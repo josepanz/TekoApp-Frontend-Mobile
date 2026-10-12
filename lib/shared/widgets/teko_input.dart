@@ -16,6 +16,8 @@ class TekoInput extends StatelessWidget {
     this.initialValue,
     this.maxLines = 1,
     this.onChanged,
+    this.semanticLabel,
+    this.semanticsIdentifier,
   });
 
   final String label;
@@ -28,9 +30,15 @@ class TekoInput extends StatelessWidget {
   final int maxLines;
   final ValueChanged<String>? onChanged;
 
+  /// Label semántico alternativo; por defecto el campo se anuncia con [label].
+  final String? semanticLabel;
+
+  /// Identificador estable (`feature.pantalla.elemento`) para selectores E2E.
+  final String? semanticsIdentifier;
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    final field = TextFormField(
       controller: controller,
       initialValue: controller == null ? initialValue : null,
       obscureText: obscureText,
@@ -41,6 +49,12 @@ class TekoInput extends StatelessWidget {
       onChanged: onChanged,
       decoration:
           InputDecoration(labelText: label, border: const OutlineInputBorder()),
+    );
+    if (semanticLabel == null && semanticsIdentifier == null) return field;
+    return Semantics(
+      label: semanticLabel,
+      identifier: semanticsIdentifier,
+      child: field,
     );
   }
 }

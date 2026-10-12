@@ -170,23 +170,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextFormField(
-                          controller: _emailController,
-                          enabled: !isBusy,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            labelText: l10n.loginEmailLabel,
+                        Semantics(
+                          identifier: 'auth.login.email_field',
+                          child: TextFormField(
+                            controller: _emailController,
+                            enabled: !isBusy,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              labelText: l10n.loginEmailLabel,
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                    ? l10n.loginEmailRequired
+                                    : null,
                           ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                                  ? l10n.loginEmailRequired
-                                  : null,
                         ),
                         const SizedBox(height: 12),
                         TekoPasswordField(
                           controller: _passwordController,
                           enabled: !isBusy,
                           labelText: l10n.loginPasswordLabel,
+                          semanticsIdentifier: 'auth.login.password_field',
                           validator: (value) => (value == null || value.isEmpty)
                               ? l10n.loginPasswordRequired
                               : null,
@@ -201,25 +205,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ],
                         const SizedBox(height: 24),
-                        FilledButton(
-                          onPressed: isBusy ? null : _submit,
-                          child: loginState.isLoading
-                              ? const SizedBox(
-                                  height: 16,
-                                  width: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(l10n.loginSubmit),
-                        ),
-                        if (biometricAvailable) ...[
-                          const SizedBox(height: 12),
-                          OutlinedButton(
-                            key: const Key('login_biometric_button'),
-                            onPressed:
-                                isBusy ? null : () => _submitBiometric(l10n),
-                            child: biometricLoginState.isLoading
+                        Semantics(
+                          identifier: 'auth.login.submit_button',
+                          child: FilledButton(
+                            onPressed: isBusy ? null : _submit,
+                            child: loginState.isLoading
                                 ? const SizedBox(
                                     height: 16,
                                     width: 16,
@@ -227,7 +217,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : Text(l10n.loginBiometricButton),
+                                : Text(l10n.loginSubmit),
+                          ),
+                        ),
+                        if (biometricAvailable) ...[
+                          const SizedBox(height: 12),
+                          Semantics(
+                            identifier: 'auth.login.biometric_button',
+                            child: OutlinedButton(
+                              key: const Key('login_biometric_button'),
+                              onPressed:
+                                  isBusy ? null : () => _submitBiometric(l10n),
+                              child: biometricLoginState.isLoading
+                                  ? const SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(l10n.loginBiometricButton),
+                            ),
                           ),
                         ],
                         if (biometricLoginState.hasError) ...[
@@ -240,10 +250,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ],
                         const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () => context.go('/register'),
-                          child: Text(
-                            '${l10n.loginNoAccount} ${l10n.loginSignUp}',
+                        Semantics(
+                          identifier: 'auth.login.register_link',
+                          child: TextButton(
+                            onPressed: () => context.go('/register'),
+                            child: Text(
+                              '${l10n.loginNoAccount} ${l10n.loginSignUp}',
+                            ),
                           ),
                         ),
                       ],

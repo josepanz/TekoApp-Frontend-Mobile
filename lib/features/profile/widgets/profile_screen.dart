@@ -39,26 +39,29 @@ class _LanguageSelector extends ConsumerWidget {
     return Row(
       children: [
         Expanded(child: Text(l10n.profileLanguageLabel)),
-        DropdownButton<String?>(
-          key: const Key('profile_language_selector'),
-          value: locale?.languageCode,
-          items: [
-            DropdownMenuItem(
-              value: null,
-              child: Text(l10n.profileLanguageSystem),
-            ),
-            DropdownMenuItem(
-              value: 'es',
-              child: Text(l10n.profileLanguageSpanish),
-            ),
-            DropdownMenuItem(
-              value: 'en',
-              child: Text(l10n.profileLanguageEnglish),
-            ),
-          ],
-          onChanged: (code) => ref
-              .read(localeControllerProvider.notifier)
-              .setLocale(code == null ? null : Locale(code)),
+        Semantics(
+          identifier: 'profile.profile.language_selector',
+          child: DropdownButton<String?>(
+            key: const Key('profile_language_selector'),
+            value: locale?.languageCode,
+            items: [
+              DropdownMenuItem(
+                value: null,
+                child: Text(l10n.profileLanguageSystem),
+              ),
+              DropdownMenuItem(
+                value: 'es',
+                child: Text(l10n.profileLanguageSpanish),
+              ),
+              DropdownMenuItem(
+                value: 'en',
+                child: Text(l10n.profileLanguageEnglish),
+              ),
+            ],
+            onChanged: (code) => ref
+                .read(localeControllerProvider.notifier)
+                .setLocale(code == null ? null : Locale(code)),
+          ),
         ),
       ],
     );
@@ -93,13 +96,17 @@ class _BiometricLoginToggle extends ConsumerWidget {
             ],
           ),
         ),
-        Switch(
-          key: const Key('profile_biometric_switch'),
-          value: enabled,
-          onChanged: enabled
-              ? (_) =>
-                  ref.read(biometricOptInControllerProvider.notifier).disable()
-              : null,
+        Semantics(
+          identifier: 'profile.profile.biometric_switch',
+          child: Switch(
+            key: const Key('profile_biometric_switch'),
+            value: enabled,
+            onChanged: enabled
+                ? (_) => ref
+                    .read(biometricOptInControllerProvider.notifier)
+                    .disable()
+                : null,
+          ),
         ),
       ],
     );
@@ -122,14 +129,17 @@ class _ShareContactInfoToggle extends ConsumerWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Checkbox(
-          key: const Key('profile_share_contact_info_checkbox'),
-          value: shares,
-          onChanged: state.isLoading
-              ? null
-              : (value) => ref
-                  .read(shareContactInfoControllerProvider.notifier)
-                  .setSharesContactInfo(value ?? true),
+        Semantics(
+          identifier: 'profile.profile.share_contact_checkbox',
+          child: Checkbox(
+            key: const Key('profile_share_contact_info_checkbox'),
+            value: shares,
+            onChanged: state.isLoading
+                ? null
+                : (value) => ref
+                    .read(shareContactInfoControllerProvider.notifier)
+                    .setSharesContactInfo(value ?? true),
+          ),
         ),
         Expanded(
           child: Column(
@@ -278,30 +288,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
-                child: GestureDetector(
+                child: Semantics(
+                  button: true,
+                  label: l10n.profileChangeAvatar,
+                  identifier: 'profile.profile.change_avatar_button',
                   onTap: avatarState.isLoading ? null : _pickAndUploadAvatar,
-                  child: Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      TekoAvatar(
-                        name: '${user.firstName} ${user.lastName}',
-                        avatarUrl: user.avatarUrl,
-                        size: TekoAvatarSize.lg,
-                      ),
-                      if (avatarState.isLoading)
-                        const Positioned.fill(
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else
-                        Semantics(
-                          button: true,
-                          label: l10n.profileChangeAvatar,
-                          child: const CircleAvatar(
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    onTap: avatarState.isLoading ? null : _pickAndUploadAvatar,
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        TekoAvatar(
+                          name: '${user.firstName} ${user.lastName}',
+                          avatarUrl: user.avatarUrl,
+                          size: TekoAvatarSize.lg,
+                          decorative: true,
+                        ),
+                        if (avatarState.isLoading)
+                          const Positioned.fill(
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else
+                          const CircleAvatar(
                             radius: 14,
                             child: Icon(Icons.edit, size: 16),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -318,6 +332,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 24),
               TekoInput(
                 label: l10n.profileFirstNameLabel,
+                semanticsIdentifier: 'profile.profile.first_name_field',
                 controller: _firstNameController,
                 enabled: !isSaving,
                 validator: (value) => (value == null || value.trim().isEmpty)
@@ -327,6 +342,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.profileLastNameLabel,
+                semanticsIdentifier: 'profile.profile.last_name_field',
                 controller: _lastNameController,
                 enabled: !isSaving,
                 validator: (value) => (value == null || value.trim().isEmpty)
@@ -336,6 +352,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.profilePhoneLabel,
+                semanticsIdentifier: 'profile.profile.phone_field',
                 controller: _phoneController,
                 enabled: !isSaving,
                 keyboardType: TextInputType.phone,
@@ -350,6 +367,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 24),
               TekoButton(
                 key: const Key('profile_save_button'),
+                semanticsIdentifier: 'profile.profile.save_button',
                 label: l10n.profileSave,
                 loading: updateState.isLoading,
                 onPressed: isSaving ? null : () => _submit(user),
@@ -363,6 +381,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_privacy_and_data_button'),
+                semanticsIdentifier: 'profile.profile.privacy_button',
                 label: l10n.profileLinkPrivacyAndData,
                 variant: TekoButtonVariant.ghost,
                 onPressed: () => context.push('/perfil/privacidad-y-datos'),
@@ -370,6 +389,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_logout_button'),
+                semanticsIdentifier: 'profile.profile.logout_button',
                 label: l10n.logout,
                 variant: TekoButtonVariant.outline,
                 onPressed: () => ref.read(sessionProvider.notifier).logout(),
@@ -381,6 +401,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('profile_delete_account_button'),
+                semanticsIdentifier: 'profile.profile.delete_account_button',
                 label: l10n.accountDeletionButton,
                 variant: TekoButtonVariant.destructive,
                 onPressed: () => context.push('/perfil/eliminar-cuenta'),

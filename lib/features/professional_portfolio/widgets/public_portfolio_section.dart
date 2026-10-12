@@ -73,6 +73,8 @@ class _PublicPortfolioPhoto extends ConsumerWidget {
         urlAsync: fileUrlAsync,
         width: 88,
         height: 88,
+        semanticLabel: item.caption ??
+            AppLocalizations.of(context)!.portfolioPhotoSemanticLabel,
       ),
     );
   }

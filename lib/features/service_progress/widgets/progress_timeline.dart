@@ -205,6 +205,8 @@ class _ProgressEntryPhoto extends ConsumerWidget {
           AsyncData(:final value) => Image.network(
               value,
               fit: BoxFit.cover,
+              semanticLabel: AppLocalizations.of(context)!
+                  .serviceProgressPhotoSemanticLabel,
               errorBuilder: (_, __, ___) => const _PhotoPlaceholder(),
             ),
           AsyncError() => const _PhotoPlaceholder(),

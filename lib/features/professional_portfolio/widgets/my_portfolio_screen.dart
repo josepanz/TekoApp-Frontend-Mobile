@@ -101,6 +101,7 @@ class _PortfolioItemCard extends ConsumerWidget {
               urlAsync: fileUrlAsync,
               width: 72,
               height: 72,
+              semanticLabel: item.caption ?? l10n.portfolioPhotoSemanticLabel,
             ),
           ),
           const SizedBox(width: 12),
