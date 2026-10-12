@@ -1,3 +1,8 @@
+// Suite: componente TekoSkeleton y AsyncStateView.loadingBuilder
+// Casos: CP-MOB-UI-001..006 (ver test/qa/casos/CP-UI.md)
+// Tipo: widget / a11y   Prioridad: P2
+// Precondiciones: widget aislado; reduce-motion y dark controlados
+// Trazabilidad: U1
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

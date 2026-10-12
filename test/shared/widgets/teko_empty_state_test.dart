@@ -1,3 +1,8 @@
+// Suite: componente TekoEmptyState
+// Casos: CP-MOB-UI-007..010 (ver test/qa/casos/CP-UI.md)
+// Tipo: widget / a11y   Prioridad: P2
+// Precondiciones: widget aislado en MaterialApp
+// Trazabilidad: U2
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

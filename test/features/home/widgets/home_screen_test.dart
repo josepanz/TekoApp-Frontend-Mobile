@@ -1,3 +1,8 @@
+// Suite: pantalla Home (saludo, accesos rápidos, modo profesional, accesibilidad)
+// Casos: CP-MOB-A11Y-003 (ver test/qa/casos/CP-A11Y.md)
+// Tipo: widget / a11y   Prioridad: P1
+// Precondiciones: usuario autenticado fixture, providers mockeados
+// Trazabilidad: U3 accesibilidad; docs/e2e-selectors.md
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

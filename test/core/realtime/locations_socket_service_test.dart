@@ -1,3 +1,8 @@
+// Suite: servicio socket de ubicaciones (estado de conexión, reintentos, salas de ubicación exacta)
+// Casos: CP-MOB-LOC-006..007 (ver test/qa/casos/CP-LOC.md)
+// Tipo: unitaria   Prioridad: P1
+// Precondiciones: Socket.IO falso, sin red
+// Trazabilidad: M8 tracking en vivo; M-03; exactLocationUpdated
 import 'package:flutter_test/flutter_test.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:tekoapp_mobile/core/realtime/locations_socket_service.dart';

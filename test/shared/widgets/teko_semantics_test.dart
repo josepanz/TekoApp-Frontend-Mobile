@@ -1,3 +1,8 @@
+// Suite: semántica y ids E2E de TekoButton, TekoInput y TekoAvatar
+// Casos: CP-MOB-A11Y-005..008 (ver test/qa/casos/CP-A11Y.md)
+// Tipo: widget / a11y   Prioridad: P1
+// Precondiciones: widgets aislados con semántica activa
+// Trazabilidad: U3; docs/e2e-selectors.md
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tekoapp_mobile/shared/widgets/teko_avatar.dart';

@@ -1,3 +1,8 @@
+// Suite: componente TekoToast
+// Casos: CP-MOB-UI-011..014 (ver test/qa/casos/CP-UI.md)
+// Tipo: widget / a11y   Prioridad: P2
+// Precondiciones: host con botón que dispara TekoToast.show
+// Trazabilidad: U2
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tekoapp_mobile/core/theme/app_theme.dart';

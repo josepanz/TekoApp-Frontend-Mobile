@@ -1,3 +1,8 @@
+// Suite: ubicación del profesional asignado (exactLocationUpdated, suscripción a la sala, fallback)
+// Casos: CP-MOB-LOC-001..005 (ver test/qa/casos/CP-LOC.md)
+// Tipo: unitaria (provider)   Prioridad: P1
+// Precondiciones: socket y repositorio falsos, ProviderContainer con overrides
+// Trazabilidad: M8 tracking en vivo
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

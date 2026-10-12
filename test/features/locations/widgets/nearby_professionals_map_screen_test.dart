@@ -1,3 +1,8 @@
+// Suite: pantalla de mapa de profesionales cercanos
+// Casos: CP-MOB-LOC-008 (ver test/qa/casos/CP-LOC.md)
+// Tipo: widget   Prioridad: P2
+// Precondiciones: mapCenterProvider y controller de cercanos sobreescritos
+// Trazabilidad: M8; aviso de ubicación aproximada
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

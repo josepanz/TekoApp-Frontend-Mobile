@@ -1,3 +1,8 @@
+// Suite: pantalla de métodos de pago (listado, vacío, default, eliminación, accesibilidad)
+// Casos: CP-MOB-A11Y-004 (ver test/qa/casos/CP-A11Y.md)
+// Tipo: widget / a11y   Prioridad: P1
+// Precondiciones: Dio mockeado (mocktail)
+// Trazabilidad: M6 Pagos; U3 accesibilidad
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

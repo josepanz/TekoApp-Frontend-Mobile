@@ -1,3 +1,8 @@
+// Suite: pantalla de login (validación, errores, biometría, accesibilidad)
+// Casos: CP-MOB-A11Y-001..002 (grupo accesibilidad; ver test/qa/casos/CP-A11Y.md)
+// Tipo: widget / a11y   Prioridad: P1
+// Precondiciones: providers de auth y biometría mockeados
+// Trazabilidad: M1 Auth; U3 accesibilidad; docs/e2e-selectors.md
 import 'dart:async';
 
 import 'package:flutter/material.dart';

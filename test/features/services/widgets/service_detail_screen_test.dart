@@ -1,3 +1,8 @@
+// Suite: detalle de servicio (profesional asignado, contacto, calificación)
+// Casos: sin CP- dedicado; cubierto por el inventario del informe
+// Tipo: widget   Prioridad: P1
+// Precondiciones: providers y repositorios mockeados
+// Trazabilidad: M4 Marketplace; M8 ubicación del asignado
 import 'dart:async';
 
 import 'package:dio/dio.dart';
