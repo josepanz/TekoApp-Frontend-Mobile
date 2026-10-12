@@ -14,6 +14,8 @@ import 'package:tekoapp_mobile/features/professional_profile/models/professional
 import 'package:tekoapp_mobile/features/professional_profile/providers/my_professional_profile_provider.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
+import '../../../helpers/semantics_finders.dart';
+
 final _profile = ProfessionalProfile(
   id: 2,
   referenceId: 'prof-uuid-1',
@@ -246,4 +248,23 @@ void main() {
       expect(find.text('¿Querés trabajar con nosotros?'), findsNothing);
     },
   );
+
+  testWidgets('accesibilidad: guidelines de tap target y labels + ids E2E', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pumpScreen(tester);
+
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    expect(
+      bySemanticsId('home.home.request_service_cta'),
+      findsOneWidget,
+    );
+    expect(
+      bySemanticsId('home.home.professional_mode_button'),
+      findsOneWidget,
+    );
+    handle.dispose();
+  });
 }

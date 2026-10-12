@@ -8,6 +8,7 @@ import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/features/payments/widgets/payment_methods_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
+import 'package:tekoapp_mobile/shared/widgets/teko_empty_state.dart';
 
 class _MockDio extends Mock implements Dio {}
 
@@ -80,6 +81,28 @@ void main() {
       find.text('Todavía no agregaste ningún método de pago'),
       findsOneWidget,
     );
+    // TekoEmptyState con CTA para el siguiente paso
+    expect(find.byType(TekoEmptyState), findsOneWidget);
+    expect(find.text('Agregar método de pago'), findsWidgets);
+  });
+
+  testWidgets('estado vacío cumple las guidelines de accesibilidad', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    when(() => dio.get<List<dynamic>>('/payments/methods')).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/payments/methods'),
+        data: [],
+      ),
+    );
+
+    await _pumpScreen(tester, dio);
+    await tester.pumpAndSettle();
+
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    handle.dispose();
   });
 
   testWidgets(

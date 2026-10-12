@@ -14,6 +14,8 @@ import 'package:tekoapp_mobile/features/auth/providers/login_controller_provider
 import 'package:tekoapp_mobile/features/auth/widgets/login_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
 
+import '../../../helpers/semantics_finders.dart';
+
 /// Fija el estado inicial de `loginControllerProvider` sin pegarle a ningún repositorio — cada
 /// test declara exactamente el estado que quiere ver renderizado.
 class _FixedLoginController extends LoginController {
@@ -390,5 +392,38 @@ void main() {
         expect(find.text('home'), findsOneWidget);
       },
     );
+  });
+
+  group('accesibilidad', () {
+    testWidgets('targets táctiles y labels cumplen las guidelines', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpLoginScreen(tester);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      handle.dispose();
+    });
+
+    testWidgets('expone identificadores E2E estables', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpLoginScreen(tester);
+
+      expect(
+        bySemanticsId('auth.login.submit_button'),
+        findsOneWidget,
+      );
+      expect(
+        bySemanticsId('auth.login.email_field'),
+        findsOneWidget,
+      );
+      expect(
+        bySemanticsId('auth.login.password_field'),
+        findsOneWidget,
+      );
+      handle.dispose();
+    });
   });
 }
