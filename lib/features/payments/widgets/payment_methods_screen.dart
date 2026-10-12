@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_card.dart';
@@ -56,9 +57,7 @@ class PaymentMethodsScreen extends ConsumerWidget {
           backendMessage ?? l10n.paymentMethodGenericError,
         _ => l10n.paymentMethodGenericError,
       };
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      TekoToast.show(context, message, variant: TekoToastVariant.error);
     }
   }
 
@@ -83,6 +82,9 @@ class PaymentMethodsScreen extends ConsumerWidget {
         isEmpty: methods != null && methods.isEmpty,
         errorMessage: l10n.paymentMethodsError,
         emptyMessage: l10n.paymentMethodsEmpty,
+        emptyIcon: Icons.credit_card_outlined,
+        emptyActionLabel: l10n.paymentMethodsAddButton,
+        onEmptyAction: () => context.push('/pagos/metodos/nuevo'),
         builder: (context, methods) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: methods.length,

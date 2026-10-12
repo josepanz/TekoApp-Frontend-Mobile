@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_input.dart';
 import '../../promotions/models/promotion_failure.dart';
@@ -133,9 +134,7 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
       // muestra deshabilitado en el dropdown con la fecha actual.
       setState(() => _selectedMethod = null);
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    TekoToast.show(context, message, variant: TekoToastVariant.error);
   }
 
   @override

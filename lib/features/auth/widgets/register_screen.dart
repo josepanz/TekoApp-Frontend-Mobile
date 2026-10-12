@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/teko_gradient_background.dart';
 import '../../../shared/widgets/teko_password_field.dart';
 import '../models/register_failure.dart';
@@ -73,8 +74,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.listen<AsyncValue<void>>(registerControllerProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && !next.isLoading && !next.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.registerSuccess)),
+        TekoToast.show(
+          context,
+          l10n.registerSuccess,
+          variant: TekoToastVariant.success,
         );
         context.go('/login');
       }

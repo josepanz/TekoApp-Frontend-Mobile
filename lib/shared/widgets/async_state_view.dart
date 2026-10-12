@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'teko_button.dart';
+import 'teko_empty_state.dart';
 
 /// Wrapper genérico de loading/error/data para pantallas que consumen un `AsyncValue` de
 /// Riverpod — evita repetir el mismo `switch`/`when` en cada widget de dominio (regla DRY, ver
@@ -22,6 +23,11 @@ class AsyncStateView<T> extends StatelessWidget {
     this.isEmpty = false,
     this.onRetry,
     this.loadingBuilder,
+    this.emptyIcon = Icons.inbox_outlined,
+    this.emptyDescription,
+    this.emptyActionLabel,
+    this.onEmptyAction,
+    this.emptyCompact = false,
   });
 
   final bool isLoading;
@@ -36,6 +42,13 @@ class AsyncStateView<T> extends StatelessWidget {
   /// Loading opcional (típicamente un `TekoSkeleton`). Si es `null` se mantiene el spinner de
   /// siempre, así los usos existentes no cambian.
   final WidgetBuilder? loadingBuilder;
+
+  /// Personalización del estado vacío (`TekoEmptyState`): ícono, descripción y CTA opcional.
+  final IconData emptyIcon;
+  final String? emptyDescription;
+  final String? emptyActionLabel;
+  final VoidCallback? onEmptyAction;
+  final bool emptyCompact;
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +81,13 @@ class AsyncStateView<T> extends StatelessWidget {
       );
     }
     if (isEmpty) {
-      return Center(
-        child: Text(
-          emptyMessage ?? l10n.asyncStateEmpty,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+      return TekoEmptyState(
+        title: emptyMessage ?? l10n.asyncStateEmpty,
+        icon: emptyIcon,
+        description: emptyDescription,
+        actionLabel: emptyActionLabel,
+        onAction: onEmptyAction,
+        compact: emptyCompact,
       );
     }
     return builder(context, data as T);

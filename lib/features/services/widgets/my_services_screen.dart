@@ -31,6 +31,9 @@ class MyServicesScreen extends ConsumerWidget {
         isEmpty: services != null && services.isEmpty,
         errorMessage: l10n.myServicesError,
         emptyMessage: l10n.myServicesEmpty,
+        emptyIcon: Icons.list_alt_outlined,
+        emptyActionLabel: l10n.requestServiceTitle,
+        onEmptyAction: () => context.push('/solicitar'),
         builder: (context, services) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: services.length,

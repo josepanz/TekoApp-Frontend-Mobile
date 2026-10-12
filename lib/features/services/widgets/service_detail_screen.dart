@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart' as ll;
 
 import '../../../core/realtime/locations_socket_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/ai_disclosure_badge.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_badge.dart';
@@ -267,6 +268,7 @@ class _ServiceRequestsSection extends ConsumerWidget {
       isEmpty: requests != null && requests.isEmpty,
       errorMessage: l10n.serviceRequestsError,
       emptyMessage: l10n.serviceRequestsEmpty,
+      emptyCompact: true,
       builder: (context, requests) => Column(
         children: [
           for (final request in requests)
@@ -336,9 +338,13 @@ class _RateProfessionalButton extends ConsumerWidget {
         backendMessage ?? l10n.ratingError,
       _ => l10n.ratingError,
     };
-    ScaffoldMessenger.of(
+    TekoToast.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      message,
+      variant: state.error == null
+          ? TekoToastVariant.success
+          : TekoToastVariant.error,
+    );
   }
 
   @override

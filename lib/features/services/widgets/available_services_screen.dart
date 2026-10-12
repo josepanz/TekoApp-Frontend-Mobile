@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_button.dart';
@@ -44,8 +45,10 @@ class _AvailableServicesScreenState
       );
     } else if (state.hasError) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_errorMessage(l10n, state.error))),
+      TekoToast.show(
+        context,
+        _errorMessage(l10n, state.error),
+        variant: TekoToastVariant.error,
       );
     }
     if (!mounted) return;
@@ -73,6 +76,7 @@ class _AvailableServicesScreenState
       isEmpty: services != null && services.isEmpty,
       errorMessage: l10n.availableServicesError,
       emptyMessage: l10n.availableServicesEmpty,
+      emptyIcon: Icons.work_outline,
       builder: (context, services) => ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: services.length,

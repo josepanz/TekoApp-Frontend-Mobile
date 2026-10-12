@@ -64,6 +64,7 @@ class ProfessionalDocumentsSection extends ConsumerWidget {
           isEmpty: documents != null && documents.isEmpty,
           errorMessage: l10n.professionalDocumentsSectionError,
           emptyMessage: l10n.professionalDocumentsSectionEmpty,
+          emptyCompact: true,
           builder: (context, documents) => Column(
             children: [
               for (final document in documents)

@@ -31,6 +31,7 @@ class PaymentHistoryScreen extends ConsumerWidget {
         isEmpty: payments != null && payments.isEmpty,
         errorMessage: l10n.paymentHistoryError,
         emptyMessage: l10n.paymentHistoryEmpty,
+        emptyIcon: Icons.history_outlined,
         builder: (context, payments) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: payments.length,

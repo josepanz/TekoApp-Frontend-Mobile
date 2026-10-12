@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/auth/session_provider.dart';
 import '../../../core/auth/session_state.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../models/push_notification_payload.dart';
 import '../providers/push_messaging_provider.dart';
 import '../providers/push_registration_controller.dart';
@@ -113,8 +114,9 @@ class _PushNotificationGatewayState
     final text = payload.body == null
         ? payload.title!
         : '${payload.title} — ${payload.body}';
-    pushNotificationScaffoldMessengerKey.currentState
-        ?.showSnackBar(SnackBar(content: Text(text)));
+    final messenger = pushNotificationScaffoldMessengerKey.currentState;
+    if (messenger == null) return;
+    TekoToast.showOn(messenger, Theme.of(context), text);
   }
 
   void _navigateToPayload(RemoteMessage message) {

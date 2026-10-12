@@ -44,6 +44,7 @@ class PublicPortfolioSection extends ConsumerWidget {
           isEmpty: items != null && items.isEmpty,
           errorMessage: l10n.publicPortfolioSectionError,
           emptyMessage: l10n.publicPortfolioSectionEmpty,
+          emptyCompact: true,
           builder: (context, items) => SizedBox(
             height: 88,
             child: ListView.separated(

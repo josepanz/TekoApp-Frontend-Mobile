@@ -58,6 +58,7 @@ class _StatsBody extends ConsumerWidget {
         errorMessage: l10n.professionalRatingStatsError,
         isEmpty: statsAsync.valueOrNull?.totalRatings == 0,
         emptyMessage: l10n.professionalRatingStatsEmpty,
+        emptyIcon: Icons.star_outline,
         builder: (context, stats) => ListView(
           children: [
             TekoCard(

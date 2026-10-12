@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
@@ -59,8 +60,10 @@ class ProgressTimeline extends ConsumerWidget {
 
     final state = ref.read(serviceProgressControllerProvider);
     if (!state.hasError) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.serviceProgressDeleteError)),
+    TekoToast.show(
+      context,
+      l10n.serviceProgressDeleteError,
+      variant: TekoToastVariant.error,
     );
   }
 
@@ -93,6 +96,7 @@ class ProgressTimeline extends ConsumerWidget {
           isEmpty: entries != null && entries.isEmpty,
           errorMessage: l10n.serviceProgressError,
           emptyMessage: l10n.serviceProgressEmpty,
+          emptyCompact: true,
           builder: (context, entries) => Column(
             children: [
               for (final entry in entries)

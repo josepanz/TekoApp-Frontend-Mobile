@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
@@ -83,8 +84,7 @@ class _ContractPreviewBodyState extends ConsumerState<_ContractPreviewBody> {
       ContractConflictFailure() => l10n.contractConflictError,
       _ => l10n.contractSignError,
     };
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    TekoToast.show(context, message, variant: TekoToastVariant.error);
   }
 
   Future<void> _openPdf() async {
@@ -97,8 +97,10 @@ class _ContractPreviewBodyState extends ConsumerState<_ContractPreviewBody> {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.contractDownloadPdfError)),
+      TekoToast.show(
+        context,
+        l10n.contractDownloadPdfError,
+        variant: TekoToastVariant.error,
       );
     }
   }

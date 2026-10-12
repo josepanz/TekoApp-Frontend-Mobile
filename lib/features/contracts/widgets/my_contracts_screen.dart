@@ -32,6 +32,7 @@ class MyContractsScreen extends ConsumerWidget {
         isEmpty: contracts != null && contracts.isEmpty,
         errorMessage: l10n.myContractsLoadError,
         emptyMessage: l10n.myContractsEmpty,
+        emptyIcon: Icons.description_outlined,
         builder: (context, contracts) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: contracts.length,

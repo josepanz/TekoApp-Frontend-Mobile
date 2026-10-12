@@ -37,6 +37,7 @@ class MyDocumentsScreen extends ConsumerWidget {
           isEmpty: statuses != null && statuses.isEmpty,
           errorMessage: l10n.myDocumentsError,
           emptyMessage: l10n.myDocumentsEmpty,
+          emptyIcon: Icons.folder_open_outlined,
           builder: (context, statuses) =>
               _GroupedByCategory(statuses: statuses),
         ),

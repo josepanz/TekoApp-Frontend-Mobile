@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_button.dart';
@@ -58,8 +59,7 @@ class _ProfessionalServicesScreenState
         ServiceConflictFailure() => l10n.professionalServicesConflict,
         _ => l10n.professionalServicesError,
       };
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      TekoToast.show(context, message, variant: TekoToastVariant.error);
     }
     setState(() => _actingServiceId = null);
   }
@@ -80,6 +80,7 @@ class _ProfessionalServicesScreenState
         isEmpty: services != null && services.isEmpty,
         errorMessage: l10n.professionalServicesLoadError,
         emptyMessage: l10n.professionalServicesEmpty,
+        emptyIcon: Icons.work_outline,
         builder: (context, services) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: services.length,
@@ -162,9 +163,13 @@ class _RateClientButton extends ConsumerWidget {
         backendMessage ?? l10n.ratingError,
       _ => l10n.ratingError,
     };
-    ScaffoldMessenger.of(
+    TekoToast.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      message,
+      variant: state.error == null
+          ? TekoToastVariant.success
+          : TekoToastVariant.error,
+    );
   }
 
   @override

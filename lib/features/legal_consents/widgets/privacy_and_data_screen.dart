@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../models/content_consent_grant.dart';
 import '../models/data_consents_history.dart';
@@ -133,15 +134,17 @@ class _ContentGrantTile extends ConsumerWidget {
     final result = ref.read(legalConsentsControllerProvider);
     final error = result.error;
     if (error is LegalConsentsLegalHoldFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.backendMessage ?? l10n.privacyDataRevokeError),
-        ),
+      TekoToast.show(
+        context,
+        error.backendMessage ?? l10n.privacyDataRevokeError,
+        variant: TekoToastVariant.error,
       );
     } else if (error != null) {
-      ScaffoldMessenger.of(
+      TekoToast.show(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.privacyDataRevokeError)));
+        l10n.privacyDataRevokeError,
+        variant: TekoToastVariant.error,
+      );
     }
   }
 }

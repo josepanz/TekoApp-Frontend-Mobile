@@ -45,6 +45,9 @@ class MyPortfolioScreen extends ConsumerWidget {
           isEmpty: items != null && items.isEmpty,
           errorMessage: l10n.myPortfolioError,
           emptyMessage: l10n.myPortfolioEmpty,
+          emptyIcon: Icons.photo_library_outlined,
+          emptyActionLabel: l10n.portfolioUploadButton,
+          onEmptyAction: () => showUploadPortfolioItemSheet(context),
           builder: (context, items) => ListView.separated(
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
