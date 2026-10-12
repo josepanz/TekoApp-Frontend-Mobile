@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
@@ -30,6 +31,7 @@ class MyDocumentsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         child: AsyncStateView<List<MyDocumentStatus>>(
           isLoading: documentsAsync.isLoading,
+          loadingBuilder: (_) => const TekoSkeleton.list(),
           hasError: documentsAsync.hasError,
           data: statuses,
           isEmpty: statuses != null && statuses.isEmpty,

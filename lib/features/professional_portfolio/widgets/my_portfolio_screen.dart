@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/resolved_network_image.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_button.dart';
@@ -38,6 +39,7 @@ class MyPortfolioScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         child: AsyncStateView<List<PortfolioItem>>(
           isLoading: portfolioAsync.isLoading,
+          loadingBuilder: (_) => const TekoSkeleton.list(),
           hasError: portfolioAsync.hasError,
           data: items,
           isEmpty: items != null && items.isEmpty,

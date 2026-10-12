@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_card.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../models/service.dart';
 import '../providers/my_client_services_provider.dart';
 import 'service_status_badge.dart';
@@ -24,6 +25,7 @@ class MyServicesScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.myServicesTitle)),
       body: AsyncStateView<List<Service>>(
         isLoading: servicesAsync.isLoading,
+        loadingBuilder: (_) => const TekoSkeleton.list(),
         hasError: servicesAsync.hasError,
         data: services,
         isEmpty: services != null && services.isEmpty,

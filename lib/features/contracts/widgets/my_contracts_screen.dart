@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../models/contract.dart';
@@ -25,6 +26,7 @@ class MyContractsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.myContractsScreenTitle)),
       body: AsyncStateView<List<MyContractSummary>>(
         isLoading: contractsAsync.isLoading,
+        loadingBuilder: (_) => const TekoSkeleton.list(),
         hasError: contractsAsync.hasError,
         data: contracts,
         isEmpty: contracts != null && contracts.isEmpty,

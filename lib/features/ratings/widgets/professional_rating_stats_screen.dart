@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../../professional_profile/providers/my_professional_profile_provider.dart';
 import '../models/professional_rating_stats.dart';
@@ -51,6 +52,7 @@ class _StatsBody extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       child: AsyncStateView<ProfessionalRatingStats>(
         isLoading: statsAsync.isLoading,
+        loadingBuilder: (_) => const TekoSkeleton.card(),
         hasError: statsAsync.hasError,
         data: statsAsync.valueOrNull,
         errorMessage: l10n.professionalRatingStatsError,

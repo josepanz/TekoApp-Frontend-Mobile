@@ -598,5 +598,6 @@
   "portfolioPhotoSemanticLabel": "Foto del portafolio",
   "serviceProgressPhotoSemanticLabel": "Foto del avance del servicio",
   "passwordShowTooltip": "Mostrar contraseña",
-  "passwordHideTooltip": "Ocultar contraseña"
+  "passwordHideTooltip": "Ocultar contraseña",
+  "skeletonLoadingLabel": "Cargando"
 }

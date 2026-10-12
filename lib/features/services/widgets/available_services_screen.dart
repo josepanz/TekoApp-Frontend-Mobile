@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../models/service.dart';
@@ -66,6 +67,7 @@ class _AvailableServicesScreenState
 
     return AsyncStateView<List<Service>>(
       isLoading: servicesAsync.isLoading,
+      loadingBuilder: (_) => const TekoSkeleton.list(),
       hasError: servicesAsync.hasError,
       data: services,
       isEmpty: services != null && services.isEmpty,

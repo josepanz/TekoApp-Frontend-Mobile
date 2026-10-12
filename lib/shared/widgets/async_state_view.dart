@@ -21,6 +21,7 @@ class AsyncStateView<T> extends StatelessWidget {
     this.emptyMessage,
     this.isEmpty = false,
     this.onRetry,
+    this.loadingBuilder,
   });
 
   final bool isLoading;
@@ -32,12 +33,17 @@ class AsyncStateView<T> extends StatelessWidget {
   final bool isEmpty;
   final VoidCallback? onRetry;
 
+  /// Loading opcional (típicamente un `TekoSkeleton`). Si es `null` se mantiene el spinner de
+  /// siempre, así los usos existentes no cambian.
+  final WidgetBuilder? loadingBuilder;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return loadingBuilder?.call(context) ??
+          const Center(child: CircularProgressIndicator());
     }
     if (hasError || data == null) {
       return Center(

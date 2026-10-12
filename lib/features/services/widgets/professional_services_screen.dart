@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../../ratings/models/rating_failure.dart';
@@ -73,6 +74,7 @@ class _ProfessionalServicesScreenState
       appBar: AppBar(title: Text(l10n.professionalServicesTitle)),
       body: AsyncStateView<List<Service>>(
         isLoading: servicesAsync.isLoading,
+        loadingBuilder: (_) => const TekoSkeleton.list(),
         hasError: servicesAsync.hasError,
         data: services,
         isEmpty: services != null && services.isEmpty,

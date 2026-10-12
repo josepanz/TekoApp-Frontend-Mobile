@@ -492,5 +492,6 @@
   "portfolioPhotoSemanticLabel": "Portfolio photo",
   "serviceProgressPhotoSemanticLabel": "Service progress photo",
   "passwordShowTooltip": "Show password",
-  "passwordHideTooltip": "Hide password"
+  "passwordHideTooltip": "Hide password",
+  "skeletonLoadingLabel": "Loading"
 }

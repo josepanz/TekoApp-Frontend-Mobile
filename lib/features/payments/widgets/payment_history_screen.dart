@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../models/payment.dart';
 import '../providers/payment_history_provider.dart';
@@ -24,6 +25,7 @@ class PaymentHistoryScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.paymentHistoryTitle)),
       body: AsyncStateView<List<Payment>>(
         isLoading: paymentsAsync.isLoading,
+        loadingBuilder: (_) => const TekoSkeleton.list(),
         hasError: paymentsAsync.hasError,
         data: payments,
         isEmpty: payments != null && payments.isEmpty,

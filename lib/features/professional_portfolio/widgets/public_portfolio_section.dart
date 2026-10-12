@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/resolved_network_image.dart';
 import '../models/portfolio_item.dart';
 import '../providers/portfolio_file_url_provider.dart';
@@ -37,6 +38,7 @@ class PublicPortfolioSection extends ConsumerWidget {
         const SizedBox(height: 8),
         AsyncStateView<List<PortfolioItem>>(
           isLoading: portfolioAsync.isLoading,
+          loadingBuilder: (_) => const TekoSkeleton.card(),
           hasError: portfolioAsync.hasError,
           data: items,
           isEmpty: items != null && items.isEmpty,
