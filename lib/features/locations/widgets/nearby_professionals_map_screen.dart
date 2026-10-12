@@ -43,56 +43,116 @@ class NearbyProfessionalsMapScreen extends ConsumerWidget {
           isEmpty: (professionals.valueOrNull ?? const []).isEmpty,
           emptyMessage: l10n.nearbyProfessionalsMapEmpty,
           errorMessage: l10n.nearbyProfessionalsMapError,
-          builder: (context, list) => FlutterMap(
-            key: const Key('nearby_professionals_map'),
-            options: MapOptions(
-              initialCenter: ll.LatLng(
-                deviceCenter.latitude,
-                deviceCenter.longitude,
-              ),
-              initialZoom: 13,
-            ),
+          builder: (context, list) => Stack(
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.tekoapp.mobile',
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: ll.LatLng(
-                      deviceCenter.latitude,
-                      deviceCenter.longitude,
-                    ),
-                    child: const Icon(Icons.my_location, color: Colors.blue),
+              FlutterMap(
+                key: const Key('nearby_professionals_map'),
+                options: MapOptions(
+                  initialCenter: ll.LatLng(
+                    deviceCenter.latitude,
+                    deviceCenter.longitude,
                   ),
-                  for (final professional in list)
-                    Marker(
-                      key: Key(
-                        'nearby_professional_marker_${professional.id}',
-                      ),
-                      point: ll.LatLng(
-                        professional.latitude,
-                        professional.longitude,
-                      ),
-                      child: Tooltip(
-                        message: professional.isAvailable
-                            ? professional.description
-                            : '${professional.description}'
-                                ' (${l10n.nearbyProfessionalsMapUnavailable})',
-                        child: Icon(
-                          Icons.location_pin,
-                          // Atenuado cuando no está disponible para tomar servicios nuevos — sigue
-                          // visible en el mapa (no se filtra: puede seguir siendo útil ver dónde
-                          // está), pero se distingue del resto (ver isAvailable, M-04).
-                          color: professional.isAvailable
-                              ? Colors.red
-                              : Colors.grey,
-                          size: 36,
+                  initialZoom: 13,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.tekoapp.mobile',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: ll.LatLng(
+                          deviceCenter.latitude,
+                          deviceCenter.longitude,
                         ),
+                        child:
+                            const Icon(Icons.my_location, color: Colors.blue),
                       ),
-                    ),
+                      for (final professional in list)
+                        Marker(
+                          key: Key(
+                            'nearby_professional_marker_${professional.id}',
+                          ),
+                          point: ll.LatLng(
+                            professional.latitude,
+                            professional.longitude,
+                          ),
+                          child: Tooltip(
+                            message: professional.isAvailable
+                                ? professional.description
+                                : '${professional.description}'
+                                    ' (${l10n.nearbyProfessionalsMapUnavailable})',
+                            child: Icon(
+                              Icons.location_pin,
+                              // Atenuado cuando no está disponible para tomar servicios nuevos — sigue
+                              // visible en el mapa (no se filtra: puede seguir siendo útil ver dónde
+                              // está), pero se distingue del resto (ver isAvailable, M-04).
+                              color: professional.isAvailable
+                                  ? Colors.red
+                                  : Colors.grey,
+                              size: 36,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ],
+              ),
+              Positioned(
+                left: 12,
+                right: 12,
+                top: 12,
+                child: _ApproximateLocationNotice(
+                  message: l10n.nearbyProfessionalsMapApproximateNotice,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Aviso discreto: el backend ofusca (~300 m) la posición de los profesionales y solo expone a
+/// los que están en línea; la coordenada exacta únicamente la ve el cliente con servicio activo.
+class _ApproximateLocationNotice extends StatelessWidget {
+  const _ApproximateLocationNotice({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      label: message,
+      excludeSemantics: true,
+      child: DecoratedBox(
+        key: const Key('nearby_professionals_approximate_notice'),
+        decoration: BoxDecoration(
+          color: colorScheme.surface.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: colorScheme.outline),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 16,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             ],
           ),

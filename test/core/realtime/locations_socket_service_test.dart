@@ -195,4 +195,88 @@ void main() {
       },
     );
   });
+
+  group('SocketIoLocationsSocketService — salas de ubicación exacta', () {
+    late SocketIoLocationsSocketService service;
+    late io.Socket socket;
+
+    // Con el socket desconectado, `emit` queda en `sendBuffer` — permite observar lo emitido sin
+    // red real.
+    List<dynamic> buffered() => socket.sendBuffer
+        .map((p) => (p as Map<dynamic, dynamic>)['data'] as List<dynamic>)
+        .toList();
+
+    const subscribeSeven = [
+      'subscribeToProfessional',
+      {'professionalId': '7'},
+    ];
+
+    setUp(() {
+      service = SocketIoLocationsSocketService();
+      socket = buildDisconnectedSocket();
+      service.wireSocketForTesting(socket);
+    });
+
+    test('suscribir antes de conectar emite al conectarse', () {
+      service.subscribeToProfessional(7);
+      expect(buffered(), isEmpty);
+
+      socket.emit('connect');
+
+      expect(buffered(), [subscribeSeven]);
+    });
+
+    test('re-suscribe tras reconectar', () {
+      service.subscribeToProfessional(7);
+      socket.emit('connect');
+      socket.sendBuffer.clear();
+
+      socket.emit('disconnect', 'transport close');
+      socket.emit('connect');
+
+      expect(buffered(), [subscribeSeven]);
+    });
+
+    test('unsubscribe saca al profesional de las re-suscripciones', () {
+      service.subscribeToProfessional(7);
+      service.unsubscribeFromProfessional(7);
+
+      socket.emit('connect');
+
+      expect(buffered(), isEmpty);
+    });
+
+    test('expone exactLocationUpdated y subscriptionError como streams',
+        () async {
+      final exact = <ProfessionalLocationUpdate>[];
+      final errors = <LocationsSubscriptionError>[];
+      service.exactLocationUpdates.listen(exact.add);
+      service.subscriptionErrors.listen(errors.add);
+
+      // `emit` de un socket cliente envía al servidor; para simular un evento ENTRANTE se usa
+      // `onevent` (exige `connected`).
+      socket.connected = true;
+      socket.onevent({
+        'data': [
+          'exactLocationUpdated',
+          {
+            'professionalId': 7,
+            'location': {'latitude': -25.1, 'longitude': -57.2},
+          },
+        ],
+      });
+      socket.onevent({
+        'data': [
+          'subscriptionError',
+          {'professionalId': '7', 'error': 'forbidden'},
+        ],
+      });
+      await pumpEventQueue();
+
+      expect(exact.single.professionalId, 7);
+      expect(exact.single.latitude, -25.1);
+      expect(errors.single.professionalId, 7);
+      expect(errors.single.message, 'forbidden');
+    });
+  });
 }

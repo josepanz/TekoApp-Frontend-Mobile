@@ -42,6 +42,20 @@ class _FakeLocationsSocketService implements LocationsSocketService {
 
   @override
   void onLocationUpdated(void Function(ProfessionalLocationUpdate) listener) {}
+
+  @override
+  void subscribeToProfessional(int professionalId) {}
+
+  @override
+  void unsubscribeFromProfessional(int professionalId) {}
+
+  @override
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates =>
+      const Stream.empty();
+
+  @override
+  Stream<LocationsSubscriptionError> get subscriptionErrors =>
+      const Stream.empty();
 }
 
 /// Sin token: el tracking en vivo del profesional asignado (`assignedProfessionalLocationProvider`)

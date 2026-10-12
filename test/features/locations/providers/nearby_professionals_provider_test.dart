@@ -38,6 +38,20 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   }
 
   void emit(ProfessionalLocationUpdate update) => _listener?.call(update);
+
+  @override
+  void subscribeToProfessional(int professionalId) {}
+
+  @override
+  void unsubscribeFromProfessional(int professionalId) {}
+
+  @override
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates =>
+      const Stream.empty();
+
+  @override
+  Stream<LocationsSubscriptionError> get subscriptionErrors =>
+      const Stream.empty();
 }
 
 const _professional = NearbyProfessional(

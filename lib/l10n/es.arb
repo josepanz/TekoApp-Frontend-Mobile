@@ -599,5 +599,6 @@
   "serviceProgressPhotoSemanticLabel": "Foto del avance del servicio",
   "passwordShowTooltip": "Mostrar contraseña",
   "passwordHideTooltip": "Ocultar contraseña",
-  "skeletonLoadingLabel": "Cargando"
+  "skeletonLoadingLabel": "Cargando",
+  "nearbyProfessionalsMapApproximateNotice": "Ubicación aproximada · solo profesionales en línea"
 }

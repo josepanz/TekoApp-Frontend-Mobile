@@ -8,11 +8,16 @@ import '../models/professional_last_location.dart';
 import 'locations_repository_provider.dart';
 import 'locations_socket_provider.dart';
 
-/// Tracking en vivo del profesional asignado a un servicio ACCEPTED/IN_PROGRESS — arranca con su
-/// última posición conocida (`GET /locations/professional/:id`) y se actualiza con los eventos
-/// `locationUpdated` del socket de `/locations`, igual que el mapa de cercanos (ver
-/// `NearbyProfessionalsController`). `null` significa "el profesional todavía no compartió
-/// ubicación" (404 esperado, no un error a mostrar).
+/// Tracking en vivo del profesional asignado a un servicio ACCEPTED/IN_PROGRESS.
+///
+/// - Carga inicial: `GET /locations/professional/:id` (coordenada exacta, el backend la autoriza
+///   por servicio activo). `null` = todavía no compartió ubicación (404 esperado).
+/// - En vivo: se suscribe a la sala del profesional (`subscribeToProfessional`) y escucha
+///   `exactLocationUpdated`. El `professionalId` es el `id` interno (Int) del profesional, el que
+///   ya trae `Service.professionalId`. Se desuscribe al dispose (pantalla cerrada, otro servicio
+///   o servicio terminado: `autoDispose` + family por profesional).
+/// - Si el backend rechaza la suscripción (`subscriptionError`) cae a la posición APROXIMADA del
+///   canal global `locationUpdated` — sin romper el stream.
 final assignedProfessionalLocationProvider = StreamProvider.autoDispose
     .family<ProfessionalLastLocation?, int>((ref, professionalId) async* {
   // `autoDispose` puede tirar abajo este provider mientras alguno de los `await` de abajo está en
@@ -36,8 +41,10 @@ final assignedProfessionalLocationProvider = StreamProvider.autoDispose
   socket.connect(token);
 
   final controller = StreamController<ProfessionalLastLocation>();
-  socket.onLocationUpdated((update) {
-    if (update.professionalId != professionalId) return;
+  var useApproximateFallback = false;
+
+  final exactSubscription = socket.exactLocationUpdates.listen((update) {
+    if (update.professionalId != professionalId || controller.isClosed) return;
     controller.add(
       ProfessionalLastLocation(
         latitude: update.latitude,
@@ -45,6 +52,30 @@ final assignedProfessionalLocationProvider = StreamProvider.autoDispose
       ),
     );
   });
-  ref.onDispose(controller.close);
+  final errorSubscription = socket.subscriptionErrors.listen((error) {
+    if (error.professionalId == professionalId) useApproximateFallback = true;
+  });
+  socket.onLocationUpdated((update) {
+    if (!useApproximateFallback ||
+        disposed ||
+        controller.isClosed ||
+        update.professionalId != professionalId) {
+      return;
+    }
+    controller.add(
+      ProfessionalLastLocation(
+        latitude: update.latitude,
+        longitude: update.longitude,
+      ),
+    );
+  });
+
+  socket.subscribeToProfessional(professionalId);
+  ref.onDispose(() {
+    unawaited(exactSubscription.cancel());
+    unawaited(errorSubscription.cancel());
+    socket.unsubscribeFromProfessional(professionalId);
+    unawaited(controller.close());
+  });
   yield* controller.stream;
 });
