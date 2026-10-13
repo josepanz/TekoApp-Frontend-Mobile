@@ -1,0 +1,18 @@
+# CP-MOB-AUTH-003 (test/qa/casos/CP-AUTH.md) - M1 Auth: login correcto con cliente_a
+# Prerrequisito: backend e2e en :3100 con seed (pnpm e2e:serve), app debug instalada.
+appId: py.com.tekoapp.mobile
+tags:
+  - m1
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: cliente_a@e2e.tekoapp.local
+      PASSWORD: E2e-Passw0rd!
+- assertVisible: "Hola, Cliente"
+- assertVisible:
+    id: home.home.request_service_cta
+- takeScreenshot: build/qa/maestro/m1-login-ok

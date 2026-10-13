@@ -1,0 +1,41 @@
+# CP-MOB-AUTH-005 - M1 Auth: registro de un usuario nuevo (email aleatorio por corrida)
+# El alta exige verificar el email antes de poder iniciar sesion, por eso termina en Login con
+# el aviso de exito y no en Home.
+appId: py.com.tekoapp.mobile
+tags:
+  - m1
+---
+- evalScript: ${output.email = 'maestro_' + Date.now() + '@e2e.tekoapp.local'}
+- launchApp:
+    clearState: true
+- tapOn:
+    id: auth.login.register_link
+- tapOn:
+    id: auth.register.first_name_field
+- inputText: Maestro
+- tapOn:
+    id: auth.register.last_name_field
+- inputText: Prueba
+- tapOn:
+    id: auth.register.email_field
+- inputText: ${output.email}
+- tapOn:
+    id: auth.register.phone_field
+- inputText: "+595981123456"
+- tapOn:
+    id: auth.register.password_field
+- inputText: E2e-Passw0rd!
+- tapOn:
+    id: auth.register.confirm_password_field
+- inputText: E2e-Passw0rd!
+- hideKeyboard
+- tapOn:
+    id: auth.register.accept_terms_checkbox
+- tapOn:
+    id: auth.register.submit_button
+- extendedWaitUntil:
+    visible:
+      id: auth.login.submit_button
+    timeout: 20000
+- assertVisible: "Cuenta creada.*"
+- takeScreenshot: build/qa/maestro/m1-registro

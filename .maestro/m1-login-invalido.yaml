@@ -1,0 +1,24 @@
+# CP-MOB-AUTH-004 - M1 Auth: credenciales invalidas muestran error y no entran a Home
+appId: py.com.tekoapp.mobile
+tags:
+  - m1
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: auth.login.email_field
+- inputText: cliente_a@e2e.tekoapp.local
+- tapOn:
+    id: auth.login.password_field
+- inputText: Contrasena-Incorrecta-1
+- hideKeyboard
+- tapOn:
+    id: auth.login.submit_button
+- extendedWaitUntil:
+    visible:
+      id: auth.login.error_message
+    timeout: 15000
+- assertVisible: "Email o contraseña incorrectos"
+- assertNotVisible:
+    id: home.home.request_service_cta
+- takeScreenshot: build/qa/maestro/m1-login-invalido
