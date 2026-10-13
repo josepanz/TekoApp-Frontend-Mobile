@@ -197,10 +197,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         if (loginState.hasError) ...[
                           const SizedBox(height: 12),
-                          Text(
-                            _errorMessage(l10n, loginState.error),
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
+                          Semantics(
+                            identifier: 'auth.login.error_message',
+                            child: Text(
+                              _errorMessage(l10n, loginState.error),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
                             ),
                           ),
                         ],

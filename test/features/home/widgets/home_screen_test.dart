@@ -105,6 +105,11 @@ Future<void> _pumpScreen(
             const Scaffold(body: Text('pantalla-historial-pagos')),
       ),
       GoRoute(
+        path: '/perfil',
+        builder: (context, state) =>
+            const Scaffold(body: Text('pantalla-perfil')),
+      ),
+      GoRoute(
         path: '/profesional',
         builder: (context, state) =>
             const Scaffold(body: Text('pantalla-profesional')),
@@ -189,6 +194,24 @@ void main() {
       await tester.tap(find.byKey(const Key('home_nearby_map_button')));
       await tester.pumpAndSettle();
       expect(find.text('pantalla-mapa'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'el ícono de perfil navega a /perfil y expone el id E2E (CP-MOB-AUTH-002)',
+    (tester) async {
+      // Arrange
+      final handle = tester.ensureSemantics();
+      await _pumpScreen(tester);
+      expect(bySemanticsId('home.home.profile_button'), findsOneWidget);
+
+      // Act
+      await tester.tap(find.byKey(const Key('home_profile_button')));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('pantalla-perfil'), findsOneWidget);
+      handle.dispose();
     },
   );
 
