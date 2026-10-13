@@ -1,0 +1,7 @@
+{
+  "API_BASE_URL": "http://10.0.2.2:3100/tekoapp-backend/api",
+  "BASIC_AUTH_CLIENT_ID": "tekoapp-mobile",
+  "BASIC_AUTH_CLIENT_SECRET": "e2e-mobile-secret",
+  "APP_ENVIRONMENT": "dev",
+  "_NOTA_DISPOSITIVO_FISICO": "Con dispositivo fisico: adb reverse tcp:3100 tcp:3100 y API_BASE_URL=http://localhost:3100/tekoapp-backend/api (alternativa: IP de la LAN, pero el cleartext debug solo permite 10.0.2.2/localhost/127.0.0.1). Copiar a dart_defines.e2e.json (ignorado por git). Los secretos son los del seed e2e del Backend (MOBILE_CLIENT_SECRET en .env.e2e.example), no reales."
+}

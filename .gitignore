@@ -133,3 +133,10 @@ node_modules/
 # Valores locales para `flutter run --dart-define-from-file=` (secret de Basic Auth incluido,
 # nunca committear) — ver .claude/documentation/entorno-dev-demo.md
 dart_defines.local.json
+
+# Config del backend e2e local (copiar de dart_defines.e2e.example.json)
+dart_defines.e2e.json
+
+# Salidas de Maestro (reportes junit, capturas, logs)
+.maestro/screenshots/
+
