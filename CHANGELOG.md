@@ -1,3 +1,9 @@
+## [1.0.0-develop.11](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.10...v1.0.0-develop.11) (2026-10-13)
+
+### Bug Fixes
+
+* acceso a Mi perfil desde Home (P0) y flujos Maestro de W1 ([#85](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/85)) ([c229f27](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c229f2773c3ddd9b0035e569555155880ff806e9))
+
 ## [1.0.0-develop.10](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.9...v1.0.0-develop.10) (2026-10-13)
 
 ### Features
