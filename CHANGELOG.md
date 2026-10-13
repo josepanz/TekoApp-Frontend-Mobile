@@ -1,3 +1,17 @@
+## [1.0.0-develop.10](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.9...v1.0.0-develop.10) (2026-10-13)
+
+### Features
+
+* **a11y:** semántica, tooltips e identificadores E2E en widgets compartidos y flujos críticos ([ed09e10](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/ed09e1029d3ab7337f2051f0f721a7ab4205ca0c))
+* accesibilidad, skeleton/empty/toast, ubicación exacta del profesional asignado y documentación QA ([#84](https://github.com/josepanz/TekoApp-Frontend-Mobile/issues/84)) ([42c55d9](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/42c55d906670054dfad84a0055356b7a7712c342))
+* **locations:** seguir la ubicación exacta del profesional asignado vía exactLocationUpdated ([5fa61ad](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/5fa61adbfda9eeb6b958ac51c4119baf4a32f972))
+* **ui:** TekoSkeleton con shimmer y loadingBuilder opcional en AsyncStateView ([c9643ea](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/c9643ea215cd325c743def5fa9239ae98b22779f))
+* **ui:** TekoToast y TekoEmptyState, migración de SnackBar nativos ([07fd9eb](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/07fd9ebea73c3e5a3958ca650225a6cd89330661))
+
+### Documentation
+
+* **qa:** documentación de pruebas QA, generador de informes e informe de ejecución ([4234e30](https://github.com/josepanz/TekoApp-Frontend-Mobile/commit/4234e300e155c49a1fe3898b252a9a45fbb6efa4))
+
 ## [1.0.0-develop.9](https://github.com/josepanz/TekoApp-Frontend-Mobile/compare/v1.0.0-develop.8...v1.0.0-develop.9) (2026-09-15)
 
 ### Features
