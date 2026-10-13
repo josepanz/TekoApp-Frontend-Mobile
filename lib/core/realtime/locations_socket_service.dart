@@ -37,6 +37,27 @@ class ProfessionalLocationUpdate {
   final double longitude;
 }
 
+/// Rechazo del backend a `subscribeToProfessional` (`subscriptionError`): el usuario no es el
+/// profesional, ni admin, ni cliente con un servicio ACCEPTED/IN_PROGRESS con él.
+class LocationsSubscriptionError {
+  const LocationsSubscriptionError({
+    required this.professionalId,
+    required this.message,
+  });
+
+  factory LocationsSubscriptionError.fromJson(Map<String, dynamic> json) {
+    // El backend devuelve el `professionalId` tal cual lo mandó el cliente (string) — o `null`
+    // si venía inválido.
+    return LocationsSubscriptionError(
+      professionalId: int.tryParse('${json['professionalId']}'),
+      message: json['error']?.toString() ?? '',
+    );
+  }
+
+  final int? professionalId;
+  final String message;
+}
+
 /// Contrato del socket de `/locations` — interfaz propia (no exponer `socket_io_client` directo
 /// fuera de `core/`) para que los tests inyecten un fake en vez de tocar red real, ver
 /// `.claude/rules/test.md`.
@@ -47,7 +68,24 @@ abstract class LocationsSocketService {
     required double latitude,
     required double longitude,
   });
+
+  /// `locationUpdated`: posición APROXIMADA (~300 m) y solo de profesionales en línea. Para el
+  /// mapa de cercanos; nunca es la coordenada exacta.
   void onLocationUpdated(void Function(ProfessionalLocationUpdate) listener);
+
+  /// Se une a la sala `professional:<id>` para recibir [exactLocationUpdates]. [professionalId]
+  /// es el `id` INTERNO (Int) del profesional — el gateway hace `Number(professionalId)`, un
+  /// `referenceId` UUID no sirve. El backend lo autoriza solo para el propio profesional, admin o
+  /// un cliente con servicio ACCEPTED/IN_PROGRESS con él; si no, llega [subscriptionErrors].
+  /// Se re-emite solo en cada reconexión (las salas se pierden al caerse el socket).
+  void subscribeToProfessional(int professionalId);
+  void unsubscribeFromProfessional(int professionalId);
+
+  /// `exactLocationUpdated`: coordenada exacta, solo para suscripciones autorizadas.
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates;
+
+  /// `subscriptionError`: el backend rechazó una suscripción.
+  Stream<LocationsSubscriptionError> get subscriptionErrors;
 
   /// `connected` tras un `connect()`/reconexión exitosa; `reconnecting` mientras el socket
   /// intenta recuperarse solo de una caída; `error` si agotó los reintentos (ver M-03);
@@ -71,6 +109,11 @@ class SocketIoLocationsSocketService implements LocationsSocketService {
   io.Socket? _socket;
   final _connectionStateController =
       StreamController<LocationsSocketConnectionState>.broadcast();
+  final _exactController =
+      StreamController<ProfessionalLocationUpdate>.broadcast();
+  final _subscriptionErrorController =
+      StreamController<LocationsSubscriptionError>.broadcast();
+  final _subscribedProfessionals = <int>{};
   bool _intentionalDisconnect = false;
   int _consecutiveFailures = 0;
 
@@ -117,7 +160,25 @@ class SocketIoLocationsSocketService implements LocationsSocketService {
 
     socket.on('connect', (_) {
       _consecutiveFailures = 0;
+      // Las salas del servidor no sobreviven a una caída del socket: re-suscribir todo.
+      for (final id in _subscribedProfessionals) {
+        socket.emit('subscribeToProfessional', {'professionalId': '$id'});
+      }
       _connectionStateController.add(LocationsSocketConnectionState.connected);
+    });
+    socket.on('exactLocationUpdated', (data) {
+      _exactController.add(
+        ProfessionalLocationUpdate.fromJson(
+          Map<String, dynamic>.from(data as Map),
+        ),
+      );
+    });
+    socket.on('subscriptionError', (data) {
+      _subscriptionErrorController.add(
+        LocationsSubscriptionError.fromJson(
+          Map<String, dynamic>.from(data as Map),
+        ),
+      );
     });
     socket.on('connect_error', (_) => _onConnectionFailure());
     socket.on('disconnect', (_) {
@@ -190,6 +251,39 @@ class SocketIoLocationsSocketService implements LocationsSocketService {
     _socket?.emit('updateLocation', {
       'location': {'latitude': latitude, 'longitude': longitude},
     });
+  }
+
+  @override
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates =>
+      _exactController.stream;
+
+  @override
+  Stream<LocationsSubscriptionError> get subscriptionErrors =>
+      _subscriptionErrorController.stream;
+
+  @override
+  void subscribeToProfessional(int professionalId) {
+    _subscribedProfessionals.add(professionalId);
+    // Si todavía no conectó, el handler de `connect` la emite.
+    final socket = _socket;
+    if (socket != null && socket.connected) {
+      socket.emit(
+        'subscribeToProfessional',
+        {'professionalId': '$professionalId'},
+      );
+    }
+  }
+
+  @override
+  void unsubscribeFromProfessional(int professionalId) {
+    _subscribedProfessionals.remove(professionalId);
+    final socket = _socket;
+    if (socket != null && socket.connected) {
+      socket.emit(
+        'unsubscribeFromProfessional',
+        {'professionalId': '$professionalId'},
+      );
+    }
   }
 
   @override

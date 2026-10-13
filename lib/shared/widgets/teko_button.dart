@@ -17,6 +17,8 @@ class TekoButton extends StatelessWidget {
     this.size = TekoButtonSize.md,
     this.icon,
     this.loading = false,
+    this.semanticLabel,
+    this.semanticsIdentifier,
   });
 
   final String label;
@@ -25,6 +27,13 @@ class TekoButton extends StatelessWidget {
   final TekoButtonSize size;
   final IconData? icon;
   final bool loading;
+
+  /// Label semántico para lectores de pantalla; por defecto se deriva de [label].
+  final String? semanticLabel;
+
+  /// Identificador estable (`feature.pantalla.elemento`) expuesto como `Semantics.identifier`
+  /// para selectores de E2E (Maestro). Ver `docs/e2e-selectors.md`.
+  final String? semanticsIdentifier;
 
   @override
   Widget build(BuildContext context) {
@@ -89,20 +98,35 @@ class TekoButton extends StatelessWidget {
             ],
           );
 
-    return SizedBox(
-      height: height,
-      child: ElevatedButton(
-        onPressed: isDisabled ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: background,
-          disabledBackgroundColor: background.withValues(alpha: 0.5),
-          elevation: 0,
-          side: border != null ? BorderSide(color: border) : BorderSide.none,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: !isDisabled,
+      label: semanticLabel ?? label,
+      identifier: semanticsIdentifier,
+      onTap: isDisabled ? null : onPressed,
+      excludeSemantics: true,
+      child: SizedBox(
+        height: height,
+        // Ancho mínimo = alto: garantiza target táctil >= 44/48dp aun con labels cortos.
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: height),
+          child: ElevatedButton(
+            onPressed: isDisabled ? null : onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: background,
+              disabledBackgroundColor: background.withValues(alpha: 0.5),
+              elevation: 0,
+              side:
+                  border != null ? BorderSide(color: border) : BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            child: content,
+          ),
         ),
-        child: content,
       ),
     );
   }

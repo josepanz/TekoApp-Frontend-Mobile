@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../../../shared/widgets/teko_button.dart';
@@ -49,8 +50,10 @@ class BudgetComparisonScreen extends ConsumerWidget {
       if (contract != null) {
         context.pushReplacement('/contratos/${contract.referenceId}');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.contractGenerateError)),
+        TekoToast.show(
+          context,
+          l10n.contractGenerateError,
+          variant: TekoToastVariant.error,
         );
         Navigator.of(context).pop(true);
       }
@@ -60,8 +63,7 @@ class BudgetComparisonScreen extends ConsumerWidget {
       BudgetConflictFailure() => l10n.budgetComparisonConflict,
       _ => l10n.budgetComparisonError,
     };
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    TekoToast.show(context, message, variant: TekoToastVariant.error);
   }
 
   @override
@@ -82,6 +84,7 @@ class BudgetComparisonScreen extends ConsumerWidget {
         isEmpty: options != null && options.isEmpty,
         errorMessage: l10n.budgetComparisonLoadError,
         emptyMessage: l10n.budgetComparisonEmpty,
+        emptyIcon: Icons.request_quote_outlined,
         builder: (context, options) => ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: options.length,
@@ -156,13 +159,16 @@ class _BudgetOptionCardState extends State<_BudgetOptionCard> {
               l10n.budgetOptionEstimatedHours(option.estimatedHours!.round()),
             ),
           const SizedBox(height: 8),
-          TextButton(
-            key: Key('budget_option_toggle_details_${option.referenceId}'),
-            onPressed: () => setState(() => _expanded = !_expanded),
-            child: Text(
-              _expanded
-                  ? l10n.budgetOptionHideDetails
-                  : l10n.budgetOptionShowDetails,
+          Semantics(
+            identifier: 'budgets.comparison.toggle_details_button',
+            child: TextButton(
+              key: Key('budget_option_toggle_details_${option.referenceId}'),
+              onPressed: () => setState(() => _expanded = !_expanded),
+              child: Text(
+                _expanded
+                    ? l10n.budgetOptionHideDetails
+                    : l10n.budgetOptionShowDetails,
+              ),
             ),
           ),
           if (_expanded)
@@ -171,6 +177,7 @@ class _BudgetOptionCardState extends State<_BudgetOptionCard> {
           if (!option.isSelected)
             TekoButton(
               key: Key('budget_option_select_${option.referenceId}'),
+              semanticsIdentifier: 'budgets.comparison.option_select_button',
               label: l10n.budgetOptionSelectButton,
               loading: widget.loading,
               onPressed: widget.loading ? null : widget.onSelect,

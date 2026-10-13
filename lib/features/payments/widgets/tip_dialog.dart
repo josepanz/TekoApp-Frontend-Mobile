@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/teko_input.dart';
 import '../models/payment.dart';
 import '../models/payment_failure.dart';
@@ -47,7 +48,12 @@ Future<void> showTipDialog(
       backendMessage ?? l10n.paymentTipError,
     _ => l10n.paymentTipError,
   };
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  TekoToast.show(
+    context,
+    message,
+    variant:
+        state.error == null ? TekoToastVariant.success : TekoToastVariant.error,
+  );
 }
 
 class _TipDialogContent extends StatefulWidget {

@@ -1,3 +1,8 @@
+// Suite: pantalla de métodos de pago (listado, vacío, default, eliminación, accesibilidad)
+// Casos: CP-MOB-A11Y-004 (ver test/qa/casos/CP-A11Y.md)
+// Tipo: widget / a11y   Prioridad: P1
+// Precondiciones: Dio mockeado (mocktail)
+// Trazabilidad: M6 Pagos; U3 accesibilidad
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +13,7 @@ import 'package:tekoapp_mobile/core/api_client/api_client.dart';
 import 'package:tekoapp_mobile/core/api_client/api_client_provider.dart';
 import 'package:tekoapp_mobile/features/payments/widgets/payment_methods_screen.dart';
 import 'package:tekoapp_mobile/l10n/app_localizations.dart';
+import 'package:tekoapp_mobile/shared/widgets/teko_empty_state.dart';
 
 class _MockDio extends Mock implements Dio {}
 
@@ -80,6 +86,28 @@ void main() {
       find.text('Todavía no agregaste ningún método de pago'),
       findsOneWidget,
     );
+    // TekoEmptyState con CTA para el siguiente paso
+    expect(find.byType(TekoEmptyState), findsOneWidget);
+    expect(find.text('Agregar método de pago'), findsWidgets);
+  });
+
+  testWidgets('estado vacío cumple las guidelines de accesibilidad', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    when(() => dio.get<List<dynamic>>('/payments/methods')).thenAnswer(
+      (_) async => Response(
+        requestOptions: RequestOptions(path: '/payments/methods'),
+        data: [],
+      ),
+    );
+
+    await _pumpScreen(tester, dio);
+    await tester.pumpAndSettle();
+
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    handle.dispose();
   });
 
   testWidgets(

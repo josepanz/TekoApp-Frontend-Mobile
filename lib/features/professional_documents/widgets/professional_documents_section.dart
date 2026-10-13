@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_badge.dart';
 import '../models/professional_document.dart';
 import '../providers/professional_document_file_url_provider.dart';
@@ -57,11 +58,13 @@ class ProfessionalDocumentsSection extends ConsumerWidget {
         const SizedBox(height: 8),
         AsyncStateView<List<ProfessionalDocument>>(
           isLoading: documentsAsync.isLoading,
+          loadingBuilder: (_) => const TekoSkeleton.card(),
           hasError: documentsAsync.hasError,
           data: documents,
           isEmpty: documents != null && documents.isEmpty,
           errorMessage: l10n.professionalDocumentsSectionError,
           emptyMessage: l10n.professionalDocumentsSectionEmpty,
+          emptyCompact: true,
           builder: (context, documents) => Column(
             children: [
               for (final document in documents)

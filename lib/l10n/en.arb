@@ -229,7 +229,9 @@
   "paymentMethodExpiresAt": "Expires {date}",
   "@paymentMethodExpiresAt": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "paymentMethodGenericError": "Could not save — check the entered data",
@@ -359,25 +361,33 @@
   "accountDeletionBlockerActiveService": "{count, plural, one{You have {count} service in progress} other{You have {count} services in progress}}",
   "@accountDeletionBlockerActiveService": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerPendingPayment": "{count, plural, one{You have {count} pending payment} other{You have {count} pending payments}}",
   "@accountDeletionBlockerPendingPayment": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerUnsignedContract": "{count, plural, one{You have {count} unsigned contract} other{You have {count} unsigned contracts}}",
   "@accountDeletionBlockerUnsignedContract": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerUnknown": "{count, plural, one{You have {count} unresolved item} other{You have {count} unresolved items}}",
   "@accountDeletionBlockerUnknown": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "accountDeletionBlockerViewButton": "View",
@@ -389,7 +399,9 @@
   "accountDeletionBannerTitle": "Your account will be deleted on {date} — you can cancel at any time before then.",
   "@accountDeletionBannerTitle": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "accountDeletionBannerCancelButton": "Cancel deletion",
@@ -431,7 +443,9 @@
   "uploadDocumentIssuedAtSelected": "Issued: {date}",
   "@uploadDocumentIssuedAtSelected": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "uploadDocumentCancelButton": "Cancel",
@@ -464,5 +478,21 @@
   "publicPortfolioSectionError": "We couldn't load the portfolio",
   "asyncStateGenericError": "An unexpected error occurred.",
   "asyncStateEmpty": "No data to display.",
-  "asyncStateRetryButton": "Retry"
+  "asyncStateRetryButton": "Retry",
+  "avatarSemanticLabel": "Avatar of {name}",
+  "@avatarSemanticLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetRemoveOptionTooltip": "Remove option",
+  "budgetRemoveLineItemTooltip": "Remove item",
+  "portfolioPhotoSemanticLabel": "Portfolio photo",
+  "serviceProgressPhotoSemanticLabel": "Service progress photo",
+  "passwordShowTooltip": "Show password",
+  "passwordHideTooltip": "Hide password",
+  "skeletonLoadingLabel": "Loading",
+  "nearbyProfessionalsMapApproximateNotice": "Approximate location · online professionals only"
 }

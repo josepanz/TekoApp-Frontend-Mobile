@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart' as ll;
 
 import '../../../core/realtime/locations_socket_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/ai_disclosure_badge.dart';
 import '../../../shared/widgets/async_state_view.dart';
 import '../../../shared/widgets/teko_badge.dart';
@@ -128,6 +129,7 @@ class _ServiceDetailBody extends StatelessWidget {
             const SizedBox(height: 24),
             TekoButton(
               key: Key('pay_service_button_${service.referenceId}'),
+              semanticsIdentifier: 'services.detail.pay_button',
               label: l10n.payServiceButton,
               onPressed: () =>
                   context.push('/pagos/pagar/${service.referenceId}'),
@@ -266,6 +268,7 @@ class _ServiceRequestsSection extends ConsumerWidget {
       isEmpty: requests != null && requests.isEmpty,
       errorMessage: l10n.serviceRequestsError,
       emptyMessage: l10n.serviceRequestsEmpty,
+      emptyCompact: true,
       builder: (context, requests) => Column(
         children: [
           for (final request in requests)
@@ -289,6 +292,8 @@ class _ServiceRequestsSection extends ConsumerWidget {
                     ),
                     TekoButton(
                       key: Key('view_budgets_${request.referenceId}'),
+                      semanticsIdentifier:
+                          'services.detail.view_budgets_button',
                       label: l10n.serviceRequestViewBudgets,
                       onPressed: () => context.push(
                         '/mis-servicios/$serviceId/solicitudes/${request.referenceId}/presupuestos',
@@ -333,9 +338,13 @@ class _RateProfessionalButton extends ConsumerWidget {
         backendMessage ?? l10n.ratingError,
       _ => l10n.ratingError,
     };
-    ScaffoldMessenger.of(
+    TekoToast.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      message,
+      variant: state.error == null
+          ? TekoToastVariant.success
+          : TekoToastVariant.error,
+    );
   }
 
   @override
@@ -356,6 +365,7 @@ class _RateProfessionalButton extends ConsumerWidget {
     final rateState = ref.watch(rateControllerProvider);
     return TekoButton(
       key: Key('rate_professional_button_${service.referenceId}'),
+      semanticsIdentifier: 'services.detail.rate_button',
       label: l10n.rateProfessionalButton,
       variant: TekoButtonVariant.outline,
       loading: rateState.isLoading,

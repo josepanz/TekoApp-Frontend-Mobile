@@ -1,3 +1,8 @@
+// Suite: controlador de estado en línea del profesional
+// Casos: sin CP- dedicado; cubierto por el inventario del informe
+// Tipo: unitaria (provider)   Prioridad: P2
+// Precondiciones: socket y repositorio falsos
+// Trazabilidad: M8 tracking en vivo
 import 'dart:async';
 
 import 'package:dio/dio.dart';
@@ -45,6 +50,20 @@ class _FakeLocationsSocketService implements LocationsSocketService {
 
   @override
   void onLocationUpdated(void Function(ProfessionalLocationUpdate) listener) {}
+
+  @override
+  void subscribeToProfessional(int professionalId) {}
+
+  @override
+  void unsubscribeFromProfessional(int professionalId) {}
+
+  @override
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates =>
+      const Stream.empty();
+
+  @override
+  Stream<LocationsSubscriptionError> get subscriptionErrors =>
+      const Stream.empty();
 }
 
 final _profile = ProfessionalProfile(

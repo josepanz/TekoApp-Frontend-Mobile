@@ -1,3 +1,8 @@
+// Suite: profesionales cercanos (carga y eventos de ubicación)
+// Casos: sin CP- dedicado; cubierto por el inventario del informe
+// Tipo: unitaria (provider)   Prioridad: P2
+// Precondiciones: socket y repositorio falsos
+// Trazabilidad: M8 tracking en vivo
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -38,6 +43,20 @@ class _FakeLocationsSocketService implements LocationsSocketService {
   }
 
   void emit(ProfessionalLocationUpdate update) => _listener?.call(update);
+
+  @override
+  void subscribeToProfessional(int professionalId) {}
+
+  @override
+  void unsubscribeFromProfessional(int professionalId) {}
+
+  @override
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates =>
+      const Stream.empty();
+
+  @override
+  Stream<LocationsSubscriptionError> get subscriptionErrors =>
+      const Stream.empty();
 }
 
 const _professional = NearbyProfessional(

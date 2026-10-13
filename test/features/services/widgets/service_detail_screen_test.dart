@@ -1,3 +1,8 @@
+// Suite: detalle de servicio (profesional asignado, contacto, calificación)
+// Casos: sin CP- dedicado; cubierto por el inventario del informe
+// Tipo: widget   Prioridad: P1
+// Precondiciones: providers y repositorios mockeados
+// Trazabilidad: M4 Marketplace; M8 ubicación del asignado
 import 'dart:async';
 
 import 'package:dio/dio.dart';
@@ -42,6 +47,20 @@ class _FakeLocationsSocketService implements LocationsSocketService {
 
   @override
   void onLocationUpdated(void Function(ProfessionalLocationUpdate) listener) {}
+
+  @override
+  void subscribeToProfessional(int professionalId) {}
+
+  @override
+  void unsubscribeFromProfessional(int professionalId) {}
+
+  @override
+  Stream<ProfessionalLocationUpdate> get exactLocationUpdates =>
+      const Stream.empty();
+
+  @override
+  Stream<LocationsSubscriptionError> get subscriptionErrors =>
+      const Stream.empty();
 }
 
 /// Sin token: el tracking en vivo del profesional asignado (`assignedProfessionalLocationProvider`)

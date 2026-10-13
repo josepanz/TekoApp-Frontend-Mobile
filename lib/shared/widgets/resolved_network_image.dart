@@ -18,6 +18,7 @@ class ResolvedNetworkImage extends StatelessWidget {
     required this.width,
     required this.height,
     this.fit = BoxFit.cover,
+    this.semanticLabel,
   });
 
   /// Estado de la resolución de la URL presignada (ver `portfolioFileUrlProvider` y equivalentes).
@@ -25,6 +26,10 @@ class ResolvedNetworkImage extends StatelessWidget {
   final double width;
   final double height;
   final BoxFit fit;
+
+  /// Descripción para lectores de pantalla. Si es `null` la imagen se considera decorativa y se
+  /// excluye del árbol semántico.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +39,8 @@ class ResolvedNetworkImage extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
+          semanticLabel: semanticLabel,
+          excludeFromSemantics: semanticLabel == null,
           // Ante una URL presignada vencida (o cualquier otro fallo de carga), degradar al mismo
           // placeholder estático en vez del ícono de imagen rota de Flutter.
           errorBuilder: (context, error, stackTrace) =>

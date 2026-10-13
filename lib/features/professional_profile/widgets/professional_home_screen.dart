@@ -42,18 +42,21 @@ class _ProfessionalActiveBody extends ConsumerWidget {
             ),
           ),
         ),
-        SwitchListTile(
-          key: const Key('professional_home_online_switch'),
-          title: Text(l10n.professionalOnlineToggleTitle),
-          subtitle: onlineAsync.hasError
-              ? Text(l10n.professionalOnlineToggleError)
-              : Text(l10n.professionalOnlineToggleSubtitle),
-          value: onlineAsync.value ?? false,
-          onChanged: onlineAsync.isLoading
-              ? null
-              : (next) => ref
-                  .read(onlineStatusControllerProvider.notifier)
-                  .setOnline(next),
+        Semantics(
+          identifier: 'professional.home.online_switch',
+          child: SwitchListTile(
+            key: const Key('professional_home_online_switch'),
+            title: Text(l10n.professionalOnlineToggleTitle),
+            subtitle: onlineAsync.hasError
+                ? Text(l10n.professionalOnlineToggleError)
+                : Text(l10n.professionalOnlineToggleSubtitle),
+            value: onlineAsync.value ?? false,
+            onChanged: onlineAsync.isLoading
+                ? null
+                : (next) => ref
+                    .read(onlineStatusControllerProvider.notifier)
+                    .setOnline(next),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.all(16),
@@ -61,6 +64,7 @@ class _ProfessionalActiveBody extends ConsumerWidget {
             children: [
               TekoButton(
                 key: const Key('professional_home_my_services_button'),
+                semanticsIdentifier: 'professional.home.my_services_button',
                 label: l10n.professionalServicesTitle,
                 variant: TekoButtonVariant.outline,
                 onPressed: () => context.push('/profesional/mis-servicios'),
@@ -68,6 +72,7 @@ class _ProfessionalActiveBody extends ConsumerWidget {
               const SizedBox(height: 8),
               TekoButton(
                 key: const Key('professional_home_my_documents_button'),
+                semanticsIdentifier: 'professional.home.my_documents_button',
                 label: l10n.myDocumentsScreenTitle,
                 variant: TekoButtonVariant.outline,
                 onPressed: () => context.push('/profesional/mis-documentos'),
@@ -75,6 +80,7 @@ class _ProfessionalActiveBody extends ConsumerWidget {
               const SizedBox(height: 8),
               TekoButton(
                 key: const Key('professional_home_my_portfolio_button'),
+                semanticsIdentifier: 'professional.home.my_portfolio_button',
                 label: l10n.myPortfolioScreenTitle,
                 variant: TekoButtonVariant.outline,
                 onPressed: () => context.push('/profesional/mi-portafolio'),
@@ -82,6 +88,7 @@ class _ProfessionalActiveBody extends ConsumerWidget {
               const SizedBox(height: 8),
               TekoButton(
                 key: const Key('professional_home_my_contracts_button'),
+                semanticsIdentifier: 'professional.home.my_contracts_button',
                 label: l10n.myContractsTitle,
                 variant: TekoButtonVariant.outline,
                 onPressed: () => context.push('/contratos'),
@@ -89,6 +96,7 @@ class _ProfessionalActiveBody extends ConsumerWidget {
               const SizedBox(height: 8),
               TekoButton(
                 key: const Key('professional_home_my_rating_stats_button'),
+                semanticsIdentifier: 'professional.home.my_rating_stats_button',
                 label: l10n.professionalRatingStatsTitle,
                 variant: TekoButtonVariant.outline,
                 onPressed: () =>
@@ -120,14 +128,17 @@ class ProfessionalHomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.professionalHomeTitle),
         actions: [
-          IconButton(
-            key: const Key('professional_home_back_to_client_button'),
-            icon: const Icon(Icons.swap_horiz),
-            tooltip: l10n.professionalHomeBackToClient,
-            onPressed: () {
-              ref.read(appModeProvider.notifier).state = AppMode.client;
-              context.go('/');
-            },
+          Semantics(
+            identifier: 'professional.home.back_to_client_button',
+            child: IconButton(
+              key: const Key('professional_home_back_to_client_button'),
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: l10n.professionalHomeBackToClient,
+              onPressed: () {
+                ref.read(appModeProvider.notifier).state = AppMode.client;
+                context.go('/');
+              },
+            ),
           ),
         ],
       ),

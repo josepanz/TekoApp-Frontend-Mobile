@@ -132,25 +132,27 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
                 hasError: categoriesAsync.hasError,
                 data: categoriesAsync.valueOrNull,
                 errorMessage: l10n.requestServiceCatalogError,
-                builder: (context, categories) =>
-                    DropdownButtonFormField<Category>(
-                  key: const Key('request_service_category_field'),
-                  initialValue: _selectedCategory,
-                  decoration: InputDecoration(
-                    labelText: l10n.requestServiceCategoryLabel,
+                builder: (context, categories) => Semantics(
+                  identifier: 'services.request.category_field',
+                  child: DropdownButtonFormField<Category>(
+                    key: const Key('request_service_category_field'),
+                    initialValue: _selectedCategory,
+                    decoration: InputDecoration(
+                      labelText: l10n.requestServiceCategoryLabel,
+                    ),
+                    items: [
+                      for (final category in categories)
+                        DropdownMenuItem(
+                          value: category,
+                          child: Text(category.name),
+                        ),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => _selectedCategory = value),
+                    validator: (value) => value == null
+                        ? l10n.requestServiceCategoryRequired
+                        : null,
                   ),
-                  items: [
-                    for (final category in categories)
-                      DropdownMenuItem(
-                        value: category,
-                        child: Text(category.name),
-                      ),
-                  ],
-                  onChanged: (value) =>
-                      setState(() => _selectedCategory = value),
-                  validator: (value) => value == null
-                      ? l10n.requestServiceCategoryRequired
-                      : null,
                 ),
               ),
               const SizedBox(height: 12),
@@ -159,29 +161,32 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
                 hasError: serviceTypesAsync.hasError,
                 data: serviceTypesAsync.valueOrNull,
                 errorMessage: l10n.requestServiceCatalogError,
-                builder: (context, serviceTypes) =>
-                    DropdownButtonFormField<ServiceType>(
-                  key: const Key('request_service_type_field'),
-                  initialValue: _selectedServiceType,
-                  decoration: InputDecoration(
-                    labelText: l10n.requestServiceTypeLabel,
+                builder: (context, serviceTypes) => Semantics(
+                  identifier: 'services.request.type_field',
+                  child: DropdownButtonFormField<ServiceType>(
+                    key: const Key('request_service_type_field'),
+                    initialValue: _selectedServiceType,
+                    decoration: InputDecoration(
+                      labelText: l10n.requestServiceTypeLabel,
+                    ),
+                    items: [
+                      for (final serviceType in serviceTypes)
+                        DropdownMenuItem(
+                          value: serviceType,
+                          child: Text(serviceType.name),
+                        ),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => _selectedServiceType = value),
+                    validator: (value) =>
+                        value == null ? l10n.requestServiceTypeRequired : null,
                   ),
-                  items: [
-                    for (final serviceType in serviceTypes)
-                      DropdownMenuItem(
-                        value: serviceType,
-                        child: Text(serviceType.name),
-                      ),
-                  ],
-                  onChanged: (value) =>
-                      setState(() => _selectedServiceType = value),
-                  validator: (value) =>
-                      value == null ? l10n.requestServiceTypeRequired : null,
                 ),
               ),
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.requestServiceTitleFieldLabel,
+                semanticsIdentifier: 'services.request.title_field',
                 controller: _titleController,
                 validator: (value) => (value == null || value.trim().isEmpty)
                     ? l10n.requestServiceTitleRequired
@@ -190,20 +195,24 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.requestServiceDescriptionLabel,
+                semanticsIdentifier: 'services.request.description_field',
                 controller: _descriptionController,
                 maxLines: 4,
                 validator: (value) => (value == null || value.trim().isEmpty)
                     ? l10n.requestServiceDescriptionRequired
                     : null,
               ),
-              CheckboxListTile(
-                key: const Key('request_service_ai_assisted_checkbox'),
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                title: Text(l10n.aiDisclosureCheckboxLabel),
-                value: _aiAssisted,
-                onChanged: (value) =>
-                    setState(() => _aiAssisted = value ?? false),
+              Semantics(
+                identifier: 'services.request.ai_assisted_checkbox',
+                child: CheckboxListTile(
+                  key: const Key('request_service_ai_assisted_checkbox'),
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(l10n.aiDisclosureCheckboxLabel),
+                  value: _aiAssisted,
+                  onChanged: (value) =>
+                      setState(() => _aiAssisted = value ?? false),
+                ),
               ),
               if (_aiAssisted) ...[
                 const SizedBox(height: 4),
@@ -215,6 +224,7 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
               const SizedBox(height: 12),
               TekoInput(
                 label: l10n.requestServiceAddressLabel,
+                semanticsIdentifier: 'services.request.address_field',
                 controller: _addressController,
                 validator: (value) => (value == null || value.trim().isEmpty)
                     ? l10n.requestServiceAddressRequired
@@ -223,6 +233,7 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
               const SizedBox(height: 12),
               TekoButton(
                 key: const Key('request_service_locate_button'),
+                semanticsIdentifier: 'services.request.locate_button',
                 label: l10n.requestServiceUseMyLocation,
                 variant: TekoButtonVariant.outline,
                 loading: _isLocating,
@@ -256,6 +267,7 @@ class _RequestServiceScreenState extends ConsumerState<RequestServiceScreen> {
               const SizedBox(height: 24),
               TekoButton(
                 key: const Key('request_service_submit_button'),
+                semanticsIdentifier: 'services.request.submit_button',
                 label: l10n.requestServiceSubmit,
                 loading: submitState.isLoading,
                 onPressed: submitState.isLoading ? null : _submit,

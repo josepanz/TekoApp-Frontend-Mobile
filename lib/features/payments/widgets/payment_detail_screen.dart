@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_input.dart';
 import '../models/payment.dart';
@@ -114,9 +115,13 @@ class _PaymentDetailBody extends ConsumerWidget {
         backendMessage ?? l10n.paymentRefundError,
       _ => l10n.paymentRefundError,
     };
-    ScaffoldMessenger.of(
+    TekoToast.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      message,
+      variant: state.error == null
+          ? TekoToastVariant.success
+          : TekoToastVariant.error,
+    );
   }
 
   @override

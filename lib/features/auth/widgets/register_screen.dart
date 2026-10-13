@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/teko_gradient_background.dart';
 import '../../../shared/widgets/teko_password_field.dart';
 import '../models/register_failure.dart';
@@ -73,8 +74,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.listen<AsyncValue<void>>(registerControllerProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && !next.isLoading && !next.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.registerSuccess)),
+        TekoToast.show(
+          context,
+          l10n.registerSuccess,
+          variant: TekoToastVariant.success,
         );
         context.go('/login');
       }
@@ -108,60 +111,73 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextFormField(
-                          controller: _firstNameController,
-                          enabled: !registerState.isLoading,
-                          decoration: InputDecoration(
-                            labelText: l10n.registerFirstNameLabel,
+                        Semantics(
+                          identifier: 'auth.register.first_name_field',
+                          child: TextFormField(
+                            controller: _firstNameController,
+                            enabled: !registerState.isLoading,
+                            decoration: InputDecoration(
+                              labelText: l10n.registerFirstNameLabel,
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                    ? l10n.registerFirstNameRequired
+                                    : null,
                           ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                                  ? l10n.registerFirstNameRequired
-                                  : null,
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _lastNameController,
-                          enabled: !registerState.isLoading,
-                          decoration: InputDecoration(
-                            labelText: l10n.registerLastNameLabel,
+                        Semantics(
+                          identifier: 'auth.register.last_name_field',
+                          child: TextFormField(
+                            controller: _lastNameController,
+                            enabled: !registerState.isLoading,
+                            decoration: InputDecoration(
+                              labelText: l10n.registerLastNameLabel,
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                    ? l10n.registerLastNameRequired
+                                    : null,
                           ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                                  ? l10n.registerLastNameRequired
-                                  : null,
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _emailController,
-                          enabled: !registerState.isLoading,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            labelText: l10n.registerEmailLabel,
+                        Semantics(
+                          identifier: 'auth.register.email_field',
+                          child: TextFormField(
+                            controller: _emailController,
+                            enabled: !registerState.isLoading,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              labelText: l10n.registerEmailLabel,
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                    ? l10n.registerEmailRequired
+                                    : null,
                           ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                                  ? l10n.registerEmailRequired
-                                  : null,
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _phoneNumberController,
-                          enabled: !registerState.isLoading,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            labelText: l10n.registerPhoneNumberLabel,
+                        Semantics(
+                          identifier: 'auth.register.phone_field',
+                          child: TextFormField(
+                            controller: _phoneNumberController,
+                            enabled: !registerState.isLoading,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: l10n.registerPhoneNumberLabel,
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                    ? l10n.registerPhoneNumberRequired
+                                    : null,
                           ),
-                          validator: (value) =>
-                              (value == null || value.trim().isEmpty)
-                                  ? l10n.registerPhoneNumberRequired
-                                  : null,
                         ),
                         const SizedBox(height: 12),
                         TekoPasswordField(
                           controller: _passwordController,
                           enabled: !registerState.isLoading,
                           labelText: l10n.registerPasswordLabel,
+                          semanticsIdentifier: 'auth.register.password_field',
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return l10n.registerPasswordRequired;
@@ -177,6 +193,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           controller: _confirmPasswordController,
                           enabled: !registerState.isLoading,
                           labelText: l10n.registerConfirmPasswordLabel,
+                          semanticsIdentifier:
+                              'auth.register.confirm_password_field',
                           validator: (value) =>
                               value != _passwordController.text
                                   ? l10n.registerPasswordsDoNotMatch
@@ -197,13 +215,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           behavior: HitTestBehavior.opaque,
                           child: Row(
                             children: [
-                              Checkbox(
-                                value: _acceptTerms,
-                                onChanged: registerState.isLoading
-                                    ? null
-                                    : (checked) => setState(
-                                          () => _acceptTerms = checked ?? false,
-                                        ),
+                              Semantics(
+                                identifier:
+                                    'auth.register.accept_terms_checkbox',
+                                child: Checkbox(
+                                  value: _acceptTerms,
+                                  onChanged: registerState.isLoading
+                                      ? null
+                                      : (checked) => setState(
+                                            () =>
+                                                _acceptTerms = checked ?? false,
+                                          ),
+                                ),
                               ),
                               Expanded(child: Text(l10n.registerAcceptTerms)),
                             ],
@@ -233,22 +256,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                         ],
                         const SizedBox(height: 24),
-                        FilledButton(
-                          onPressed: registerState.isLoading ? null : _submit,
-                          child: registerState.isLoading
-                              ? const SizedBox(
-                                  height: 16,
-                                  width: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(l10n.registerSubmit),
+                        Semantics(
+                          identifier: 'auth.register.submit_button',
+                          child: FilledButton(
+                            onPressed: registerState.isLoading ? null : _submit,
+                            child: registerState.isLoading
+                                ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(l10n.registerSubmit),
+                          ),
                         ),
                         const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () => context.go('/login'),
-                          child: Text(l10n.registerSignIn),
+                        Semantics(
+                          identifier: 'auth.register.login_link',
+                          child: TextButton(
+                            onPressed: () => context.go('/login'),
+                            child: Text(l10n.registerSignIn),
+                          ),
                         ),
                       ],
                     ),

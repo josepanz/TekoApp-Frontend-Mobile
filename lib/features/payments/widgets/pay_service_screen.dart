@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/teko_toast.dart';
 import '../../../shared/widgets/teko_button.dart';
 import '../../../shared/widgets/teko_input.dart';
 import '../../promotions/models/promotion_failure.dart';
@@ -133,9 +134,7 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
       // muestra deshabilitado en el dropdown con la fecha actual.
       setState(() => _selectedMethod = null);
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    TekoToast.show(context, message, variant: TekoToastVariant.error);
   }
 
   @override
@@ -169,6 +168,7 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
               Expanded(
                 child: TekoInput(
                   key: const Key('pay_service_promo_code_field'),
+                  semanticsIdentifier: 'payments.pay.promo_code_field',
                   label: l10n.payServicePromoCodeLabel,
                   controller: _promoCodeController,
                 ),
@@ -178,6 +178,7 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
                 padding: const EdgeInsets.only(top: 8),
                 child: TekoButton(
                   key: const Key('pay_service_validate_promo_button'),
+                  semanticsIdentifier: 'payments.pay.validate_promo_button',
                   label: l10n.payServiceValidatePromoButton,
                   loading: _validatingPromo,
                   onPressed: _validatingPromo ? null : _validatePromo,
@@ -198,45 +199,51 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
             const SizedBox(height: 8),
             TekoButton(
               key: const Key('pay_service_add_method_link'),
+              semanticsIdentifier: 'payments.pay.add_method_button',
               label: l10n.payServiceAddMethodLink,
               variant: TekoButtonVariant.outline,
               onPressed: () => context.push('/pagos/metodos/nuevo'),
             ),
           ] else ...[
-            DropdownButtonFormField<PaymentMethod>(
-              key: const Key('pay_service_method_field'),
-              initialValue: _selectedMethod,
-              isExpanded: true,
-              decoration: InputDecoration(
-                labelText: l10n.payServiceMethodLabel,
-                helperText: methods.any(_isExpired)
-                    ? l10n.payServiceMethodExpiredHint
-                    : null,
-                helperMaxLines: 2,
-              ),
-              items: [
-                for (final method in methods)
-                  DropdownMenuItem(
-                    key: Key('pay_service_method_option_${method.referenceId}'),
-                    value: method,
-                    enabled: !_isExpired(method),
-                    child: Text(
-                      _isExpired(method)
-                          ? '${method.name} · '
-                              '${paymentMethodTypeLabel(l10n, method.type)} · '
-                              '${l10n.payServiceMethodExpiredLabel}'
-                          : '${method.name} · '
-                              '${paymentMethodTypeLabel(l10n, method.type)}',
-                      overflow: TextOverflow.ellipsis,
-                      style: _isExpired(method)
-                          ? TextStyle(
-                              color: Theme.of(context).disabledColor,
-                            )
-                          : null,
+            Semantics(
+              identifier: 'payments.pay.method_field',
+              child: DropdownButtonFormField<PaymentMethod>(
+                key: const Key('pay_service_method_field'),
+                initialValue: _selectedMethod,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: l10n.payServiceMethodLabel,
+                  helperText: methods.any(_isExpired)
+                      ? l10n.payServiceMethodExpiredHint
+                      : null,
+                  helperMaxLines: 2,
+                ),
+                items: [
+                  for (final method in methods)
+                    DropdownMenuItem(
+                      key: Key(
+                        'pay_service_method_option_${method.referenceId}',
+                      ),
+                      value: method,
+                      enabled: !_isExpired(method),
+                      child: Text(
+                        _isExpired(method)
+                            ? '${method.name} · '
+                                '${paymentMethodTypeLabel(l10n, method.type)} · '
+                                '${l10n.payServiceMethodExpiredLabel}'
+                            : '${method.name} · '
+                                '${paymentMethodTypeLabel(l10n, method.type)}',
+                        overflow: TextOverflow.ellipsis,
+                        style: _isExpired(method)
+                            ? TextStyle(
+                                color: Theme.of(context).disabledColor,
+                              )
+                            : null,
+                      ),
                     ),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _selectedMethod = value),
+                ],
+                onChanged: (value) => setState(() => _selectedMethod = value),
+              ),
             ),
           ],
           if (submitState.hasError) ...[
@@ -249,6 +256,7 @@ class _PayServiceBodyState extends ConsumerState<_PayServiceBody> {
           const SizedBox(height: 24),
           TekoButton(
             key: const Key('pay_service_confirm_button'),
+            semanticsIdentifier: 'payments.pay.confirm_button',
             label: l10n.payServiceConfirmButton,
             loading: submitState.isLoading,
             onPressed: (submitState.isLoading || _selectedMethod == null)

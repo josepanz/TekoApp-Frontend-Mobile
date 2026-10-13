@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/async_state_view.dart';
+import '../../../shared/widgets/teko_skeleton.dart';
 import '../../../shared/widgets/teko_card.dart';
 import '../models/user_rating_stats.dart';
 import '../providers/my_rating_stats_provider.dart';
@@ -23,6 +24,7 @@ class MyRatingStatsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: AsyncStateView<UserRatingStats>(
           isLoading: statsAsync.isLoading,
+          loadingBuilder: (_) => const TekoSkeleton.card(),
           hasError: statsAsync.hasError,
           data: statsAsync.valueOrNull,
           errorMessage: l10n.myRatingStatsError,

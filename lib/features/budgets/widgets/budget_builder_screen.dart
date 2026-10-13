@@ -174,6 +174,7 @@ class _BudgetOptionEditor extends StatelessWidget {
               ),
               if (onRemove != null)
                 IconButton(
+                  tooltip: l10n.budgetRemoveOptionTooltip,
                   icon: const Icon(Icons.delete_outline),
                   onPressed: onRemove,
                 ),
@@ -304,7 +305,11 @@ class _LineItemEditor extends StatelessWidget {
             },
           ),
         ),
-        IconButton(icon: const Icon(Icons.close), onPressed: onRemove),
+        IconButton(
+          tooltip: l10n.budgetRemoveLineItemTooltip,
+          icon: const Icon(Icons.close),
+          onPressed: onRemove,
+        ),
       ],
     );
   }
