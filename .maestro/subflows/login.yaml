@@ -1,0 +1,24 @@
+# Subflujo reutilizable: login con la pantalla de login ya visible.
+# Parametros (obligatorios, los pasa el llamador): EMAIL, PASSWORD.
+# Termina en Home (id home.home.request_service_cta) o falla por timeout.
+appId: py.com.tekoapp.mobile
+---
+- tapOn:
+    id: auth.login.email_field
+- inputText: ${EMAIL}
+- tapOn:
+    id: auth.login.password_field
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: auth.login.submit_button
+# Opt-in biometrico: solo aparece si el dispositivo lo soporta; se declina si salta.
+- runFlow:
+    when:
+      visible: Ahora no
+    commands:
+      - tapOn: Ahora no
+- extendedWaitUntil:
+    visible:
+      id: home.home.request_service_cta
+    timeout: 20000

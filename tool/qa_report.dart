@@ -9,10 +9,17 @@
 // `test/qa/informes/AAAA-MM-DD_<tipo>_<rama-corta>.md`. Las secciones 3 (defectos),
 // 4 (desvíos) y 6 (veredicto) quedan con marcadores para completar a mano.
 //
+// Tipo `flujo` (Maestro): lee el JUnit de `maestro test --format junit` en vez del JSON de
+// `flutter test`:
+//   dart run tool/qa_report.dart build/qa/maestro.xml flujo
+// Parser en `tool/qa_junit.dart`. Solo se genera tras una ejecucion REAL de Maestro.
+//
 // Variables opcionales: QA_COMMAND (comando exacto), QA_EXECUTOR (ejecutor),
 // QA_ENV (entorno). Dart puro, sin dependencias externas.
 import 'dart:convert';
 import 'dart:io';
+
+import 'qa_junit.dart';
 
 class _Case {
   _Case(this.name, this.suiteId);
@@ -67,6 +74,10 @@ void main(List<String> args) {
   }
   final input = File(args[0]);
   final type = args[1];
+  if (type == 'flujo') {
+    _flujoReport(input);
+    return;
+  }
   final lcovFile = File(args.length > 2 ? args[2] : 'coverage/lcov.info');
 
   final suites = <int, String>{};
@@ -321,4 +332,130 @@ void main(List<String> args) {
   out.writeAsStringSync(b.toString());
   stdout.writeln('Informe escrito en ${_norm(out.path)} '
       '(total=$total ok=$ok fallaron=$failed omitidos=$skipped)');
+}
+
+/// Informe tipo `flujo`: resultados de Maestro (JUnit) por flujo, con su CP- leido del
+/// encabezado de `.maestro/<flujo>.yaml` (primera linea `# CP-MOB-...`).
+void _flujoReport(File input) {
+  if (!input.existsSync()) {
+    stderr.writeln(
+      'No existe ${_norm(input.path)}: no hubo ejecucion de Maestro.',
+    );
+    exit(66);
+  }
+  final report = parseJunit(input.readAsStringSync());
+  if (report.cases.isEmpty) {
+    stderr.writeln('El JUnit no contiene testcases: no se genera informe.');
+    exit(65);
+  }
+  String cpOf(String flow) {
+    final f = File('.maestro/$flow.yaml');
+    if (!f.existsSync()) return '-';
+    final ids = RegExp(r'CP-MOB-[A-Z]+-\d+(?:\s*/\s*\d+)?')
+        .allMatches(f.readAsLinesSync().take(3).join('\n'))
+        .map((m) => m.group(0)!)
+        .toList();
+    return ids.isEmpty ? '-' : ids.join(', ');
+  }
+
+  String label(String st) => switch (st) {
+        'passed' => 'OK',
+        'skipped' => 'OMITIDO',
+        _ => 'FALLÓ',
+      };
+  final now = DateTime.now();
+  final date = '${now.year}-${_pad(now.month)}-${_pad(now.day)}';
+  final stamp = '$date ${_pad(now.hour)}:${_pad(now.minute)}';
+  final branch = _run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+  final short = branch.contains('/')
+      ? branch.substring(branch.indexOf('/') + 1).replaceAll('/', '-')
+      : branch;
+  final commit = _run('git', ['rev-parse', '--short', 'HEAD']);
+  final maestro = _run('maestro', ['--version']).split('\n').last;
+  final repo = _norm(Directory.current.path).split('/').last;
+  final env = Platform.environment['QA_ENV'] ??
+      'Maestro $maestro; dispositivo ${report.device ?? 'n/d'}; backend e2e local :3100';
+  final cmd = Platform.environment['QA_COMMAND'] ??
+      'maestro test .maestro --format junit --output ${_norm(input.path)}';
+  final executor = Platform.environment['QA_EXECUTOR'] ?? 'agente (Claude)';
+  final verdict = report.failed == 0 ? 'OK' : 'FALLÓ';
+
+  final b = StringBuffer()
+    ..writeln('# Informe de ejecución QA — flujo — $short')
+    ..writeln()
+    ..writeln('| Campo | Valor |')
+    ..writeln('|---|---|')
+    ..writeln('| Fecha y hora | $stamp |')
+    ..writeln('| Repo | $repo |')
+    ..writeln('| Rama | `$branch` |')
+    ..writeln('| Commit | `$commit` (base de la ejecución) |')
+    ..writeln('| Entorno | $env |')
+    ..writeln('| Comando | `$cmd` |')
+    ..writeln('| Ejecutor | $executor |')
+    ..writeln()
+    ..writeln(
+      '> Tablas generadas por `tool/qa_report.dart` desde el JUnit de Maestro.',
+    )
+    ..writeln('> Las secciones 3, 4 y 6 se completan a mano.')
+    ..writeln()
+    ..writeln('## 1. Resumen')
+    ..writeln()
+    ..writeln('| Total | Pasaron | Fallaron | Omitidos | Duración |')
+    ..writeln('|---:|---:|---:|---:|---:|')
+    ..writeln('| ${report.cases.length} | ${report.passed} | ${report.failed} '
+        '| ${report.skipped} | ${report.seconds.toStringAsFixed(1)}s |')
+    ..writeln()
+    ..writeln('Resultado global: $verdict.')
+    ..writeln()
+    ..writeln('## 2. Resultados por flujo')
+    ..writeln()
+    ..writeln('| Flujo | Caso(s) CP | Duración | Estado |')
+    ..writeln('|---|---|---:|---|');
+  for (final c in report.cases) {
+    b.writeln('| `.maestro/${c.name}.yaml` | ${cpOf(c.name)} '
+        '| ${c.seconds.toStringAsFixed(1)}s | ${label(c.status)} |');
+  }
+  b
+    ..writeln()
+    ..writeln('### Flujos fallidos')
+    ..writeln();
+  final bad = report.cases.where((c) => c.status == 'failed').toList();
+  if (bad.isEmpty) {
+    b.writeln('Ninguno.');
+  } else {
+    for (final c in bad) {
+      b.writeln('- `${c.name}`: ${(c.message ?? '').split('\n').first}');
+    }
+  }
+  b
+    ..writeln()
+    ..writeln('## 3. Defectos encontrados')
+    ..writeln()
+    ..writeln('<!-- MANUAL: DEF-MOB-NNN, severidad, caso, repro, estado -->')
+    ..writeln()
+    ..writeln('## 4. Desvíos y observaciones')
+    ..writeln()
+    ..writeln(
+      '<!-- MANUAL: flakies, timeouts, entorno, omitidos con motivo -->',
+    )
+    ..writeln()
+    ..writeln('## 5. Evidencia')
+    ..writeln()
+    ..writeln('- JUnit: `${_norm(input.path)}` (no se commitea).')
+    ..writeln(
+      '- Capturas: `build/qa/maestro/` y `~/.maestro/tests/` (no se commitean).',
+    )
+    ..writeln()
+    ..writeln('## 6. Veredicto')
+    ..writeln()
+    ..writeln(
+      '<!-- MANUAL: APROBADO / APROBADO CON OBSERVACIONES / RECHAZADO + criterio -->',
+    );
+
+  final dir = Directory('test/qa/informes')..createSync(recursive: true);
+  final out = File('${dir.path}/${date}_flujo_$short.md');
+  out.writeAsStringSync(b.toString());
+  stdout.writeln('Informe escrito en ${_norm(out.path)} '
+      '(total=${report.cases.length} ok=${report.passed} '
+      'fallaron=${report.failed} omitidos=${report.skipped})');
 }

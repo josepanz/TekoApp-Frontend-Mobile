@@ -33,6 +33,17 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          // Único punto de entrada a `/perfil` (datos personales, privacidad, logout, eliminar
+          // cuenta) — sin esto la pantalla existía pero era inalcanzable desde la UI (DEF-MOB-AUTH-001).
+          Semantics(
+            identifier: 'home.home.profile_button',
+            child: IconButton(
+              key: const Key('home_profile_button'),
+              icon: const Icon(Icons.account_circle_outlined),
+              tooltip: l10n.profileTitle,
+              onPressed: () => context.push('/perfil'),
+            ),
+          ),
           Semantics(
             identifier: 'home.home.professional_mode_button',
             child: IconButton(

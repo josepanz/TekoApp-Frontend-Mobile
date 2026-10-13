@@ -1,0 +1,28 @@
+# CP-MOB-AUTH-007 - M1 Auth: cambio de modo cliente <-> profesional con pro_aprobado
+appId: py.com.tekoapp.mobile
+tags:
+  - m1
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: pro_aprobado@e2e.tekoapp.local
+      PASSWORD: E2e-Passw0rd!
+- tapOn:
+    id: home.home.professional_mode_button
+- extendedWaitUntil:
+    visible:
+      id: professional.home.online_switch
+    timeout: 20000
+- assertVisible:
+    id: professional.home.back_to_client_button
+- takeScreenshot: build/qa/maestro/m1-modo-profesional
+- tapOn:
+    id: professional.home.back_to_client_button
+- extendedWaitUntil:
+    visible:
+      id: home.home.request_service_cta
+    timeout: 10000
+- takeScreenshot: build/qa/maestro/m1-modo-cliente

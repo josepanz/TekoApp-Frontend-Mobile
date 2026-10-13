@@ -1,0 +1,29 @@
+# CP-MOB-CAT-001 / 002 (test/qa/casos/CP-CAT.md) - M2 Catalogos: categorias y tipos de servicio
+# llegan del backend. El Home no lista categorias; el consumidor real es "Pedir un servicio".
+# Datos del seed: categoria "Plomería", tipo de servicio "Instalación".
+appId: py.com.tekoapp.mobile
+tags:
+  - m2
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: cliente_a@e2e.tekoapp.local
+      PASSWORD: E2e-Passw0rd!
+- tapOn:
+    id: home.home.request_service_cta
+- extendedWaitUntil:
+    visible:
+      id: services.request.category_field
+    timeout: 20000
+- tapOn:
+    id: services.request.category_field
+- assertVisible: "Plomería"
+- tapOn: "Plomería"
+- tapOn:
+    id: services.request.type_field
+- assertVisible: "Instalación"
+- tapOn: "Instalación"
+- takeScreenshot: build/qa/maestro/m2-catalogos

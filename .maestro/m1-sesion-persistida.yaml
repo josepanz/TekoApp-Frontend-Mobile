@@ -1,0 +1,21 @@
+# CP-MOB-AUTH-008 - M1 Auth: la sesion sobrevive al cierre y reapertura de la app
+appId: py.com.tekoapp.mobile
+tags:
+  - m1
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: cliente_a@e2e.tekoapp.local
+      PASSWORD: E2e-Passw0rd!
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: home.home.request_service_cta
+    timeout: 20000
+- assertNotVisible:
+    id: auth.login.submit_button
+- takeScreenshot: build/qa/maestro/m1-sesion-persistida

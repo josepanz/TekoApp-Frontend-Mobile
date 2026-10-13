@@ -1,0 +1,24 @@
+# CP-MOB-CAT-003 - M2 Catalogos: sin conexion al abrir "Pedir un servicio" se muestra el estado de
+# error del catalogo (no un crash ni un spinner infinito). Usa modo avion del dispositivo; el
+# hook onFlowComplete lo restaura aunque el flujo falle. Los catalogos se cachean en memoria tras la
+# primera carga, por eso se corta la red ANTES de abrir la pantalla por primera vez.
+appId: py.com.tekoapp.mobile
+tags:
+  - m2
+onFlowComplete:
+  - setAirplaneMode: disabled
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: cliente_a@e2e.tekoapp.local
+      PASSWORD: E2e-Passw0rd!
+- setAirplaneMode: enabled
+- tapOn:
+    id: home.home.request_service_cta
+- extendedWaitUntil:
+    visible: "No se pudo cargar el catálogo"
+    timeout: 30000
+- takeScreenshot: build/qa/maestro/m2-catalogos-sin-red

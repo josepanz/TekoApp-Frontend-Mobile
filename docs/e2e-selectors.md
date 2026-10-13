@@ -10,9 +10,12 @@ Los ids de quick access de Home se derivan de la Key (`home_X_button` -> `home.h
 |---|---|
 | `auth.login.biometric_button` | `lib/features/auth/widgets/login_screen.dart` |
 | `auth.login.email_field` | `lib/features/auth/widgets/login_screen.dart` |
+| `auth.login.error_message` | `lib/features/auth/widgets/login_screen.dart` |
 | `auth.login.password_field` | `lib/features/auth/widgets/login_screen.dart` |
 | `auth.login.register_link` | `lib/features/auth/widgets/login_screen.dart` |
 | `auth.login.submit_button` | `lib/features/auth/widgets/login_screen.dart` |
+| `auth.register.accept_terms_checkbox` | `lib/features/auth/widgets/register_screen.dart` |
+| `auth.register.confirm_password_field` | `lib/features/auth/widgets/register_screen.dart` |
 | `auth.register.email_field` | `lib/features/auth/widgets/register_screen.dart` |
 | `auth.register.first_name_field` | `lib/features/auth/widgets/register_screen.dart` |
 | `auth.register.last_name_field` | `lib/features/auth/widgets/register_screen.dart` |
@@ -24,6 +27,7 @@ Los ids de quick access de Home se derivan de la Key (`home_X_button` -> `home.h
 | `budgets.comparison.toggle_details_button` | `lib/features/budgets/widgets/budget_comparison_screen.dart` |
 | `home.home.${quickAccessKey.replaceFirst(` | `lib/features/home/widgets/home_screen.dart` |
 | `home.home.<quick_access>` | `lib/features/home/widgets/home_screen.dart` |
+| `home.home.profile_button` | `lib/features/home/widgets/home_screen.dart` |
 | `home.home.professional_mode_button` | `lib/features/home/widgets/home_screen.dart` |
 | `home.home.recruit_professional_cta` | `lib/features/home/widgets/home_screen.dart` |
 | `home.home.request_service_cta` | `lib/features/home/widgets/home_screen.dart` |

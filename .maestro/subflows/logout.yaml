@@ -1,0 +1,16 @@
+# Subflujo reutilizable: logout desde Home (perfil -> cerrar sesion).
+# Termina en la pantalla de login (id auth.login.submit_button).
+appId: py.com.tekoapp.mobile
+---
+- tapOn:
+    id: home.home.profile_button
+- scrollUntilVisible:
+    element:
+      id: profile.profile.logout_button
+    timeout: 20000
+- tapOn:
+    id: profile.profile.logout_button
+- extendedWaitUntil:
+    visible:
+      id: auth.login.submit_button
+    timeout: 15000

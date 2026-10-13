@@ -1,0 +1,18 @@
+# CP-MOB-AUTH-006 - M1 Auth: logout vuelve a Login y Home deja de ser accesible
+appId: py.com.tekoapp.mobile
+tags:
+  - m1
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/login.yaml
+    env:
+      EMAIL: cliente_a@e2e.tekoapp.local
+      PASSWORD: E2e-Passw0rd!
+- runFlow: subflows/logout.yaml
+- assertVisible:
+    id: auth.login.email_field
+- assertNotVisible:
+    id: home.home.request_service_cta
+- takeScreenshot: build/qa/maestro/m1-logout

@@ -1,0 +1,17 @@
+# Config del workspace Maestro (se lee al correr `maestro test .maestro`).
+# El appId real (py.com.tekoapp.mobile, ver android/app/build.gradle.kts, sin flavors) va en el
+# encabezado de cada flujo: Maestro no lo toma del workspace config.
+# Solo se ejecutan los flujos de la raiz; los subflujos (subflows/) se invocan con runFlow.
+flows:
+  - "*.yaml"
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - m1-login-ok
+    - m1-login-invalido
+    - m1-registro
+    - m1-logout
+    - m1-cambio-modo
+    - m1-sesion-persistida
+    - m2-catalogos
+    - m2-catalogos-sin-red
